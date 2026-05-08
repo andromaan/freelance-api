@@ -1,9 +1,7 @@
 using System.Net.Http.Json;
 using BLL.ViewModels.Freelancer;
 using DAL.Extensions;
-using Domain.Models.Countries;
 using Domain.Models.Freelance;
-using Domain.Models.Languages;
 using Domain.Models.Projects;
 using Domain.Models.Users;
 using FluentAssertions;

@@ -15,8 +15,7 @@ namespace Tests.Common;
 
 public class IntegrationTestWebFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder()
-        .WithImage("postgres:latest")
+    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:latest")
         .WithDatabase("freelance-database")
         .WithUsername("postgres")
         .WithPassword("postgres")
@@ -24,15 +23,13 @@ public class IntegrationTestWebFactory : WebApplicationFactory<Program>, IAsyncL
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureTestServices(services =>
-        {
-            RegisterDatabase(services);
-        }).ConfigureAppConfiguration((_, config) =>
-        {
-            config
-                .AddJsonFile("appsettings.Test.json")
-                .AddEnvironmentVariables();
-        }).UseEnvironment("Test");
+        builder.ConfigureTestServices(services => { RegisterDatabase(services); })
+            .ConfigureAppConfiguration((_, config) =>
+            {
+                config
+                    .AddJsonFile("appsettings.Test.json")
+                    .AddEnvironmentVariables();
+            }).UseEnvironment("Test");
     }
 
     private void RegisterDatabase(IServiceCollection services)
@@ -43,13 +40,12 @@ public class IntegrationTestWebFactory : WebApplicationFactory<Program>, IAsyncL
         dataSourceBuilder.EnableDynamicJson();
         var dataSource = dataSourceBuilder.Build();
 
-        services.AddDbContext<AppDbContext>(
-            options => options
-                .UseNpgsql(
-                    dataSource,
-                    b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName))
-                .UseSnakeCaseNamingConvention()
-                .ConfigureWarnings(w => w.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)));
+        services.AddDbContext<AppDbContext>(options => options
+            .UseNpgsql(
+                dataSource,
+                b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName))
+            .UseSnakeCaseNamingConvention()
+            .ConfigureWarnings(w => w.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)));
     }
 
     public Task InitializeAsync()

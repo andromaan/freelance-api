@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using BLL;
 using BLL.ViewModels.Dispute;
 using DAL.Extensions;
-using Domain.Models.Auth;
 using Domain.Models.Contracts;
 using Domain.Models.Disputes;
 using Domain.Models.Freelance;

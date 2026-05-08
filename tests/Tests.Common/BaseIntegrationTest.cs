@@ -5,21 +5,7 @@ using System.Text;
 using BLL;
 using DAL.Data;
 using Domain.Models.Auth;
-using Domain.Models.Contracts;
-using Domain.Models.Countries;
-using Domain.Models.Disputes;
-using Domain.Models.Employers;
-using Domain.Models.Freelance;
-using Domain.Models.Languages;
-using Domain.Models.Messaging;
-using Domain.Models.Notifications;
-using Domain.Models.Payments;
-using Domain.Models.Projects;
-using Domain.Models.Reviews;
-using Domain.Models.Users;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -41,14 +27,10 @@ public abstract class BaseIntegrationTest : IClassFixture<IntegrationTestWebFact
         var scope = factory.Services.CreateScope();
         Context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        Client = factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureTestServices(services => { services.AddAuthentication(); });
-            })
-            .CreateClient(new WebApplicationFactoryClientOptions
-            {
-                AllowAutoRedirect = false,
-            });
+        Client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false,
+        });
 
         if (useJwtToken)
             SetAuthorizationHeader(customRole);
@@ -107,13 +89,15 @@ public abstract class BaseIntegrationTest : IClassFixture<IntegrationTestWebFact
             .ToList();
 
         var tableList = string.Join(", ", tableNames.Select(t => $"\"{t}\""));
+        
+        #pragma warning disable EF1002
         await Context.Database.ExecuteSqlRawAsync(
             $"TRUNCATE {tableList} RESTART IDENTITY CASCADE");
     }
 
     protected int GetRoleIdByName(string? role)
         => GetRoleByName(role).Id;
-    
+
     protected Role GetRoleByName(string? role)
         => Context.Roles.First(r => r.Name == role);
 }

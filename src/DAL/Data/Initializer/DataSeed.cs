@@ -4,7 +4,6 @@ using BLL.Services.PasswordHasher;
 using Domain.Models.Auth;
 using Domain.Models.Countries;
 using Domain.Models.Languages;
-using Domain.Models.Projects;
 using Domain.Models.Users;
 using Microsoft.EntityFrameworkCore;
 

@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using BLL;
 using BLL.ViewModels.Reviews;
 using DAL.Extensions;
-using Domain.Models.Auth;
 using Domain.Models.Contracts;
 using Domain.Models.Freelance;
 using Domain.Models.Projects;

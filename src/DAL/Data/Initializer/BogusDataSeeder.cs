@@ -49,8 +49,8 @@ public static class BogusDataSeeder
         var projects = await GenerateProjectsAsync(context, faker, employerUsers, categories);
 
         // 4. Генерація заявок та контрактів
-        await GenerateBidsAndQuotesAsync(context, faker, projects, freelancersUsers);
-        await GenerateContractsAsync(context, faker, projects, freelancersUsers, employerUsers);
+        await GenerateBidsAndQuotesAsync(context, projects, freelancersUsers);
+        await GenerateContractsAsync(context, projects, freelancersUsers, employerUsers);
     }
 
     private static async Task SeedSkillsAsync(AppDbContext context)
@@ -97,20 +97,20 @@ public static class BogusDataSeeder
         string defaultPasswordHash, Role freelancerRole, List<Country> countries, List<Skill> skills, Guid adminId)
     {
         var freelancerFaker = new Faker<User>("uk")
-            .RuleFor(u => u.Id, f => Guid.NewGuid())
+            .RuleFor(u => u.Id, _ => Guid.NewGuid())
             .RuleFor(u => u.Email, f => f.Internet.Email())
-            .RuleFor(u => u.PasswordHash, f => defaultPasswordHash)
+            .RuleFor(u => u.PasswordHash, _ => defaultPasswordHash)
             .RuleFor(u => u.DisplayName, f => f.Name.FullName())
-            .RuleFor(u => u.RoleId, f => freelancerRole.Id)
+            .RuleFor(u => u.RoleId, _ => freelancerRole.Id)
             .RuleFor(u => u.CountryId, f => f.PickRandom(countries).Id)
-            .RuleFor(u => u.CreatedBy, f => adminId)
-            .RuleFor(u => u.ModifiedBy, f => adminId)
+            .RuleFor(u => u.CreatedBy, _ => adminId)
+            .RuleFor(u => u.ModifiedBy, _ => adminId)
             .RuleFor(u => u.CreatedAt, f => f.Date.Past().ToUniversalTime())
             .RuleFor(u => u.ModifiedAt, f => f.Date.Recent().ToUniversalTime());
 
         var testFreelancer = freelancerFaker.Clone()
-            .RuleFor(u => u.Email, f => "freelancer@test.com")
-            .RuleFor(u => u.DisplayName, f => "Test Freelancer")
+            .RuleFor(u => u.Email, _ => "freelancer@test.com")
+            .RuleFor(u => u.DisplayName, _ => "Test Freelancer")
             .Generate();
 
         var freelancersUsers = freelancerFaker.Generate(15);
@@ -139,20 +139,20 @@ public static class BogusDataSeeder
         string defaultPasswordHash, Role employerRole, List<Country> countries, Guid adminId)
     {
         var employerFaker = new Faker<User>("uk")
-            .RuleFor(u => u.Id, f => Guid.NewGuid())
+            .RuleFor(u => u.Id, _ => Guid.NewGuid())
             .RuleFor(u => u.Email, f => f.Internet.Email())
-            .RuleFor(u => u.PasswordHash, f => defaultPasswordHash)
+            .RuleFor(u => u.PasswordHash, _ => defaultPasswordHash)
             .RuleFor(u => u.DisplayName, f => f.Name.FullName())
-            .RuleFor(u => u.RoleId, f => employerRole.Id)
+            .RuleFor(u => u.RoleId, _ => employerRole.Id)
             .RuleFor(u => u.CountryId, f => f.PickRandom(countries).Id)
-            .RuleFor(u => u.CreatedBy, f => adminId)
-            .RuleFor(u => u.ModifiedBy, f => adminId)
+            .RuleFor(u => u.CreatedBy, _ => adminId)
+            .RuleFor(u => u.ModifiedBy, _ => adminId)
             .RuleFor(u => u.CreatedAt, f => f.Date.Past().ToUniversalTime())
             .RuleFor(u => u.ModifiedAt, f => f.Date.Recent().ToUniversalTime());
 
         var testEmployer = employerFaker.Clone()
-            .RuleFor(u => u.Email, f => "employer@test.com")
-            .RuleFor(u => u.DisplayName, f => "Test Employer")
+            .RuleFor(u => u.Email, _ => "employer@test.com")
+            .RuleFor(u => u.DisplayName, _ => "Test Employer")
             .Generate();
 
         var employerUsers = employerFaker.Generate(10);
@@ -182,7 +182,7 @@ public static class BogusDataSeeder
         var projectStatuses = new[] { ProjectStatus.Open, ProjectStatus.InProgress, ProjectStatus.Completed };
 
         var projectFaker = new Faker<Project>("uk")
-            .RuleFor(p => p.Id, f => Guid.NewGuid())
+            .RuleFor(p => p.Id, _ => Guid.NewGuid())
             .RuleFor(p => p.Title, f => f.Lorem.Sentence(f.Random.Int(3, 7)))
             .RuleFor(p => p.Description, f => f.Lorem.Paragraphs(f.Random.Int(1, 3)))
             .RuleFor(p => p.Budget, f => Math.Round(f.Random.Decimal(100, 10000), 2))
@@ -206,7 +206,7 @@ public static class BogusDataSeeder
         return projects;
     }
 
-    private static async Task GenerateBidsAndQuotesAsync(AppDbContext context, Faker faker, List<Project> projects,
+    private static async Task GenerateBidsAndQuotesAsync(AppDbContext context, List<Project> projects,
         List<User> freelancersUsers)
     {
         var openProjects = projects.Where(p => p.Status == ProjectStatus.Open).ToList();
@@ -214,39 +214,39 @@ public static class BogusDataSeeder
         if (!openProjects.Any()) return;
 
         var bidFaker = new Faker<Bid>("uk")
-            .RuleFor(b => b.Id, f => Guid.NewGuid())
+            .RuleFor(b => b.Id, _ => Guid.NewGuid())
             .RuleFor(b => b.ProjectId, f => f.PickRandom(openProjects).Id)
             .RuleFor(b => b.Amount,
                 (f, b) => Math.Round(f.Random.Decimal(100, openProjects.First(x => x.Id == b.ProjectId).Budget), 2))
             .RuleFor(b => b.Message, f => f.Lorem.Paragraph())
             .RuleFor(b => b.FreelancerId, f => f.PickRandom(freelancersUsers).Id)
-            .RuleFor(b => b.CreatedBy, (f, b) => b.FreelancerId)
+            .RuleFor(b => b.CreatedBy, (_, b) => b.FreelancerId)
             .RuleFor(b => b.CreatedAt, f => f.Date.Recent().ToUniversalTime())
-            .RuleFor(b => b.ModifiedBy, (f, b) => b.FreelancerId)
-            .RuleFor(b => b.ModifiedAt, (f, b) => b.CreatedAt);
+            .RuleFor(b => b.ModifiedBy, (_, b) => b.FreelancerId)
+            .RuleFor(b => b.ModifiedAt, (_, b) => b.CreatedAt);
 
         var bids = bidFaker.Generate(50);
         context.Bids.AddRange(bids);
         await context.SaveChangesAsync();
 
         var quoteFaker = new Faker<Quote>("uk")
-            .RuleFor(q => q.Id, f => Guid.NewGuid())
+            .RuleFor(q => q.Id, _ => Guid.NewGuid())
             .RuleFor(q => q.ProjectId, f => f.PickRandom(openProjects).Id)
             .RuleFor(q => q.Amount,
                 (f, q) => Math.Round(f.Random.Decimal(100, openProjects.First(x => x.Id == q.ProjectId).Budget), 2))
             .RuleFor(q => q.Message, f => f.Lorem.Paragraph())
             .RuleFor(q => q.FreelancerId, f => f.PickRandom(freelancersUsers).Id)
-            .RuleFor(q => q.CreatedBy, (f, q) => q.FreelancerId)
+            .RuleFor(q => q.CreatedBy, (_, q) => q.FreelancerId)
             .RuleFor(q => q.CreatedAt, f => f.Date.Recent().ToUniversalTime())
-            .RuleFor(q => q.ModifiedBy, (f, q) => q.FreelancerId)
-            .RuleFor(q => q.ModifiedAt, (f, q) => q.CreatedAt);
+            .RuleFor(q => q.ModifiedBy, (_, q) => q.FreelancerId)
+            .RuleFor(q => q.ModifiedAt, (_, q) => q.CreatedAt);
 
         var quotes = quoteFaker.Generate(30);
         context.Quotes.AddRange(quotes);
         await context.SaveChangesAsync();
     }
 
-    private static async Task GenerateContractsAsync(AppDbContext context, Faker faker, List<Project> projects,
+    private static async Task GenerateContractsAsync(AppDbContext context, List<Project> projects,
         List<User> freelancersUsers, List<User> employerUsers)
     {
         var inProgressProjects = projects
@@ -256,7 +256,7 @@ public static class BogusDataSeeder
 
         var statuses = new[] { ContractStatus.Active, ContractStatus.Completed, ContractStatus.Pending };
         var contractFaker = new Faker<Contract>("uk")
-            .RuleFor(c => c.Id, f => Guid.NewGuid())
+            .RuleFor(c => c.Id, _ => Guid.NewGuid())
             .RuleFor(c => c.ProjectId, f => f.PickRandom(inProgressProjects).Id)
             .RuleFor(c => c.FreelancerId, f => f.PickRandom(freelancersUsers).Id)
             .RuleFor(c => c.StartDate, f => f.Date.Past().ToUniversalTime())
@@ -265,9 +265,9 @@ public static class BogusDataSeeder
                     2))
             .RuleFor(c => c.Status, f => f.PickRandom(statuses))
             .RuleFor(c => c.CreatedBy, f => f.PickRandom(employerUsers).Id)
-            .RuleFor(c => c.CreatedAt, (f, c) => c.StartDate)
-            .RuleFor(c => c.ModifiedBy, (f, c) => c.CreatedBy)
-            .RuleFor(c => c.ModifiedAt, (f, c) => c.StartDate);
+            .RuleFor(c => c.CreatedAt, (_, c) => c.StartDate)
+            .RuleFor(c => c.ModifiedBy, (_, c) => c.CreatedBy)
+            .RuleFor(c => c.ModifiedAt, (_, c) => c.StartDate);
 
         var contracts = contractFaker.Generate(inProgressProjects.Count * 2);
         context.Contracts.AddRange(contracts);
