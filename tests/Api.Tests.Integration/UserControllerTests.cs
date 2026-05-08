@@ -81,21 +81,21 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
     {
         // Arrange
         SwitchUser(role: Settings.Roles.EmployerRole, userId: _testUser.Id);
-        
+
         var userLanguage1 = new UserLanguage
         {
             UserId = _testUser.Id,
             LanguageId = _language1.Id,
             ProficiencyLevel = ProficiencyLevel.Advanced
         };
-        
+
         var userLanguage2 = new UserLanguage
         {
             UserId = _testUser.Id,
             LanguageId = _language2.Id,
             ProficiencyLevel = ProficiencyLevel.Intermediate
         };
-        
+
         await Context.AddAsync(userLanguage1);
         await Context.AddAsync(userLanguage2);
         await SaveChangesAsync();
@@ -112,10 +112,12 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
         userFromResponse.Email.Should().Be(_testUser.Email);
         userFromResponse.RoleId.Should().Be(_testUser.RoleId);
         userFromResponse.Languages.Should().HaveCount(2);
-        userFromResponse.Languages.Should().Contain(l => l.LanguageId == _language1.Id && l.ProficiencyLevel == nameof(ProficiencyLevel.Advanced));
-        userFromResponse.Languages.Should().Contain(l => l.LanguageId == _language2.Id && l.ProficiencyLevel == nameof(ProficiencyLevel.Intermediate));
+        userFromResponse.Languages.Should().Contain(l =>
+            l.LanguageId == _language1.Id && l.ProficiencyLevel == nameof(ProficiencyLevel.Advanced));
+        userFromResponse.Languages.Should().Contain(l =>
+            l.LanguageId == _language2.Id && l.ProficiencyLevel == nameof(ProficiencyLevel.Intermediate));
     }
-    
+
     [Fact]
     public async Task ShouldGetUserById()
     {
@@ -225,7 +227,7 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
             email: "delete@test.com",
             roleId: _freelancerRole.Id
         );
-        await Context.AddAsync(userToDelete);
+        await Context.AddAuditableAsync(userToDelete);
         await SaveChangesAsync();
 
         SwitchUser(role: Settings.Roles.AdminRole, userId: _adminUser.Id);
@@ -399,7 +401,7 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
             email: "another@test.com",
             roleId: _freelancerRole.Id
         );
-        await Context.AddAsync(anotherUser);
+        await Context.AddAuditableAsync(anotherUser);
         await SaveChangesAsync();
 
         SwitchUser(role: Settings.Roles.AdminRole, userId: _adminUser.Id);
@@ -524,7 +526,7 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
             LanguageId = _language1.Id,
             ProficiencyLevel = ProficiencyLevel.Advanced
         };
-        
+
         var request2 = new CreateUserLanguageVM
         {
             LanguageId = _language2.Id,
@@ -545,10 +547,12 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
 
         userFromDb.Should().NotBeNull();
         userFromDb.Languages.Should().HaveCount(2);
-        userFromDb.Languages.Should().Contain(l => l.LanguageId == request1.LanguageId && l.ProficiencyLevel == request1.ProficiencyLevel);
-        userFromDb.Languages.Should().Contain(l => l.LanguageId == request2.LanguageId && l.ProficiencyLevel == request2.ProficiencyLevel);
+        userFromDb.Languages.Should().Contain(l =>
+            l.LanguageId == request1.LanguageId && l.ProficiencyLevel == request1.ProficiencyLevel);
+        userFromDb.Languages.Should().Contain(l =>
+            l.LanguageId == request2.LanguageId && l.ProficiencyLevel == request2.ProficiencyLevel);
     }
-    
+
     [Fact]
     public async Task ShouldNotCreateUserLanguageWithInvalidProficiencyLevel()
     {
@@ -567,7 +571,7 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-    
+
     [Fact]
     public async Task ShouldNotCreateUserLanguageWithInvalidLanguageId()
     {
@@ -586,7 +590,7 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldUpdateUserLanguage()
     {
@@ -620,7 +624,8 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
 
         userFromDb.Should().NotBeNull();
         userFromDb.Languages.Should().HaveCount(1);
-        userFromDb.Languages.Should().Contain(l => l.LanguageId == updateRequest.LanguageId && l.ProficiencyLevel == updateRequest.ProficiencyLevel);
+        userFromDb.Languages.Should().Contain(l =>
+            l.LanguageId == updateRequest.LanguageId && l.ProficiencyLevel == updateRequest.ProficiencyLevel);
     }
 
     [Fact]
@@ -641,7 +646,7 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-    
+
     [Fact]
     public async Task ShouldNotUpdateUserLanguageWithInvalidLanguageId()
     {
@@ -660,7 +665,7 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldDeleteUserLanguage()
     {
@@ -689,7 +694,7 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
         userFromDb.Should().NotBeNull();
         userFromDb.Languages.Should().NotContain(l => l.LanguageId == _language1.Id);
     }
-    
+
     [Fact]
     public async Task ShouldNotDeleteUserLanguageWithInvalidLanguageId()
     {
@@ -747,19 +752,14 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
         freelancer.RoleId.Should().Be(_freelancerRole.Id);
         moderator.RoleId.Should().Be(_moderatorRole.Id);
     }
-    
+
     public async Task InitializeAsync()
     {
-        _employerRole = RoleData.CreateRole(name: Settings.Roles.EmployerRole);
-        _freelancerRole = RoleData.CreateRole(name: Settings.Roles.FreelancerRole);
-        _moderatorRole = RoleData.CreateRole(name: Settings.Roles.ModeratorRole);
-        _adminRole = RoleData.CreateRole(name: Settings.Roles.AdminRole);
-        
-        await Context.AddAsync(_employerRole);
-        await Context.AddAsync(_freelancerRole);
-        await Context.AddAsync(_adminRole);
-        await Context.AddAsync(_moderatorRole);
-        
+        _freelancerRole = GetRoleByName(Settings.Roles.FreelancerRole);
+        _employerRole = GetRoleByName(Settings.Roles.EmployerRole);
+        _moderatorRole = GetRoleByName(Settings.Roles.ModeratorRole);
+        _adminRole = GetRoleByName(Settings.Roles.AdminRole);
+
         _country = CountryData.MainCountry;
         _language1 = new Language { Id = 0, Name = "English", Code = "EN" };
         _language2 = new Language { Id = 0, Name = "Spanish", Code = "ES" };
@@ -786,10 +786,6 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
 
     public async Task DisposeAsync()
     {
-        Context.Set<User>().RemoveRange(Context.Set<User>());
-        Context.Set<Country>().RemoveRange(Context.Set<Country>());
-        Context.Set<Language>().RemoveRange(Context.Set<Language>());
-        Context.Set<Role>().RemoveRange(Context.Set<Role>());
-        await SaveChangesAsync();
+        await ClearDatabaseAsync();
     }
 }

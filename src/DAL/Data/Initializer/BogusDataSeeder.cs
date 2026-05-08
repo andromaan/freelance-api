@@ -32,9 +32,9 @@ public static class BogusDataSeeder
 
         // Retrieve existing lookup data
         var roles = await context.Roles.ToListAsync();
-        var countries = await context.Set<Country>().ToListAsync();
-        var skills = await context.Set<Skill>().ToListAsync();
-        var categories = await context.Set<Category>().ToListAsync();
+        var countries = await context.Countries.ToListAsync();
+        var skills = await context.Skills.ToListAsync();
+        var categories = await context.Categories.ToListAsync();
 
         var freelancerRole = roles.First(r => r.Name == Settings.Roles.FreelancerRole);
         var employerRole = roles.First(r => r.Name == Settings.Roles.EmployerRole);
@@ -55,7 +55,7 @@ public static class BogusDataSeeder
 
     private static async Task SeedSkillsAsync(AppDbContext context)
     {
-        var existingSkills = await context.Set<Skill>().ToListAsync();
+        var existingSkills = await context.Skills.ToListAsync();
         if (existingSkills.Any()) return;
 
         var skills = new List<Skill>
@@ -72,7 +72,7 @@ public static class BogusDataSeeder
             new() { Id = 10, Name = "React" }
         };
 
-        context.Set<Skill>().AddRange(skills);
+        context.Skills.AddRange(skills);
         await context.SaveChangesAsync();
     }
 
@@ -84,11 +84,11 @@ public static class BogusDataSeeder
             "Data Science", "Video Editing", "Backend Development", "Frontend Development", "DevOps"
         };
 
-        var categories = await context.Set<Category>().ToListAsync();
+        var categories = await context.Categories.ToListAsync();
         if (!categories.Any(c => c.Id >= 100))
         {
             var newCategories = categoriesList.Select((c, i) => new Category { Id = 100 + i, Name = c }).ToList();
-            context.Set<Category>().AddRange(newCategories);
+            context.Categories.AddRange(newCategories);
             await context.SaveChangesAsync();
         }
     }
@@ -200,7 +200,7 @@ public static class BogusDataSeeder
             project.Categories = faker.PickRandom(categories, faker.Random.Int(1, 3)).ToList();
         }
 
-        context.Set<Project>().AddRange(projects);
+        context.Projects.AddRange(projects);
         await context.SaveChangesAsync();
 
         return projects;
@@ -226,7 +226,7 @@ public static class BogusDataSeeder
             .RuleFor(b => b.ModifiedAt, (f, b) => b.CreatedAt);
 
         var bids = bidFaker.Generate(50);
-        context.Set<Bid>().AddRange(bids);
+        context.Bids.AddRange(bids);
         await context.SaveChangesAsync();
 
         var quoteFaker = new Faker<Quote>("uk")
@@ -242,7 +242,7 @@ public static class BogusDataSeeder
             .RuleFor(q => q.ModifiedAt, (f, q) => q.CreatedAt);
 
         var quotes = quoteFaker.Generate(30);
-        context.Set<Quote>().AddRange(quotes);
+        context.Quotes.AddRange(quotes);
         await context.SaveChangesAsync();
     }
 
@@ -270,7 +270,7 @@ public static class BogusDataSeeder
             .RuleFor(c => c.ModifiedAt, (f, c) => c.StartDate);
 
         var contracts = contractFaker.Generate(inProgressProjects.Count * 2);
-        context.Set<Contract>().AddRange(contracts);
+        context.Contracts.AddRange(contracts);
         await context.SaveChangesAsync();
     }
 }

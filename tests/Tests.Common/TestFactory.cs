@@ -7,13 +7,21 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
+using Testcontainers.PostgreSql;
+using Xunit;
 
 namespace Tests.Common;
 
-public class IntegrationTestWebFactory : WebApplicationFactory<Program>
+public class IntegrationTestWebFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly string _databaseName = $"InMemoryTestDb_{Guid.NewGuid()}";
-    
+    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder()
+        .WithImage("postgres:latest")
+        .WithDatabase("freelance-database")
+        .WithUsername("postgres")
+        .WithPassword("postgres")
+        .Build();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureTestServices(services =>
@@ -29,13 +37,28 @@ public class IntegrationTestWebFactory : WebApplicationFactory<Program>
 
     private void RegisterDatabase(IServiceCollection services)
     {
-        // Видаляємо попередню реєстрацію AppDbContext, якщо вона є
         services.RemoveServiceByType(typeof(DbContextOptions<AppDbContext>));
 
-        // Реєструємо in-memory базу даних
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_dbContainer.GetConnectionString());
+        dataSourceBuilder.EnableDynamicJson();
+        var dataSource = dataSourceBuilder.Build();
+
         services.AddDbContext<AppDbContext>(
             options => options
-                .UseInMemoryDatabase(_databaseName)
-                .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning)));
+                .UseNpgsql(
+                    dataSource,
+                    b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName))
+                .UseSnakeCaseNamingConvention()
+                .ConfigureWarnings(w => w.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)));
+    }
+
+    public Task InitializeAsync()
+    {
+        return _dbContainer.StartAsync();
+    }
+
+    public new Task DisposeAsync()
+    {
+        return _dbContainer.DisposeAsync().AsTask();
     }
 }

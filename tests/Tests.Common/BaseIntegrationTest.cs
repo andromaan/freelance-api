@@ -4,8 +4,23 @@ using System.Security.Claims;
 using System.Text;
 using BLL;
 using DAL.Data;
+using Domain.Models.Auth;
+using Domain.Models.Contracts;
+using Domain.Models.Countries;
+using Domain.Models.Disputes;
+using Domain.Models.Employers;
+using Domain.Models.Freelance;
+using Domain.Models.Languages;
+using Domain.Models.Messaging;
+using Domain.Models.Notifications;
+using Domain.Models.Payments;
+using Domain.Models.Projects;
+using Domain.Models.Reviews;
+using Domain.Models.Users;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
@@ -82,4 +97,23 @@ public abstract class BaseIntegrationTest : IClassFixture<IntegrationTestWebFact
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    protected async Task ClearDatabaseAsync()
+    {
+        var tableNames = Context.Model.GetEntityTypes()
+            .Select(t => t.GetTableName())
+            .Where(t => t != null && t != "roles")
+            .Distinct()
+            .ToList();
+
+        var tableList = string.Join(", ", tableNames.Select(t => $"\"{t}\""));
+        await Context.Database.ExecuteSqlRawAsync(
+            $"TRUNCATE {tableList} RESTART IDENTITY CASCADE");
+    }
+
+    protected int GetRoleIdByName(string? role)
+        => GetRoleByName(role).Id;
+    
+    protected Role GetRoleByName(string? role)
+        => Context.Roles.First(r => r.Name == role);
 }

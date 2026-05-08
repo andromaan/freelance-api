@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using BLL.ViewModels.Quote;
+using DAL.Extensions;
 using Domain.Models.Freelance;
 using Domain.Models.Projects;
 using Domain.Models.Users;
@@ -221,8 +222,8 @@ public class QuoteControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldReturnEmptyListForProjectWithNoQuotes()
     {
         // Arrange
-        var projectWithoutQuotes = ProjectData.CreateProject();
-        await Context.AddAsync(projectWithoutQuotes);
+        var projectWithoutQuotes = ProjectData.CreateProject(userId: _user.Id);
+        await Context.AddAuditableAsync(projectWithoutQuotes);
         await SaveChangesAsync();
 
         // Act
@@ -239,7 +240,7 @@ public class QuoteControllerTests(IntegrationTestWebFactory factory)
     public async Task InitializeAsync()
     {
         _user = UserData.CreateTestUser(UserId);
-        _project = ProjectData.CreateProject();
+        _project = ProjectData.CreateProject(userId: _user.Id);
         _freelancer = FreelancerData.CreateFreelancer(userId: _user.Id);
         _quote = new Quote
         {
@@ -250,19 +251,15 @@ public class QuoteControllerTests(IntegrationTestWebFactory factory)
             Message = "Test quote message"
         };
 
-        await Context.AddAsync(_user);
-        await Context.AddAsync(_project);
-        await Context.AddAsync(_freelancer);
-        await Context.AddAsync(_quote);
+        await Context.AddAuditableAsync(_user);
+        await Context.AddAuditableAsync(_project);
+        await Context.AddAuditableAsync(_freelancer);
+        await Context.AddAuditableAsync(_quote);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.Set<Quote>().RemoveRange(Context.Set<Quote>());
-        Context.Set<Freelancer>().RemoveRange(Context.Set<Freelancer>());
-        Context.Set<Project>().RemoveRange(Context.Set<Project>());
-        Context.Set<User>().RemoveRange(Context.Set<User>());
-        await SaveChangesAsync();
+        await ClearDatabaseAsync();
     }
 }

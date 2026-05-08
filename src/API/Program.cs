@@ -47,11 +47,6 @@ app.UseCors(options => options
 app.UseAuthentication();
 app.UseAuthorization();
 
-if (!app.Environment.IsEnvironment("Test"))
-{
-    await app.InitialiseDb();
-}
-
 app.MapControllers();
 
 app.UseMiddleware<MiddlewareExceptionsHandling>();

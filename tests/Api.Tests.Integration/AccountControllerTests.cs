@@ -4,19 +4,15 @@ using BLL;
 using BLL.Services.PasswordHasher;
 using BLL.ViewModels.Auth;
 using DAL.Extensions;
-using Domain.Models.Auth;
 using Domain.Models.Users;
 using FluentAssertions;
 using Tests.Common;
-using TestsData;
 
 namespace Api.Tests.Integration;
 
 public class AccountControllerTests(IntegrationTestWebFactory factory)
     : BaseIntegrationTest(factory, useJwtToken: false), IAsyncLifetime
 {
-    private Role? _freelancerRole;
-    private Role? _employerRole;
     private User _existingUser = null!;
     private const string ExistingUserPassword = "Test123!@#";
     private const string ExistingUserEmail = "existing@test.com";
@@ -231,11 +227,6 @@ public class AccountControllerTests(IntegrationTestWebFactory factory)
 
     public async Task InitializeAsync()
     {
-        _freelancerRole = RoleData.CreateRole(name: Settings.Roles.FreelancerRole, id: 0);
-        await Context.AddAsync(_freelancerRole);
-        _employerRole = RoleData.CreateRole(name: Settings.Roles.EmployerRole, id: 0);
-        await Context.AddAsync(_employerRole);
-
         // Створюємо існуючого користувача безпосередньо в БД для тестів логіну
         var passwordHasher = new PasswordHasher();
 
@@ -246,7 +237,7 @@ public class AccountControllerTests(IntegrationTestWebFactory factory)
             Email = ExistingUserEmail,
             PasswordHash = passwordHasher.HashPassword(ExistingUserPassword),
             DisplayName = "Existing User",
-            RoleId = _freelancerRole.Id,
+            RoleId = GetRoleIdByName(Settings.Roles.FreelancerRole),
             CreatedBy = userId
         };
 
@@ -257,8 +248,6 @@ public class AccountControllerTests(IntegrationTestWebFactory factory)
 
     public async Task DisposeAsync()
     {
-        Context.Set<User>().RemoveRange(Context.Set<User>());
-        Context.Set<Role>().RemoveRange(Context.Set<Role>());
-        await SaveChangesAsync();
+        await ClearDatabaseAsync();
     }
 }

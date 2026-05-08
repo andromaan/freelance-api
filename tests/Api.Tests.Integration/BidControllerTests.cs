@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
+using BLL;
 using BLL.ViewModels.Bid;
+using DAL.Extensions;
 using Domain.Models.Freelance;
 using Domain.Models.Projects;
 using Domain.Models.Users;
@@ -42,7 +44,7 @@ public class BidControllerTests(IntegrationTestWebFactory factory)
         var bidFromResponse = await JsonHelper.GetPayloadAsync<BidVM>(response);
         var bidId = bidFromResponse.Id;
 
-        var bidFromDb = await Context.Set<Bid>().FirstOrDefaultAsync(x => x.Id == bidId);
+        var bidFromDb = await Context.Bids.FirstOrDefaultAsync(x => x.Id == bidId);
 
         bidFromDb.Should().NotBeNull();
         bidFromDb.ProjectId.Should().Be(_project.Id);
@@ -87,7 +89,7 @@ public class BidControllerTests(IntegrationTestWebFactory factory)
 
         var bidFromResponse = await JsonHelper.GetPayloadAsync<BidVM>(response);
 
-        var bidFromDb = await Context.Set<Bid>().FirstOrDefaultAsync(x => x.Id == bidFromResponse.Id);
+        var bidFromDb = await Context.Bids.FirstOrDefaultAsync(x => x.Id == bidFromResponse.Id);
 
         bidFromDb.Should().NotBeNull();
         bidFromDb.Amount.Should().Be(2500m);
@@ -103,7 +105,7 @@ public class BidControllerTests(IntegrationTestWebFactory factory)
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
 
-        var bidFromDb = await Context.Set<Bid>().FirstOrDefaultAsync(x => x.Id == _bid.Id);
+        var bidFromDb = await Context.Bids.FirstOrDefaultAsync(x => x.Id == _bid.Id);
 
         bidFromDb.Should().BeNull();
     }
@@ -221,8 +223,8 @@ public class BidControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldReturnEmptyListForProjectWithNoBids()
     {
         // Arrange
-        var projectWithoutBids = ProjectData.CreateProject();
-        await Context.AddAsync(projectWithoutBids);
+        var projectWithoutBids = ProjectData.CreateProject(userId: UserId);
+        await Context.AddAuditableAsync(projectWithoutBids);
         await SaveChangesAsync();
 
         // Act
@@ -238,8 +240,8 @@ public class BidControllerTests(IntegrationTestWebFactory factory)
 
     public async Task InitializeAsync()
     {
-        _user = UserData.CreateTestUser(UserId);
-        _project = ProjectData.CreateProject();
+        _user = UserData.CreateTestUser(UserId, roleId: GetRoleIdByName(Settings.Roles.FreelancerRole));
+        _project = ProjectData.CreateProject(userId: _user.Id);
         _freelancer = FreelancerData.CreateFreelancer(userId: _user.Id);
         _bid = new Bid
         {
@@ -250,19 +252,15 @@ public class BidControllerTests(IntegrationTestWebFactory factory)
             Message = "Test bid message"
         };
 
-        await Context.AddAsync(_user);
-        await Context.AddAsync(_project);
-        await Context.AddAsync(_freelancer);
-        await Context.AddAsync(_bid);
+        await Context.AddAuditableAsync(_user);
+        await Context.AddAuditableAsync(_project);
+        await Context.AddAuditableAsync(_freelancer);
+        await Context.AddAuditableAsync(_bid);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.Set<Bid>().RemoveRange(Context.Set<Bid>());
-        Context.Set<Freelancer>().RemoveRange(Context.Set<Freelancer>());
-        Context.Set<Project>().RemoveRange(Context.Set<Project>());
-        Context.Set<User>().RemoveRange(Context.Set<User>());
-        await SaveChangesAsync();
+        await ClearDatabaseAsync();
     }
 }

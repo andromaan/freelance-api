@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using BLL;
 using BLL.ViewModels.Contract;
+using DAL.Extensions;
 using Domain.Models.Contracts;
 using Domain.Models.Freelance;
 using Domain.Models.Projects;
@@ -33,7 +34,7 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
             freelancerId: _freelancer.Id,
             amount: 3000m
         );
-        await Context.AddAsync(newQuote);
+        await Context.AddAuditableAsync(newQuote);
         await SaveChangesAsync();
 
         // Act
@@ -45,7 +46,7 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
         var contractFromResponse = await JsonHelper.GetPayloadAsync<ContractVM>(response);
         var contractId = contractFromResponse.Id;
 
-        var contractFromDb = await Context.Set<Contract>().FirstOrDefaultAsync(x => x.Id == contractId);
+        var contractFromDb = await Context.Contracts.FirstOrDefaultAsync(x => x.Id == contractId);
 
         contractFromDb.Should().NotBeNull();
         contractFromDb.ProjectId.Should().Be(_project.Id);
@@ -65,7 +66,8 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
             ProjectId = newProject.Id,
             Description = "Milestone 1",
             DueDate = DateTime.UtcNow.AddDays(30),
-            Amount = 1000m
+            Amount = 1000m,
+            CreatedBy = _employerUser.Id
         };
         var milestone2 = new ProjectMilestone
         {
@@ -73,7 +75,8 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
             ProjectId = newProject.Id,
             Description = "Milestone 2",
             DueDate = DateTime.UtcNow.AddDays(60),
-            Amount = 2000m
+            Amount = 2000m,
+            CreatedBy = _employerUser.Id
         };
         var newQuote = QuoteData.CreateQuote(
             projectId: newProject.Id,
@@ -81,10 +84,10 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
             amount: 3000m
         );
 
-        await Context.AddAsync(newProject);
-        await Context.AddAsync(milestone1);
-        await Context.AddAsync(milestone2);
-        await Context.AddAsync(newQuote);
+        await Context.AddAuditableAsync(newProject);
+        await Context.AddAuditableAsync(milestone1);
+        await Context.AddAuditableAsync(milestone2);
+        await Context.AddAuditableAsync(newQuote);
         await SaveChangesAsync();
 
         // Act
@@ -96,10 +99,10 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
         var contractFromResponse = await JsonHelper.GetPayloadAsync<ContractVM>(response);
         var contractId = contractFromResponse.Id;
 
-        var contractFromDb = await Context.Set<Contract>().FirstOrDefaultAsync(x => x.Id == contractId);
+        var contractFromDb = await Context.Contracts.FirstOrDefaultAsync(x => x.Id == contractId);
         contractFromDb.Should().NotBeNull();
 
-        var contractMilestones = await Context.Set<ContractMilestone>()
+        var contractMilestones = await Context.ContractMilestones
             .Where(cm => cm.ContractId == contractId)
             .ToListAsync();
 
@@ -129,7 +132,7 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
         
         var contractFromResponse = await JsonHelper.GetPayloadAsync<ContractVM>(response);
         
-        var contractFromDb = await Context.Set<Contract>().FirstOrDefaultAsync(x => x.Id == contractFromResponse.Id);
+        var contractFromDb = await Context.Contracts.FirstOrDefaultAsync(x => x.Id == contractFromResponse.Id);
         
         contractFromDb.Should().NotBeNull();
         contractFromDb.StartDate.Should().BeCloseTo(newStartDate, TimeSpan.FromSeconds(1));
@@ -197,8 +200,8 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
             amount: 2500m
         );
 
-        await Context.AddAsync(projectWithDeadline);
-        await Context.AddAsync(newQuote);
+        await Context.AddAuditableAsync(projectWithDeadline);
+        await Context.AddAuditableAsync(newQuote);
         await SaveChangesAsync();
 
         // Act
@@ -210,7 +213,7 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
         var contractFromResponse = await JsonHelper.GetPayloadAsync<ContractVM>(response);
         var contractId = contractFromResponse.Id;
 
-        var contractFromDb = await Context.Set<Contract>().FirstOrDefaultAsync(x => x.Id == contractId);
+        var contractFromDb = await Context.Contracts.FirstOrDefaultAsync(x => x.Id == contractId);
         
         contractFromDb.Should().NotBeNull();
         contractFromDb.EndDate.Should().BeCloseTo(projectWithDeadline.Deadline, TimeSpan.FromSeconds(1));
@@ -229,7 +232,8 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
             ProjectId = newProject.Id,
             Description = "Early Milestone",
             DueDate = DateTime.UtcNow.AddDays(20),
-            Amount = 1000m
+            Amount = 1000m,
+            CreatedBy = _employerUser.Id
         };
         var milestone2 = new ProjectMilestone
         {
@@ -237,7 +241,8 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
             ProjectId = newProject.Id,
             Description = "Late Milestone",
             DueDate = DateTime.UtcNow.AddDays(60), // Later than project deadline
-            Amount = 2000m
+            Amount = 2000m,
+            CreatedBy = _employerUser.Id
         };
         
         var newQuote = QuoteData.CreateQuote(
@@ -246,10 +251,10 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
             amount: 3000m
         );
 
-        await Context.AddAsync(newProject);
-        await Context.AddAsync(milestone1);
-        await Context.AddAsync(milestone2);
-        await Context.AddAsync(newQuote);
+        await Context.AddAuditableAsync(newProject);
+        await Context.AddAuditableAsync(milestone1);
+        await Context.AddAuditableAsync(milestone2);
+        await Context.AddAuditableAsync(newQuote);
         await SaveChangesAsync();
 
         // Act
@@ -259,7 +264,7 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
         response.IsSuccessStatusCode.Should().BeTrue();
 
         var contractFromResponse = await JsonHelper.GetPayloadAsync<ContractVM>(response);
-        var contractFromDb = await Context.Set<Contract>().FirstOrDefaultAsync(x => x.Id == contractFromResponse.Id);
+        var contractFromDb = await Context.Contracts.FirstOrDefaultAsync(x => x.Id == contractFromResponse.Id);
         
         contractFromDb.Should().NotBeNull();
         // EndDate should be from the latest milestone, not the project deadline
@@ -281,7 +286,7 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
 
-        var contractFromDb = await Context.Set<Contract>().FirstOrDefaultAsync(x => x.Id == _contract.Id);
+        var contractFromDb = await Context.Contracts.FirstOrDefaultAsync(x => x.Id == _contract.Id);
         contractFromDb.Should().NotBeNull();
         contractFromDb.Status.Should().Be(ContractStatus.Active);
     }
@@ -307,12 +312,12 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldUpdateProjectStatusToInProgress_WhenContractCreated()
     {
         // Arrange
-        var project = ProjectData.CreateProject();
-        await Context.AddAsync(project);
-        var freelancer = FreelancerData.CreateFreelancer();
-        await Context.AddAsync(freelancer);
+        var project = ProjectData.CreateProject(userId: _employerUser.Id);
+        await Context.AddAuditableAsync(project);
+        var freelancer = FreelancerData.CreateFreelancer(userId: _freelancerUser.Id);
+        await Context.AddAuditableAsync(freelancer);
         var quote = QuoteData.CreateQuote(projectId: project.Id, freelancerId: freelancer.Id, amount: 1000m);
-        await Context.AddAsync(quote);
+        await Context.AddAuditableAsync(quote);
         await SaveChangesAsync();
 
         // Act
@@ -349,28 +354,22 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
             ProjectId = _project.Id,
             Description = "Test Milestone",
             DueDate = DateTime.UtcNow.AddDays(15),
-            Amount = 1000m
+            Amount = 1000m,
+            CreatedBy = _employerUser.Id
         };
 
-        await Context.AddAsync(_employerUser);
-        await Context.AddAsync(_freelancerUser);
-        await Context.AddAsync(_project);
-        await Context.AddAsync(_freelancer);
-        await Context.AddAsync(_quote);
-        await Context.AddAsync(_contract);
-        await Context.AddAsync(_projectMilestone);
+        await Context.AddAuditableAsync(_employerUser);
+        await Context.AddAuditableAsync(_freelancerUser);
+        await Context.AddAuditableAsync(_freelancer);
+        await Context.AddAuditableAsync(_project);
+        await Context.AddAuditableAsync(_projectMilestone);
+        await Context.AddAuditableAsync(_quote);
+        await Context.AddAuditableAsync(_contract);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.Set<ContractMilestone>().RemoveRange(Context.Set<ContractMilestone>());
-        Context.Set<ProjectMilestone>().RemoveRange(Context.Set<ProjectMilestone>());
-        Context.Set<Contract>().RemoveRange(Context.Set<Contract>());
-        Context.Set<Quote>().RemoveRange(Context.Set<Quote>());
-        Context.Set<Freelancer>().RemoveRange(Context.Set<Freelancer>());
-        Context.Set<Project>().RemoveRange(Context.Set<Project>());
-        Context.Set<User>().RemoveRange(Context.Set<User>());
-        await SaveChangesAsync();
+        await ClearDatabaseAsync();
     }
 }

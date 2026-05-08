@@ -65,9 +65,9 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
             ModifiedAt = DateTime.UtcNow
         };
 
-        await Context.AddAsync(employerWallet);
-        await Context.AddAsync(freelancerWallet);
-        await Context.AddAsync(milestone);
+        await Context.AddAuditableAsync(employerWallet);
+        await Context.AddAuditableAsync(freelancerWallet);
+        await Context.AddAuditableAsync(milestone);
         await SaveChangesAsync();
 
         var request = new UpdContractMilestoneStatusEmployerVM
@@ -82,7 +82,7 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
         response.IsSuccessStatusCode.Should().BeTrue();
 
         // Verify milestone status changed
-        var updatedMilestone = await Context.Set<ContractMilestone>()
+        var updatedMilestone = await Context.ContractMilestones
             .FirstOrDefaultAsync(x => x.Id == milestone.Id);
         updatedMilestone.Should().NotBeNull();
         updatedMilestone.Status.Should().Be(ContractMilestoneStatus.Approved);
@@ -147,17 +147,17 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
         var milestone1 = ContractMilestoneData.MainContractMilestone(contractId: _contract.Id,
             description: "Milestone 1 for approval", amount: 500m, dueDate: DateTime.UtcNow.AddDays(10),
             status: ContractMilestoneStatus.Submitted, createdBy: _employerUser.Id);
-        
+
         var milestone2 = ContractMilestoneData.MainContractMilestone(contractId: _contract.Id,
             description: "Milestone 2 for approval", amount: 300m, dueDate: DateTime.UtcNow.AddDays(15),
             status: ContractMilestoneStatus.Submitted, createdBy: _employerUser.Id);
-        
+
         var milestone3 = ContractMilestoneData.MainContractMilestone(contractId: _contract.Id,
             description: "Milestone 3 for approval", amount: 100m, dueDate: DateTime.UtcNow.AddDays(20),
             status: ContractMilestoneStatus.Submitted, createdBy: _employerUser.Id);
 
-        await Context.AddAsync(employerWallet);
-        await Context.AddAsync(freelancerWallet);
+        await Context.AddAuditableAsync(employerWallet);
+        await Context.AddAuditableAsync(freelancerWallet);
         await Context.AddAuditableAsync(milestone1);
         await Context.AddAuditableAsync(milestone2);
         await Context.AddAuditableAsync(milestone3);
@@ -183,7 +183,7 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
         var secondMilestoneAmount = _contract.AgreedRate - milestonesSum;
 
         // Verify milestone status changed
-        var updatedMilestone = await Context.Set<ContractMilestone>()
+        var updatedMilestone = await Context.ContractMilestones
             .FirstOrDefaultAsync(x => x.Id == milestone1.Id);
         updatedMilestone.Should().NotBeNull();
         updatedMilestone.Status.Should().Be(ContractMilestoneStatus.Approved);
@@ -226,7 +226,7 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
         var contract =
             ContractData.CreateContract(projectId: _project.Id, freelancerId: _freelancer.Id, agreedRate: 1000m,
                 createdById: UserId);
-        await Context.AddAsync(contract);
+        await Context.AddAuditableAsync(contract);
         var milestone1 = new ContractMilestone
         {
             Id = Guid.NewGuid(), ContractId = contract.Id, Description = "M1", Amount = 500m,
@@ -258,10 +258,10 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
             ModifiedAt = DateTime.UtcNow
         };
 
-        await Context.AddAsync(milestone1);
-        await Context.AddAsync(milestone2);
-        await Context.AddAsync(employerWallet);
-        await Context.AddAsync(freelancerWallet);
+        await Context.AddAuditableAsync(milestone1);
+        await Context.AddAuditableAsync(milestone2);
+        await Context.AddAuditableAsync(employerWallet);
+        await Context.AddAuditableAsync(freelancerWallet);
         await SaveChangesAsync();
 
         // Act: Approve both milestones
@@ -270,7 +270,7 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
         await Client.PutAsJsonAsync($"ContractMilestone/status/{milestone2.Id}/employer", approveVm);
 
         // Assert
-        var contractFromDb = await Context.Set<Contract>().FirstOrDefaultAsync(x => x.Id == contract.Id);
+        var contractFromDb = await Context.Contracts.FirstOrDefaultAsync(x => x.Id == contract.Id);
         contractFromDb.Should().NotBeNull();
         contractFromDb.Status.Should().Be(ContractStatus.Completed);
 
@@ -308,8 +308,8 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
             ModifiedAt = DateTime.UtcNow
         };
 
-        await Context.AddAsync(employerWallet);
-        await Context.AddAsync(milestone);
+        await Context.AddAuditableAsync(employerWallet);
+        await Context.AddAuditableAsync(milestone);
         await SaveChangesAsync();
 
         var request = new UpdContractMilestoneStatusEmployerVM
@@ -325,7 +325,7 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         // Verify milestone status remains unchanged
-        var unchangedMilestone = await Context.Set<ContractMilestone>()
+        var unchangedMilestone = await Context.ContractMilestones
             .FirstOrDefaultAsync(x => x.Id == milestone.Id);
         unchangedMilestone.Should().NotBeNull();
         unchangedMilestone.Status.Should().Be(ContractMilestoneStatus.Submitted);
@@ -365,8 +365,8 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
             ModifiedAt = DateTime.UtcNow
         };
 
-        await Context.AddAsync(employerWallet);
-        await Context.AddAsync(milestone);
+        await Context.AddAuditableAsync(employerWallet);
+        await Context.AddAuditableAsync(milestone);
         await SaveChangesAsync();
 
         var request = new UpdContractMilestoneStatusEmployerVM
@@ -382,7 +382,7 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         // Verify milestone status remains approved
-        var unchangedMilestone = await Context.Set<ContractMilestone>()
+        var unchangedMilestone = await Context.ContractMilestones
             .FirstOrDefaultAsync(x => x.Id == milestone.Id);
         unchangedMilestone.Should().NotBeNull();
         unchangedMilestone.Status.Should().Be(ContractMilestoneStatus.Approved);
@@ -418,8 +418,8 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
             ModifiedAt = DateTime.UtcNow
         };
 
-        await Context.AddAsync(employerWallet);
-        await Context.AddAsync(milestone);
+        await Context.AddAuditableAsync(employerWallet);
+        await Context.AddAuditableAsync(milestone);
         await SaveChangesAsync();
 
         var request = new UpdContractMilestoneStatusEmployerVM
@@ -435,7 +435,7 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         // Verify milestone status remains unchanged
-        var unchangedMilestone = await Context.Set<ContractMilestone>()
+        var unchangedMilestone = await Context.ContractMilestones
             .FirstOrDefaultAsync(x => x.Id == milestone.Id);
         unchangedMilestone.Should().NotBeNull();
         unchangedMilestone.Status.Should().Be(milestoneStatus);
@@ -480,9 +480,9 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
             ModifiedAt = DateTime.UtcNow
         };
 
-        await Context.AddAsync(employerWallet);
-        await Context.AddAsync(freelancerWallet);
-        await Context.AddAsync(milestone);
+        await Context.AddAuditableAsync(employerWallet);
+        await Context.AddAuditableAsync(freelancerWallet);
+        await Context.AddAuditableAsync(milestone);
         await SaveChangesAsync();
 
         var request = new UpdContractMilestoneStatusEmployerVM
@@ -497,7 +497,7 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
         response.IsSuccessStatusCode.Should().BeTrue();
 
         // Verify milestone status changed to Rejected
-        var updatedMilestone = await Context.Set<ContractMilestone>()
+        var updatedMilestone = await Context.ContractMilestones
             .FirstOrDefaultAsync(x => x.Id == milestone.Id);
         updatedMilestone.Should().NotBeNull();
         updatedMilestone.Status.Should().Be((ContractMilestoneStatus)request.Status);
@@ -551,9 +551,9 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
             ModifiedAt = DateTime.UtcNow
         };
 
-        await Context.AddAsync(employerWallet);
-        await Context.AddAsync(freelancerWallet);
-        await Context.AddAsync(milestone);
+        await Context.AddAuditableAsync(employerWallet);
+        await Context.AddAuditableAsync(freelancerWallet);
+        await Context.AddAuditableAsync(milestone);
         await SaveChangesAsync();
 
         var request = new UpdContractMilestoneStatusEmployerVM
@@ -568,7 +568,7 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
         response.IsSuccessStatusCode.Should().BeTrue();
 
         // Verify milestone status changed to UnderReview
-        var updatedMilestone = await Context.Set<ContractMilestone>()
+        var updatedMilestone = await Context.ContractMilestones
             .FirstOrDefaultAsync(x => x.Id == milestone.Id);
         updatedMilestone.Should().NotBeNull();
         updatedMilestone.Status.Should().Be(ContractMilestoneStatus.UnderReview);
@@ -588,13 +588,13 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
         _employerUser = UserData.CreateTestUser(UserId);
         _freelancerUser = UserData.CreateTestUser(Guid.NewGuid());
         _freelancer = FreelancerData.CreateFreelancer(userId: _freelancerUser.Id);
-        _project = ProjectData.CreateProject();
+        _project = ProjectData.CreateProject(userId: _employerUser.Id);
         _contract = ContractData.CreateContract(
             projectId: _project.Id,
             freelancerId: _freelancer.Id,
-            agreedRate: 2000m
+            agreedRate: 2000m,
+            createdById: _employerUser.Id
         );
-        _contract.CreatedBy = _employerUser.Id;
         _contractMilestone = new ContractMilestone
         {
             Id = Guid.NewGuid(),
@@ -602,26 +602,21 @@ public class ContractMilestoneEmployerControllerTests(IntegrationTestWebFactory 
             Description = "Test contract milestone",
             Amount = _contract.AgreedRate / 2,
             DueDate = DateTime.UtcNow.AddDays(30),
-            Status = ContractMilestoneStatus.Pending
+            Status = ContractMilestoneStatus.Pending,
+            CreatedBy = _employerUser.Id
         };
 
-        await Context.AddAsync(_employerUser);
-        await Context.AddAsync(_freelancerUser);
-        await Context.AddAsync(_freelancer);
-        await Context.AddAsync(_project);
-        await Context.AddAsync(_contract);
-        await Context.AddAsync(_contractMilestone);
+        await Context.AddAuditableAsync(_employerUser);
+        await Context.AddAuditableAsync(_freelancerUser);
+        await Context.AddAuditableAsync(_freelancer);
+        await Context.AddAuditableAsync(_project);
+        await Context.AddAuditableAsync(_contract);
+        await Context.AddAuditableAsync(_contractMilestone);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.Set<ContractMilestone>().RemoveRange(Context.Set<ContractMilestone>());
-        Context.Set<Contract>().RemoveRange(Context.Set<Contract>());
-        Context.Set<Project>().RemoveRange(Context.Set<Project>());
-        Context.Set<UserWallet>().RemoveRange(Context.Set<UserWallet>());
-        Context.Set<Freelancer>().RemoveRange(Context.Set<Freelancer>());
-        Context.Set<User>().RemoveRange(Context.Set<User>());
-        await SaveChangesAsync();
+        await ClearDatabaseAsync();
     }
 }

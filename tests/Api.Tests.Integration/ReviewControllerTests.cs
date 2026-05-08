@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using BLL;
 using BLL.ViewModels.Reviews;
+using DAL.Extensions;
 using Domain.Models.Auth;
 using Domain.Models.Contracts;
 using Domain.Models.Freelance;
@@ -31,7 +32,7 @@ public class ReviewControllerTests(IntegrationTestWebFactory factory)
         // Arrange
         Context.Set<Review>().RemoveRange(Context.Set<Review>());
         await SaveChangesAsync();
-        
+
         var request = new CreateReviewVM
         {
             ContractId = _contract.Id,
@@ -58,16 +59,16 @@ public class ReviewControllerTests(IntegrationTestWebFactory factory)
         reviewFromDb.ReviewText.Should().Be(request.ReviewText);
         reviewFromDb.CreatedBy.Should().Be(UserId);
     }
-    
+
     [Fact]
     public async Task ShouldCreateReviewByFreelancer()
     {
         SwitchUser(_freelancerUser.Role!.Name, _freelancerUser.Id);
-        
+
         // Arrange
         Context.Set<Review>().RemoveRange(Context.Set<Review>());
         await SaveChangesAsync();
-        
+
         var request = new CreateReviewVM
         {
             ContractId = _contract.Id,
@@ -290,7 +291,7 @@ public class ReviewControllerTests(IntegrationTestWebFactory factory)
         // Arrange
         Context.Set<Review>().RemoveRange(Context.Set<Review>());
         await SaveChangesAsync();
-        
+
         var request = new CreateReviewVM
         {
             ContractId = _contract.Id,
@@ -314,7 +315,7 @@ public class ReviewControllerTests(IntegrationTestWebFactory factory)
         // Arrange
         Context.Set<Review>().RemoveRange(Context.Set<Review>());
         await SaveChangesAsync();
-        
+
         var request = new CreateReviewVM
         {
             ContractId = _contract.Id,
@@ -334,19 +335,15 @@ public class ReviewControllerTests(IntegrationTestWebFactory factory)
 
     public async Task InitializeAsync()
     {
-        var employerRole = RoleData.CreateRole(name: Settings.Roles.EmployerRole);
-        var freelancerRole = RoleData.CreateRole(name: Settings.Roles.FreelancerRole);
-        
-        await Context.AddAsync(employerRole);
-        await Context.AddAsync(freelancerRole);
-        
         // Set employer user to the same UserId as the JWT token
-        _employerUser = UserData.CreateTestUser(id: UserId, email: "employer@test.com", roleId: employerRole.Id);
-        _freelancerUser = UserData.CreateTestUser(email: "freelancer@test.com", roleId: freelancerRole.Id);
-        
+        _employerUser = UserData.CreateTestUser(id: UserId, email: "employer@test.com",
+            roleId: GetRoleIdByName(Settings.Roles.EmployerRole));
+        _freelancerUser = UserData.CreateTestUser(email: "freelancer@test.com",
+            roleId: GetRoleIdByName(Settings.Roles.FreelancerRole));
+
         _project = ProjectData.CreateProject(userId: _employerUser.Id);
         _freelancer = FreelancerData.CreateFreelancer(userId: _freelancerUser.Id);
-        
+
         _contract = ContractData.CreateContract(
             projectId: _project.Id,
             freelancerId: _freelancer.Id,
@@ -354,34 +351,28 @@ public class ReviewControllerTests(IntegrationTestWebFactory factory)
             createdById: _employerUser.Id
         );
         _contract.Status = ContractStatus.Completed;
-        
+
         _existingReview = ReviewData.CreateReview(
             contractId: _contract.Id,
             reviewedUserId: _freelancerUser.Id,
             rating: 4.0m,
             reviewText: "Good work overall.",
-            reviewerRoleId: employerRole.Id,
+            reviewerRoleId: _employerUser.RoleId,
             createdById: _employerUser.Id
         );
 
 
-        await Context.AddAsync(_employerUser);
-        await Context.AddAsync(_freelancerUser);
-        await Context.AddAsync(_project);
-        await Context.AddAsync(_freelancer);
-        await Context.AddAsync(_contract);
-        await Context.AddAsync(_existingReview);
+        await Context.AddAuditableAsync(_employerUser);
+        await Context.AddAuditableAsync(_freelancerUser);
+        await Context.AddAuditableAsync(_project);
+        await Context.AddAuditableAsync(_freelancer);
+        await Context.AddAuditableAsync(_contract);
+        await Context.AddAuditableAsync(_existingReview);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.Set<Review>().RemoveRange(Context.Set<Review>());
-        Context.Set<Contract>().RemoveRange(Context.Set<Contract>());
-        Context.Set<Freelancer>().RemoveRange(Context.Set<Freelancer>());
-        Context.Set<Project>().RemoveRange(Context.Set<Project>());
-        Context.Set<User>().RemoveRange(Context.Set<User>());
-        Context.Set<Role>().RemoveRange(Context.Set<Role>());
-        await SaveChangesAsync();
+        await ClearDatabaseAsync();
     }
 }
