@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using BLL;
 using BLL.ViewModels.Message;
+using DAL.Extensions;
 using Domain.Models.Contracts;
 using Domain.Models.Freelance;
 using Domain.Models.Messaging;
@@ -28,8 +29,8 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldCreateMessage()
     {
         // Arrange
-        var request = new CreateMessageVM 
-        { 
+        var request = new CreateMessageVM
+        {
             ContractId = _contract.Id,
             ReceiverEmail = _receiverUser.Email,
             Text = "Hello, this is a test message"
@@ -57,8 +58,8 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldCreateMessageWithoutContract()
     {
         // Arrange
-        var request = new CreateMessageWithoutContractVM 
-        { 
+        var request = new CreateMessageWithoutContractVM
+        {
             ReceiverEmail = _receiverUser.Email,
             Text = "Direct message without contract"
         };
@@ -85,21 +86,21 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldUpdateMessage()
     {
         // Arrange
-        var request = new UpdateMessageVM 
-        { 
+        var request = new UpdateMessageVM
+        {
             Text = "Updated message text"
         };
 
         // Act
         var response = await Client.PutAsJsonAsync($"Message/{_message.Id}", request);
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var messageFromResponse = await JsonHelper.GetPayloadAsync<MessageVM>(response);
-        
+
         var messageFromDb = await Context.Set<Message>().FirstOrDefaultAsync(x => x.Id == messageFromResponse.Id);
-        
+
         messageFromDb.Should().NotBeNull();
         messageFromDb.Text.Should().Be("Updated message text");
     }
@@ -109,12 +110,12 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
     {
         // Act
         var response = await Client.DeleteAsync($"Message/{_message.Id}");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var messageFromDb = await Context.Set<Message>().FirstOrDefaultAsync(x => x.Id == _message.Id);
-        
+
         messageFromDb.Should().BeNull();
     }
 
@@ -123,12 +124,12 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
     {
         // Act
         var response = await Client.GetAsync($"Message/{_message.Id}");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var messageFromResponse = await JsonHelper.GetPayloadAsync<MessageVM>(response);
-        
+
         messageFromResponse.Should().NotBeNull();
         messageFromResponse.Id.Should().Be(_message.Id);
         messageFromResponse.Text.Should().Be(_message.Text);
@@ -139,12 +140,12 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
     {
         // Act
         var response = await Client.GetAsync("Message/by-user");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var messages = await JsonHelper.GetPayloadAsync<List<MessageVM>>(response);
-        
+
         messages.Should().NotBeEmpty();
         messages.Should().Contain(m => m.Id == _message.Id);
     }
@@ -154,12 +155,12 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
     {
         // Act
         var response = await Client.GetAsync($"Message/by-contract/{_contract.Id}");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var messages = await JsonHelper.GetPayloadAsync<List<MessageVM>>(response);
-        
+
         messages.Should().NotBeEmpty();
         messages.Should().Contain(m => m.Id == _message.Id);
     }
@@ -168,15 +169,15 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldNotCreateMessageWithoutContractBecauseReceiverNotFound()
     {
         // Arrange
-        var request = new CreateMessageWithoutContractVM 
-        { 
+        var request = new CreateMessageWithoutContractVM
+        {
             ReceiverEmail = "nonexistent@test.com",
             Text = "Test message"
         };
-        
+
         // Act
         var response = await Client.PostAsJsonAsync("Message/without-contract", request);
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -186,15 +187,15 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldNotCreateMessageWithoutContractToYourself()
     {
         // Arrange
-        var request = new CreateMessageWithoutContractVM 
-        { 
+        var request = new CreateMessageWithoutContractVM
+        {
             ReceiverEmail = _user.Email, // Sending to yourself
             Text = "Test message"
         };
-        
+
         // Act
         var response = await Client.PostAsJsonAsync("Message/without-contract", request);
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -204,15 +205,15 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldNotCreateMessageWithEmptyText()
     {
         // Arrange
-        var request = new CreateMessageWithoutContractVM 
-        { 
+        var request = new CreateMessageWithoutContractVM
+        {
             ReceiverEmail = _receiverUser.Email,
             Text = "" // Empty text
         };
-        
+
         // Act
         var response = await Client.PostAsJsonAsync("Message/without-contract", request);
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -222,36 +223,36 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldNotUpdateBecauseNotFound()
     {
         // Arrange
-        var request = new UpdateMessageVM 
-        { 
+        var request = new UpdateMessageVM
+        {
             Text = "Updated text"
         };
-        
+
         // Act
         var response = await Client.PutAsJsonAsync($"Message/{Guid.NewGuid()}", request);
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldNotDeleteBecauseNotFound()
     {
         // Act
         var response = await Client.DeleteAsync($"Message/{Guid.NewGuid()}");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldNotGetByIdBecauseNotFound()
     {
         // Act
         var response = await Client.GetAsync($"Message/{Guid.NewGuid()}");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -263,19 +264,20 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
         // Arrange
         var contractWithoutMessages = ContractData.CreateContract(
             projectId: _project.Id,
-            freelancerId: _freelancer.Id
+            freelancerId: _freelancer.Id,
+            createdById: _user.Id
         );
-        await Context.AddAsync(contractWithoutMessages);
+        await Context.AddAuditableAsync(contractWithoutMessages);
         await SaveChangesAsync();
 
         // Act
         var response = await Client.GetAsync($"Message/by-contract/{contractWithoutMessages.Id}");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var messages = await JsonHelper.GetPayloadAsync<List<MessageVM>>(response);
-        
+
         messages.Should().BeEmpty();
     }
 
@@ -284,7 +286,7 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
     {
         // Act
         var response = await Client.GetAsync($"Message/by-contract/{Guid.NewGuid()}");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -292,16 +294,15 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
 
     public async Task InitializeAsync()
     {
-        var freelancerRole = RoleData.CreateRole(name: Settings.Roles.FreelancerRole);
-        await Context.AddAsync(freelancerRole);
-        
         _user = UserData.CreateTestUser(UserId, "sender@test.com");
-        _receiverUser = UserData.CreateTestUser(email: "receiver@test.com", roleId: freelancerRole.Id);
+        _receiverUser = UserData.CreateTestUser(email: "receiver@test.com",
+            roleId: GetRoleIdByName(Settings.Roles.FreelancerRole));
         _project = ProjectData.CreateProject(userId: _user.Id);
         _freelancer = FreelancerData.CreateFreelancer(userId: _receiverUser.Id);
         _contract = ContractData.CreateContract(
             projectId: _project.Id,
-            freelancerId: _freelancer.Id
+            freelancerId: _freelancer.Id,
+            createdById: _user.Id
         );
         _message = MessageData.CreateMessage(
             contractId: _contract.Id,
@@ -310,22 +311,17 @@ public class MessageControllerTests(IntegrationTestWebFactory factory)
             text: "Initial test message"
         );
 
-        await Context.AddAsync(_user);
-        await Context.AddAsync(_receiverUser);
-        await Context.AddAsync(_project);
-        await Context.AddAsync(_freelancer);
-        await Context.AddAsync(_contract);
-        await Context.AddAsync(_message);
+        await Context.AddAuditableAsync(_user);
+        await Context.AddAuditableAsync(_receiverUser);
+        await Context.AddAuditableAsync(_project);
+        await Context.AddAuditableAsync(_freelancer);
+        await Context.AddAuditableAsync(_contract);
+        await Context.AddAuditableAsync(_message);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.Set<Message>().RemoveRange(Context.Set<Message>());
-        Context.Set<Contract>().RemoveRange(Context.Set<Contract>());
-        Context.Set<Freelancer>().RemoveRange(Context.Set<Freelancer>());
-        Context.Set<Project>().RemoveRange(Context.Set<Project>());
-        Context.Set<User>().RemoveRange(Context.Set<User>());
-        await SaveChangesAsync();
+        await ClearDatabaseAsync();
     }
 }

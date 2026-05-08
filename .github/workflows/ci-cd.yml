@@ -28,6 +28,9 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      - name: Verify Docker is available
+        run: docker info
+
       - name: Restore dependencies
         run: dotnet restore FreelanceBack.sln
 
@@ -36,7 +39,9 @@ jobs:
 
       - name: Test
         run: dotnet test FreelanceBack.sln --no-build -c Release --verbosity normal --logger trx --results-directory ./test-results
-
+        env:
+          DOCKER_HOST: unix:///var/run/docker.sock
+      
       - name: Publish test results
         uses: dorny/test-reporter@v1
         if: always()

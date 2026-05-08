@@ -14,7 +14,7 @@ public class WalletTransactionConfiguration : IEntityTypeConfiguration<WalletTra
         builder.HasKey(wt => wt.Id);
 
         builder.Property(wt => wt.Amount).HasPrecision(18, 2).IsRequired();
-        builder.Property(wt => wt.TransactionType).HasMaxLength(32).IsRequired();
+        builder.Property(wt => wt.TransactionType).HasMaxLength(64).IsRequired();
         builder.Property(wt => wt.TransactionDate)
             .HasConversion(new DateTimeUtcConverter())
             .HasDefaultValueSql("timezone('utc', now())");

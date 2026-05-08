@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using BLL.ViewModels.Employer;
+using DAL.Extensions;
 using Domain.Models.Employers;
 using Domain.Models.Users;
 using FluentAssertions;
@@ -51,7 +52,7 @@ public class EmployerControllerTests(IntegrationTestWebFactory factory)
         
         var employerFromResponse = await JsonHelper.GetPayloadAsync<EmployerVM>(response);
         
-        var employerFromDb = await Context.Set<Employer>().FirstOrDefaultAsync(x => x.Id == employerFromResponse.Id);
+        var employerFromDb = await Context.Employers.FirstOrDefaultAsync(x => x.Id == employerFromResponse.Id);
         
         employerFromDb.Should().NotBeNull();
         employerFromDb.CompanyName.Should().Be("Updated Company");
@@ -81,15 +82,13 @@ public class EmployerControllerTests(IntegrationTestWebFactory factory)
         _user = UserData.CreateTestUser(UserId);
         _employer = EmployerData.CreateEmployer(createdBy: _user.Id);
 
-        await Context.AddAsync(_user);
-        await Context.AddAsync(_employer);
+        await Context.AddAuditableAsync(_user);
+        await Context.AddAuditableAsync(_employer);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.Set<Employer>().RemoveRange(Context.Set<Employer>());
-        Context.Set<User>().RemoveRange(Context.Set<User>());
-        await SaveChangesAsync();
+        await ClearDatabaseAsync();
     }
 }

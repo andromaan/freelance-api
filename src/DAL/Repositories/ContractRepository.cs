@@ -17,7 +17,7 @@ public class ContractRepository(AppDbContext appDbContext, IUserProvider userPro
     {
         var userId = _userProvider.GetUserId().GetAwaiter().GetResult();
 
-        return await _appDbContext.Set<Contract>()
+        return await _appDbContext.Contracts
             .Include(c => c.Freelancer)
             .Where(p => p.CreatedBy == userId || p.Freelancer!.CreatedBy == userId)
             .AsNoTracking()
@@ -26,7 +26,7 @@ public class ContractRepository(AppDbContext appDbContext, IUserProvider userPro
 
     public async Task<IEnumerable<Contract>> GetByFreelancerId(Guid freelancerId, CancellationToken cancellationToken)
     {
-        return await _appDbContext.Set<Contract>()
+        return await _appDbContext.Contracts
             .Include(c => c.Project).ThenInclude(p => p!.Categories)
             .Where(p => p.FreelancerId == freelancerId)
             .AsNoTracking()

@@ -3,6 +3,7 @@ using System;
 using DAL.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260508122534_UpdatedDataSeed")]
+    partial class UpdatedDataSeed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3705,8 +3708,8 @@ namespace DAL.Migrations
 
                     b.Property<string>("TransactionType")
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
                         .HasColumnName("transaction_type");
 
                     b.Property<Guid>("WalletId")
@@ -4160,13 +4163,13 @@ namespace DAL.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            CreatedAt = new DateTime(2026, 5, 8, 13, 55, 33, 105, DateTimeKind.Utc).AddTicks(581),
+                            CreatedAt = new DateTime(2026, 5, 8, 12, 25, 33, 804, DateTimeKind.Utc).AddTicks(8893),
                             CreatedBy = new Guid("11111111-1111-1111-1111-111111111111"),
                             DisplayName = "Admin",
                             Email = "admin@mail.com",
-                            ModifiedAt = new DateTime(2026, 5, 8, 13, 55, 33, 105, DateTimeKind.Utc).AddTicks(587),
+                            ModifiedAt = new DateTime(2026, 5, 8, 12, 25, 33, 804, DateTimeKind.Utc).AddTicks(8897),
                             ModifiedBy = new Guid("11111111-1111-1111-1111-111111111111"),
-                            PasswordHash = "4310DE75A6FEBFC8187628227842716775DF0EAAB4140E98B4EE9BA483347784-443463310447EDA6CA103472D637D919",
+                            PasswordHash = "68FCD63C8B7DF2858F42974B089A89817D7B684DEFF0E27F88172C54EB2D4504-A265FCB45730900F125D16EC3447496D",
                             RoleId = 1
                         });
                 });
@@ -4268,7 +4271,7 @@ namespace DAL.Migrations
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_contracts_projects_project_id");
+                        .HasConstraintName("fk_contracts_project_project_id");
 
                     b.Navigation("Freelancer");
 
@@ -4505,7 +4508,7 @@ namespace DAL.Migrations
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_bids_projects_project_id");
+                        .HasConstraintName("fk_bids_project_project_id");
 
                     b.Navigation("Freelancer");
 
@@ -4602,7 +4605,7 @@ namespace DAL.Migrations
                         .WithMany()
                         .HasForeignKey("CountryId")
                         .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_users_countries_country_id");
+                        .HasConstraintName("fk_users_country_country_id");
 
                     b.HasOne("Domain.Models.Users.User", null)
                         .WithMany()
@@ -4663,7 +4666,7 @@ namespace DAL.Migrations
                         .HasForeignKey("SkillsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_freelancers_skills_skills_skills_id");
+                        .HasConstraintName("fk_freelancers_skills_skill_skills_id");
                 });
 
             modelBuilder.Entity("Domain.Models.Freelance.Freelancer", b =>

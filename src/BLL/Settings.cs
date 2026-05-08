@@ -10,6 +10,7 @@ public static class Settings
         public const string AdminOrFreelancer = "AdminOrFreelancer";
         
         public const string AdminRole = "admin";
+        public const string AdminId = "11111111-1111-1111-1111-111111111111";
         public const string EmployerRole = "employer";
         public const string FreelancerRole = "freelancer";
         public const string ModeratorRole = "moderator";

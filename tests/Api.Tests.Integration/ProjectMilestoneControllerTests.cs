@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using BLL.ViewModels.ProjectMilestone;
+using DAL.Extensions;
 using Domain.Models.Projects;
 using Domain.Models.Users;
 using FluentAssertions;
@@ -184,8 +185,8 @@ public class ProjectMilestoneControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldReturnEmptyListForProjectWithNoMilestones()
     {
         // Arrange
-        var projectWithoutMilestones = ProjectData.CreateProject();
-        await Context.AddAsync(projectWithoutMilestones);
+        var projectWithoutMilestones = ProjectData.CreateProject(userId: _employerUser.Id);
+        await Context.AddAuditableAsync(projectWithoutMilestones);
         await SaveChangesAsync();
 
         // Act
@@ -203,8 +204,8 @@ public class ProjectMilestoneControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldNotCreateProjectMilestone_WhenAmountExceedsProjectBudget()
     {
         // Arrange
-        var project = ProjectData.CreateProject(budget: 1000m);
-        await Context.AddAsync(project);
+        var project = ProjectData.CreateProject(budget: 1000m, userId: _employerUser.Id);
+        await Context.AddAuditableAsync(project);
         await SaveChangesAsync();
 
         var firstMilestone = new CreateProjectMilestoneVM
@@ -236,8 +237,8 @@ public class ProjectMilestoneControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldNotUpdateProjectMilestone_WhenAmountExceedsProjectBudget()
     {
         // Arrange
-        var project = ProjectData.CreateProject(budget: 1000m);
-        await Context.AddAsync(project);
+        var project = ProjectData.CreateProject(budget: 1000m, userId: _employerUser.Id);
+        await Context.AddAuditableAsync(project);
         var milestone = new ProjectMilestone
         {
             Id = Guid.NewGuid(),
@@ -248,7 +249,7 @@ public class ProjectMilestoneControllerTests(IntegrationTestWebFactory factory)
             Status = ProjectMilestoneStatus.Pending,
             CreatedBy = UserId
         };
-        await Context.AddAsync(milestone);
+        await Context.AddAuditableAsync(milestone);
         await SaveChangesAsync();
         
         var updateRequest = new UpdateProjectMilestoneVM
@@ -269,7 +270,7 @@ public class ProjectMilestoneControllerTests(IntegrationTestWebFactory factory)
     public async Task InitializeAsync()
     {
         _employerUser = UserData.CreateTestUser(UserId);
-        _project = ProjectData.CreateProject();
+        _project = ProjectData.CreateProject(userId: _employerUser.Id);
         _projectMilestone = new ProjectMilestone
         {
             Id = Guid.NewGuid(),
@@ -281,17 +282,14 @@ public class ProjectMilestoneControllerTests(IntegrationTestWebFactory factory)
             CreatedBy = _employerUser.Id
         };
         
-        await Context.AddAsync(_employerUser);
-        await Context.AddAsync(_project);
-        await Context.AddAsync(_projectMilestone);
+        await Context.AddAuditableAsync(_employerUser);
+        await Context.AddAuditableAsync(_project);
+        await Context.AddAuditableAsync(_projectMilestone);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.Set<ProjectMilestone>().RemoveRange(Context.Set<ProjectMilestone>());
-        Context.Set<Project>().RemoveRange(Context.Set<Project>());
-        Context.Set<User>().RemoveRange(Context.Set<User>());
-        await SaveChangesAsync();
+        await ClearDatabaseAsync();
     }
 }

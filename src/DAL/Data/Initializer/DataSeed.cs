@@ -4,7 +4,6 @@ using BLL.Services.PasswordHasher;
 using Domain.Models.Auth;
 using Domain.Models.Countries;
 using Domain.Models.Languages;
-using Domain.Models.Projects;
 using Domain.Models.Users;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,37 +17,17 @@ public static partial class DataSeed
         SeedLanguages(modelBuilder);
         SeedCountries(modelBuilder);
         SeedUsers(modelBuilder, adminRole);
-        SeedSkills(modelBuilder);
-    }
-
-    private static void SeedSkills(ModelBuilder modelBuilder)
-    {
-        var skills = new List<Skill>
-        {
-            new() { Id = 1, Name = "C#" },
-            new() { Id = 2, Name = "Java" },
-            new() { Id = 3, Name = "Python" },
-            new() { Id = 4, Name = "JavaScript" },
-            new() { Id = 5, Name = "SQL" },
-            new() { Id = 6, Name = "AWS" },
-            new() { Id = 7, Name = "Azure" },
-            new() { Id = 8, Name = "Docker" },
-            new() { Id = 9, Name = "Kubernetes" },
-            new() { Id = 10, Name = "React" }
-        };
-
-        modelBuilder.Entity<Skill>().HasData(skills);
     }
 
     private static void SeedUsers(ModelBuilder modelBuilder, Role adminRole)
     {
         var passwordHasher = new PasswordHasher();
 
-        var adminId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var adminId = Guid.Parse(Settings.Roles.AdminId);
 
         var adminUser = new User
         {
-            Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            Id = Guid.Parse(Settings.Roles.AdminId),
             DisplayName = "Admin",
             PasswordHash = passwordHasher.HashPassword("admin"),
             Email = "admin@mail.com",

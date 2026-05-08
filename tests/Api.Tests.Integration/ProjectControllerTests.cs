@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using BLL;
 using BLL.ViewModels.Project;
+using DAL.Extensions;
 using Domain.Models.Projects;
 using Domain.Models.Users;
 using FluentAssertions;
@@ -22,8 +23,8 @@ public class ProjectControllerTests(IntegrationTestWebFactory factory)
     {
         // Arrange
         var projectTitle = "New Test Project";
-        var request = new CreateProjectVM 
-        { 
+        var request = new CreateProjectVM
+        {
             Title = projectTitle,
             Description = "New Test Project Description",
             Budget = 10000m
@@ -46,14 +47,14 @@ public class ProjectControllerTests(IntegrationTestWebFactory factory)
         projectFromDb.Budget.Should().Be(request.Budget);
         projectFromDb.Status.Should().Be(ProjectStatus.Open);
     }
-    
+
     [Fact]
     public async Task ShouldUpdateProject()
     {
         // Arrange
         var projectTitle = "Updated Project";
-        var request = new UpdateProjectVM 
-        { 
+        var request = new UpdateProjectVM
+        {
             Title = projectTitle,
             Description = "Updated Description",
             Budget = 15000m
@@ -61,31 +62,31 @@ public class ProjectControllerTests(IntegrationTestWebFactory factory)
 
         // Act
         var response = await Client.PutAsJsonAsync($"Project/{_project.Id}", request);
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var projectFromResponse = await JsonHelper.GetPayloadAsync<ProjectVM>(response);
-        
+
         var projectFromDb = await Context.Set<Project>().FirstOrDefaultAsync(x => x.Id == projectFromResponse.Id);
-        
+
         projectFromDb.Should().NotBeNull();
         projectFromDb.Title.Should().Be(projectTitle);
         projectFromDb.Description.Should().Be(request.Description);
         projectFromDb.Budget.Should().Be(request.Budget);
     }
-    
+
     [Fact]
     public async Task ShouldDeleteProject()
     {
         // Act
         var response = await Client.DeleteAsync($"Project/{_project.Id}");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var projectFromDb = await Context.Set<Project>().FirstOrDefaultAsync(x => x.Id == _project.Id);
-        
+
         projectFromDb.Should().BeNull();
     }
 
@@ -94,12 +95,12 @@ public class ProjectControllerTests(IntegrationTestWebFactory factory)
     {
         // Act
         var response = await Client.GetAsync($"Project/{_project.Id}");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var projectFromResponse = await JsonHelper.GetPayloadAsync<ProjectVM>(response);
-        
+
         projectFromResponse.Should().NotBeNull();
         projectFromResponse.Id.Should().Be(_project.Id);
         projectFromResponse.Title.Should().Be(_project.Title);
@@ -109,54 +110,54 @@ public class ProjectControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldNotUpdateBecauseNotFound()
     {
         // Arrange
-        var request = new UpdateProjectVM 
-        { 
+        var request = new UpdateProjectVM
+        {
             Title = "Test",
             Description = "Test",
             Budget = 5000m
         };
-        
+
         // Act
         var response = await Client.PutAsJsonAsync($"Project/{Guid.NewGuid()}", request);
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldNotDeleteBecauseNotFound()
     {
         // Act
         var response = await Client.DeleteAsync($"Project/{Guid.NewGuid()}");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldNotGetByIdBecauseNotFound()
     {
         // Act
         var response = await Client.GetAsync($"Project/{Guid.NewGuid()}");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldGetAllProjects()
     {
         // Act
         var response = await Client.GetAsync("Project");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var projects = await JsonHelper.GetPayloadAsync<List<ProjectVM>>(response);
-        
+
         projects.Should().NotBeEmpty();
     }
 
@@ -165,12 +166,12 @@ public class ProjectControllerTests(IntegrationTestWebFactory factory)
     {
         // Act
         var response = await Client.GetAsync("Project/by-employer");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var projects = await JsonHelper.GetPayloadAsync<List<ProjectVM>>(response);
-        
+
         projects.Should().NotBeNull();
     }
 
@@ -184,22 +185,22 @@ public class ProjectControllerTests(IntegrationTestWebFactory factory)
         await Context.AddAsync(category2);
         await SaveChangesAsync();
 
-        var request = new UpdateProjectCategoriesVM 
-        { 
+        var request = new UpdateProjectCategoriesVM
+        {
             CategoryIds = new List<int> { category1.Id, category2.Id }
         };
 
         // Act
-        var response = await Client.PatchAsync($"Project/categories/{_project.Id}", 
+        var response = await Client.PatchAsync($"Project/categories/{_project.Id}",
             JsonContent.Create(request));
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var projectFromDb = await Context.Set<Project>()
             .Include(p => p.Categories)
             .FirstOrDefaultAsync(x => x.Id == _project.Id);
-        
+
         projectFromDb!.Categories.Should().HaveCount(2);
         projectFromDb.Categories.Should().Contain(c => c.Id == category1.Id);
         projectFromDb.Categories.Should().Contain(c => c.Id == category2.Id);
@@ -207,22 +208,16 @@ public class ProjectControllerTests(IntegrationTestWebFactory factory)
 
     public async Task InitializeAsync()
     {
-        var employerRole = RoleData.CreateRole(name: Settings.Roles.EmployerRole);
-        await Context.AddAsync(employerRole);
-        
-        _employerUser = UserData.CreateTestUser(UserId, roleId: employerRole.Id);
+        _employerUser = UserData.CreateTestUser(UserId, roleId: GetRoleIdByName(Settings.Roles.EmployerRole));
         _project = ProjectData.CreateProject(userId: UserId);
-        
-        await Context.AddAsync(_employerUser);
-        await Context.AddAsync(_project);
+
+        await Context.AddAuditableAsync(_employerUser);
+        await Context.AddAuditableAsync(_project);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.Set<Project>().RemoveRange(Context.Set<Project>());
-        Context.Set<Category>().RemoveRange(Context.Set<Category>());
-        Context.Set<User>().RemoveRange(Context.Set<User>());
-        await SaveChangesAsync();
+        await ClearDatabaseAsync();
     }
 }

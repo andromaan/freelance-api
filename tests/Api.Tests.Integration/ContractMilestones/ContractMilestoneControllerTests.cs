@@ -2,10 +2,9 @@ using System.Net;
 using System.Net.Http.Json;
 using BLL;
 using BLL.ViewModels.ContractMilestone;
-using Domain.Models.Auth;
+using DAL.Extensions;
 using Domain.Models.Contracts;
 using Domain.Models.Freelance;
-using Domain.Models.Payments;
 using Domain.Models.Projects;
 using Domain.Models.Users;
 using FluentAssertions;
@@ -23,7 +22,6 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
     private Project _project = null!;
     private User _freelancerUser = null!;
     private Freelancer _freelancer = null!;
-    private Role _moderatorRole = null!;
 
     [Fact]
     public async Task ShouldCreateContractMilestone()
@@ -47,7 +45,7 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
         var milestoneFromResponse = await JsonHelper.GetPayloadAsync<ContractMilestoneVM>(response);
         var milestoneId = milestoneFromResponse.Id;
 
-        var milestoneFromDb = await Context.Set<ContractMilestone>().FirstOrDefaultAsync(x => x.Id == milestoneId);
+        var milestoneFromDb = await Context.ContractMilestones.FirstOrDefaultAsync(x => x.Id == milestoneId);
 
         milestoneFromDb.Should().NotBeNull();
         milestoneFromDb.ContractId.Should().Be(_contract.Id);
@@ -75,7 +73,7 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
 
         var milestoneFromResponse = await JsonHelper.GetPayloadAsync<ContractMilestoneVM>(response);
 
-        var milestoneFromDb = await Context.Set<ContractMilestone>()
+        var milestoneFromDb = await Context.ContractMilestones
             .FirstOrDefaultAsync(x => x.Id == milestoneFromResponse.Id);
 
         milestoneFromDb.Should().NotBeNull();
@@ -116,7 +114,7 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
         response.IsSuccessStatusCode.Should().BeTrue();
 
         var milestoneFromDb =
-            await Context.Set<ContractMilestone>().FirstOrDefaultAsync(x => x.Id == _contractMilestone.Id);
+            await Context.ContractMilestones.FirstOrDefaultAsync(x => x.Id == _contractMilestone.Id);
 
         milestoneFromDb.Should().BeNull();
     }
@@ -219,9 +217,10 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
         // Arrange
         var contractWithoutMilestones = ContractData.CreateContract(
             projectId: _project.Id,
-            freelancerId: _freelancerUser.Id
+            freelancerId: _freelancer.Id,
+            createdById: UserId
         );
-        await Context.AddAsync(contractWithoutMilestones);
+        await Context.AddAuditableAsync(contractWithoutMilestones);
         await SaveChangesAsync();
 
         // Act
@@ -241,8 +240,8 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
         // Arrange
         var contract =
             ContractData.CreateContract(agreedRate: 1000m, projectId: _project.Id,
-                freelancerId: _freelancerUser.Id, createdById: UserId);
-        await Context.AddAsync(contract);
+                freelancerId: _freelancer.Id, createdById: UserId);
+        await Context.AddAuditableAsync(contract);
         await SaveChangesAsync();
 
         var firstMilestone = new CreateContractMilestoneVM
@@ -276,8 +275,9 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
         // Arrange
         var contract =
             ContractData.CreateContract(agreedRate: 1000m,
-                projectId: _project.Id, freelancerId: _freelancerUser.Id, createdById: UserId);
-        await Context.AddAsync(contract);
+                projectId: _project.Id, freelancerId: _freelancer.Id, createdById: UserId);
+        await Context.AddAuditableAsync(contract);
+        
         var milestone = new ContractMilestone
         {
             Id = Guid.NewGuid(),
@@ -288,7 +288,7 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
             Status = ContractMilestoneStatus.Pending,
             CreatedBy = UserId
         };
-        await Context.AddAsync(milestone);
+        await Context.AddAuditableAsync(milestone);
         await SaveChangesAsync();
 
         var updateRequest = new UpdateContractMilestoneVM
@@ -312,14 +312,14 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
         var contract =
             ContractData.CreateContract(projectId: _project.Id, freelancerId: _freelancer.Id, agreedRate: 1000m,
                 createdById: UserId);
-        await Context.AddAsync(contract);
+        await Context.AddAuditableAsync(contract);
         var milestone1 = new ContractMilestone
         {
             Id = Guid.NewGuid(), ContractId = contract.Id, Description = "M1", Amount = 500m,
             DueDate = DateTime.UtcNow.AddDays(1), Status = ContractMilestoneStatus.Pending,
             CreatedBy = UserId
         };
-        await Context.AddAsync(milestone1);
+        await Context.AddAuditableAsync(milestone1);
         await SaveChangesAsync();
 
         // Act: Set milestone to InProgress (фрілансер)
@@ -328,7 +328,7 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
         await Client.PutAsJsonAsync($"ContractMilestone/status/{milestone1.Id}/freelancer", inProgressVm);
 
         // Assert
-        var contractFromDb = await Context.Set<Contract>().FirstOrDefaultAsync(x => x.Id == contract.Id);
+        var contractFromDb = await Context.Contracts.FirstOrDefaultAsync(x => x.Id == contract.Id);
         contractFromDb.Should().NotBeNull();
         contractFromDb.Status.Should().Be(ContractStatus.InProgress);
     }
@@ -340,7 +340,7 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
         var contract =
             ContractData.CreateContract(projectId: _project.Id, freelancerId: _freelancer.Id, agreedRate: 1000m,
                 createdById: UserId);
-        await Context.AddAsync(contract);
+        await Context.AddAuditableAsync(contract);
         var milestone1 = new ContractMilestone
         {
             Id = Guid.NewGuid(), ContractId = contract.Id, Description = "M1", Amount = 500m,
@@ -349,12 +349,12 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
         };
 
         var userModerator =
-            UserData.CreateTestUser(Guid.NewGuid(), "moderator@mail.com", roleId: _moderatorRole.Id);
+            UserData.CreateTestUser(Guid.NewGuid(), "moderator@mail.com", roleId: GetRoleIdByName(Settings.Roles.ModeratorRole));
 
         userModerator.Role = null;
 
-        await Context.AddAsync(userModerator);
-        await Context.AddAsync(milestone1);
+        await Context.AddAuditableAsync(userModerator);
+        await Context.AddAuditableAsync(milestone1);
         await SaveChangesAsync();
 
         SwitchUser(role: Settings.Roles.ModeratorRole, userId: userModerator.Id);
@@ -366,18 +366,17 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
 
         // Assert
         var contractFromDb =
-            await Context.Set<ContractMilestone>().FirstOrDefaultAsync(x => x.Id == milestone1.Id);
+            await Context.ContractMilestones.FirstOrDefaultAsync(x => x.Id == milestone1.Id);
         contractFromDb.Should().NotBeNull();
         contractFromDb.Status.Should().Be(moderatorStatusVm.Status);
     }
 
     public async Task InitializeAsync()
     {
-        _moderatorRole = RoleData.CreateRole(name: Settings.Roles.ModeratorRole);
         _freelancerUser = UserData.CreateTestUser(UserId);
         
         _freelancer = FreelancerData.CreateFreelancer(userId: _freelancerUser.Id);
-        _project = ProjectData.CreateProject();
+        _project = ProjectData.CreateProject(userId: _freelancerUser.Id);
         _contract = ContractData.CreateContract(
             projectId: _project.Id,
             freelancerId: _freelancer.Id,
@@ -395,23 +394,16 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
             CreatedBy = UserId
         };
 
-        await Context.AddAsync(_moderatorRole);
-        await Context.AddAsync(_freelancerUser);
-        await Context.AddAsync(_freelancer);
-        await Context.AddAsync(_project);
-        await Context.AddAsync(_contract);
-        await Context.AddAsync(_contractMilestone);
+        await Context.AddAuditableAsync(_freelancerUser);
+        await Context.AddAuditableAsync(_freelancer);
+        await Context.AddAuditableAsync(_project);
+        await Context.AddAuditableAsync(_contract);
+        await Context.AddAuditableAsync(_contractMilestone);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.Set<ContractMilestone>().RemoveRange(Context.Set<ContractMilestone>());
-        Context.Set<Contract>().RemoveRange(Context.Set<Contract>());
-        Context.Set<Project>().RemoveRange(Context.Set<Project>());
-        Context.Set<UserWallet>().RemoveRange(Context.Set<UserWallet>());
-        Context.Set<Freelancer>().RemoveRange(Context.Set<Freelancer>());
-        Context.Set<User>().RemoveRange(Context.Set<User>());
-        await SaveChangesAsync();
+        await ClearDatabaseAsync();
     }
 }

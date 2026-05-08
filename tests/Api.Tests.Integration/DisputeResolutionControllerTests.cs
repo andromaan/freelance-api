@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using BLL;
 using BLL.ViewModels.DisputeResolution;
+using DAL.Extensions;
 using Domain.Models.Contracts;
 using Domain.Models.Disputes;
 using Domain.Models.Freelance;
@@ -36,7 +37,7 @@ public class DisputeResolutionControllerTests(IntegrationTestWebFactory factory)
             status: DisputeStatus.UnderReview,
             createdById: _employerUser.Id
         );
-        await Context.AddAsync(newDispute);
+        await Context.AddAuditableAsync(newDispute);
         await SaveChangesAsync();
 
         var request = new CreateDisputeResolutionVM
@@ -55,7 +56,7 @@ public class DisputeResolutionControllerTests(IntegrationTestWebFactory factory)
         var resolutionFromResponse = await JsonHelper.GetPayloadAsync<DisputeResolutionVM>(response);
         var resolutionId = resolutionFromResponse.Id;
 
-        var resolutionFromDb = await Context.Set<DisputeResolution>().FirstOrDefaultAsync(x => x.Id == resolutionId);
+        var resolutionFromDb = await Context.DisputeResolutions.FirstOrDefaultAsync(x => x.Id == resolutionId);
 
         resolutionFromDb.Should().NotBeNull();
         resolutionFromDb.DisputeId.Should().Be(newDispute.Id);
@@ -63,7 +64,7 @@ public class DisputeResolutionControllerTests(IntegrationTestWebFactory factory)
         resolutionFromDb.CreatedBy.Should().Be(UserId);
 
         // Verify dispute status was updated
-        var updatedDispute = await Context.Set<Dispute>().FirstOrDefaultAsync(x => x.Id == newDispute.Id);
+        var updatedDispute = await Context.Disputes.FirstOrDefaultAsync(x => x.Id == newDispute.Id);
         updatedDispute.Should().NotBeNull();
         updatedDispute.Status.Should().Be(DisputeStatus.Resolved);
     }
@@ -117,8 +118,8 @@ public class DisputeResolutionControllerTests(IntegrationTestWebFactory factory)
             createdById: UserId
         );
         
-        await Context.AddAsync(newDispute);
-        await Context.AddAsync(resolutionToDelete);
+        await Context.AddAuditableAsync(newDispute);
+        await Context.AddAuditableAsync(resolutionToDelete);
         await SaveChangesAsync();
 
         // Act
@@ -127,7 +128,7 @@ public class DisputeResolutionControllerTests(IntegrationTestWebFactory factory)
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
 
-        var resolutionFromDb = await Context.Set<DisputeResolution>().FirstOrDefaultAsync(x => x.Id == resolutionToDelete.Id);
+        var resolutionFromDb = await Context.DisputeResolutions.FirstOrDefaultAsync(x => x.Id == resolutionToDelete.Id);
         resolutionFromDb.Should().BeNull();
     }
 
@@ -185,7 +186,7 @@ public class DisputeResolutionControllerTests(IntegrationTestWebFactory factory)
             status: DisputeStatus.Resolved,
             createdById: _employerUser.Id
         );
-        await Context.AddAsync(resolvedDispute);
+        await Context.AddAuditableAsync(resolvedDispute);
         await SaveChangesAsync();
 
         var request = new CreateDisputeResolutionVM
@@ -212,7 +213,7 @@ public class DisputeResolutionControllerTests(IntegrationTestWebFactory factory)
             status: DisputeStatus.Rejected,
             createdById: _employerUser.Id
         );
-        await Context.AddAsync(rejectedDispute);
+        await Context.AddAuditableAsync(rejectedDispute);
         await SaveChangesAsync();
 
         var request = new CreateDisputeResolutionVM
@@ -239,7 +240,7 @@ public class DisputeResolutionControllerTests(IntegrationTestWebFactory factory)
             status: DisputeStatus.UnderReview,
             createdById: _employerUser.Id
         );
-        await Context.AddAsync(newDispute);
+        await Context.AddAuditableAsync(newDispute);
         await SaveChangesAsync();
 
         var request = new CreateDisputeResolutionVM
@@ -256,34 +257,27 @@ public class DisputeResolutionControllerTests(IntegrationTestWebFactory factory)
         response.IsSuccessStatusCode.Should().BeTrue();
 
         // Verify dispute status was updated to Rejected
-        var updatedDispute = await Context.Set<Dispute>().FirstOrDefaultAsync(x => x.Id == newDispute.Id);
+        var updatedDispute = await Context.Disputes.FirstOrDefaultAsync(x => x.Id == newDispute.Id);
         updatedDispute.Should().NotBeNull();
         updatedDispute.Status.Should().Be(DisputeStatus.Rejected);
     }
 
     public async Task InitializeAsync()
     {
-        var employerRole = RoleData.CreateRole(name: Settings.Roles.EmployerRole);
-        var adminRole = RoleData.CreateRole(name: Settings.Roles.AdminRole);
-        var freelancerRole = RoleData.CreateRole(name: Settings.Roles.FreelancerRole);
-        await Context.AddAsync(employerRole);
-        await Context.AddAsync(freelancerRole);
-        await Context.AddAsync(adminRole);
-        
         _adminUser = UserData.CreateTestUser(
             id: UserId,
             email: "admin@test.com",
-            roleId: adminRole.Id
+            roleId: GetRoleIdByName(Settings.Roles.AdminRole)
         );
 
         _employerUser = UserData.CreateTestUser(
             email: "employer@test.com",
-            roleId: employerRole.Id
+            roleId: GetRoleIdByName(Settings.Roles.EmployerRole)
         );
 
         _freelancerUser = UserData.CreateTestUser(
             email: "freelancer@test.com",
-            roleId: freelancerRole.Id
+            roleId: GetRoleIdByName(Settings.Roles.FreelancerRole)
         );
 
         _project = ProjectData.CreateProject(userId: _employerUser.Id);
@@ -308,25 +302,19 @@ public class DisputeResolutionControllerTests(IntegrationTestWebFactory factory)
             createdById: _adminUser.Id
         );
 
-        await Context.AddAsync(_adminUser);
-        await Context.AddAsync(_employerUser);
-        await Context.AddAsync(_freelancerUser);
-        await Context.AddAsync(_project);
-        await Context.AddAsync(_freelancer);
-        await Context.AddAsync(_contract);
-        await Context.AddAsync(_dispute);
-        await Context.AddAsync(_existingResolution);
+        await Context.AddAuditableAsync(_adminUser);
+        await Context.AddAuditableAsync(_employerUser);
+        await Context.AddAuditableAsync(_freelancerUser);
+        await Context.AddAuditableAsync(_project);
+        await Context.AddAuditableAsync(_freelancer);
+        await Context.AddAuditableAsync(_contract);
+        await Context.AddAuditableAsync(_dispute);
+        await Context.AddAuditableAsync(_existingResolution);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.Set<DisputeResolution>().RemoveRange(Context.Set<DisputeResolution>());
-        Context.Set<Dispute>().RemoveRange(Context.Set<Dispute>());
-        Context.Set<Contract>().RemoveRange(Context.Set<Contract>());
-        Context.Set<Freelancer>().RemoveRange(Context.Set<Freelancer>());
-        Context.Set<Project>().RemoveRange(Context.Set<Project>());
-        Context.Set<User>().RemoveRange(Context.Set<User>());
-        await SaveChangesAsync();
+        await ClearDatabaseAsync();
     }
 }

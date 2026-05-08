@@ -1,8 +1,7 @@
 using System.Net.Http.Json;
 using BLL.ViewModels.Freelancer;
-using Domain.Models.Countries;
+using DAL.Extensions;
 using Domain.Models.Freelance;
-using Domain.Models.Languages;
 using Domain.Models.Projects;
 using Domain.Models.Users;
 using FluentAssertions;
@@ -55,7 +54,7 @@ public class FreelancerControllerTests(IntegrationTestWebFactory factory)
         
         // var freelancerFromResponse = await JsonHelper.GetPayloadAsync<FreelancerVM>(response);
         
-        var freelancerFromDb = await Context.Set<Freelancer>()
+        var freelancerFromDb = await Context.Freelancers
             .FirstOrDefaultAsync(x => x.CreatedBy == _user.Id);
         
         freelancerFromDb.Should().NotBeNull();
@@ -78,7 +77,7 @@ public class FreelancerControllerTests(IntegrationTestWebFactory factory)
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
         
-        var freelancerFromDb = await Context.Set<Freelancer>()
+        var freelancerFromDb = await Context.Freelancers
             .Include(f => f.Skills)
             .FirstOrDefaultAsync(x => x.CreatedBy == _user.Id);
         
@@ -103,7 +102,7 @@ public class FreelancerControllerTests(IntegrationTestWebFactory factory)
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
         
-        var freelancerFromDb = await Context.Set<Freelancer>()
+        var freelancerFromDb = await Context.Freelancers
             .Include(f => f.Skills)
             .FirstOrDefaultAsync(x => x.CreatedBy == _user.Id);
         
@@ -120,19 +119,15 @@ public class FreelancerControllerTests(IntegrationTestWebFactory factory)
         
         _freelancer = FreelancerData.CreateFreelancer(userId: _user.Id);
 
-        await Context.AddAsync(_user);
+        await Context.AddAuditableAsync(_user);
         await Context.AddAsync(_skill1);
         await Context.AddAsync(_skill2);
-        await Context.AddAsync(_freelancer);
+        await Context.AddAuditableAsync(_freelancer);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.Set<Freelancer>().RemoveRange(Context.Set<Freelancer>());
-        Context.Set<Language>().RemoveRange(Context.Set<Language>());
-        Context.Set<Country>().RemoveRange(Context.Set<Country>());
-        Context.Set<User>().RemoveRange(Context.Set<User>());
-        await SaveChangesAsync();
+        await ClearDatabaseAsync();
     }
 }

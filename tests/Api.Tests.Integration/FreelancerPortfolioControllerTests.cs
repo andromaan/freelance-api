@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using BLL;
 using BLL.ViewModels.Portfolio;
+using DAL.Extensions;
 using Domain.Models.Freelance;
 using Domain.Models.Users;
 using FluentAssertions;
@@ -41,7 +42,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
         var portfolioFromResponse = await JsonHelper.GetPayloadAsync<PortfolioVM>(response);
         var portfolioId = portfolioFromResponse.Id;
 
-        var portfolioFromDb = await Context.Set<Portfolio>().FirstOrDefaultAsync(x => x.Id == portfolioId);
+        var portfolioFromDb = await Context.Portfolios.FirstOrDefaultAsync(x => x.Id == portfolioId);
 
         portfolioFromDb.Should().NotBeNull();
         portfolioFromDb.Title.Should().Be(request.Title);
@@ -71,7 +72,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
         var portfolioFromResponse = await JsonHelper.GetPayloadAsync<PortfolioVM>(response);
         var portfolioId = portfolioFromResponse.Id;
 
-        var portfolioFromDb = await Context.Set<Portfolio>().FirstOrDefaultAsync(x => x.Id == portfolioId);
+        var portfolioFromDb = await Context.Portfolios.FirstOrDefaultAsync(x => x.Id == portfolioId);
 
         portfolioFromDb.Should().NotBeNull();
         portfolioFromDb.Title.Should().Be(request.Title);
@@ -85,7 +86,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
     {
         // Arrange
         SwitchUser(role: Settings.Roles.EmployerRole, userId: _employerUser.Id);
-        
+
         var request = new CreatePortfolioVM
         {
             Title = "Unauthorized Portfolio",
@@ -110,7 +111,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
         response.IsSuccessStatusCode.Should().BeTrue();
 
         var portfolioFromResponse = await JsonHelper.GetPayloadAsync<PortfolioVM>(response);
-        
+
         portfolioFromResponse.Id.Should().Be(_existingPortfolio.Id);
         portfolioFromResponse.Title.Should().Be(_existingPortfolio.Title);
         portfolioFromResponse.Description.Should().Be(_existingPortfolio.Description);
@@ -129,7 +130,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
         response.IsSuccessStatusCode.Should().BeTrue();
 
         var portfoliosFromResponse = await JsonHelper.GetPayloadAsync<List<PortfolioVM>>(response);
-        
+
         portfoliosFromResponse.Should().NotBeNull();
         portfoliosFromResponse.Should().HaveCountGreaterThan(0);
         portfoliosFromResponse.Should().Contain(p => p.Id == _existingPortfolio.Id);
@@ -148,7 +149,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
         response.IsSuccessStatusCode.Should().BeTrue();
 
         var portfoliosFromResponse = await JsonHelper.GetPayloadAsync<List<PortfolioVM>>(response);
-        
+
         portfoliosFromResponse.Should().NotBeNull();
         portfoliosFromResponse.Should().Contain(p => p.Id == _existingPortfolio.Id);
     }
@@ -163,7 +164,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
         response.IsSuccessStatusCode.Should().BeTrue();
 
         var portfoliosFromResponse = await JsonHelper.GetPayloadAsync<List<PortfolioVM>>(response);
-        
+
         portfoliosFromResponse.Should().NotBeNull();
         portfoliosFromResponse.Should().BeEmpty();
     }
@@ -185,7 +186,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
 
-        var portfolioFromDb = await Context.Set<Portfolio>().FirstOrDefaultAsync(x => x.Id == _existingPortfolio.Id);
+        var portfolioFromDb = await Context.Portfolios.FirstOrDefaultAsync(x => x.Id == _existingPortfolio.Id);
 
         portfolioFromDb.Should().NotBeNull();
         portfolioFromDb.Title.Should().Be(request.Title);
@@ -202,7 +203,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
             userId: _otherFreelancerUser.Id,
             title: "Other Freelancer Portfolio"
         );
-        await Context.AddAsync(otherPortfolio);
+        await Context.AddAuditableAsync(otherPortfolio);
         await SaveChangesAsync();
 
         var request = new UpdatePortfolioVM
@@ -224,7 +225,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
     {
         // Arrange
         SwitchUser(role: Settings.Roles.EmployerRole, userId: _employerUser.Id);
-        
+
         var request = new UpdatePortfolioVM
         {
             Title = "Unauthorized Update",
@@ -248,7 +249,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
             userId: _freelancerUser.Id,
             title: "Portfolio to Delete"
         );
-        await Context.AddAsync(portfolioToDelete);
+        await Context.AddAuditableAsync(portfolioToDelete);
         await SaveChangesAsync();
 
         // Act
@@ -257,7 +258,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
 
-        var portfolioFromDb = await Context.Set<Portfolio>().FirstOrDefaultAsync(x => x.Id == portfolioToDelete.Id);
+        var portfolioFromDb = await Context.Portfolios.FirstOrDefaultAsync(x => x.Id == portfolioToDelete.Id);
         portfolioFromDb.Should().BeNull();
     }
 
@@ -270,7 +271,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
             userId: _otherFreelancerUser.Id,
             title: "Other Freelancer Portfolio to Delete"
         );
-        await Context.AddAsync(otherPortfolio);
+        await Context.AddAuditableAsync(otherPortfolio);
         await SaveChangesAsync();
 
         // Act
@@ -279,7 +280,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
 
-        var portfolioFromDb = await Context.Set<Portfolio>().FirstOrDefaultAsync(x => x.Id == otherPortfolio.Id);
+        var portfolioFromDb = await Context.Portfolios.FirstOrDefaultAsync(x => x.Id == otherPortfolio.Id);
         portfolioFromDb.Should().NotBeNull();
     }
 
@@ -314,7 +315,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
     {
         // Arrange
         var nonExistentId = Guid.NewGuid();
-        
+
         var request = new UpdatePortfolioVM
         {
             Title = "Non-existent Portfolio",
@@ -391,7 +392,7 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
 
         portfolio1.Id.Should().NotBe(portfolio2.Id);
 
-        var portfoliosFromDb = await Context.Set<Portfolio>()
+        var portfoliosFromDb = await Context.Portfolios
             .Where(p => p.FreelancerId == _freelancer.Id)
             .ToListAsync();
 
@@ -400,25 +401,20 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
 
     public async Task InitializeAsync()
     {
-        var freelancerRole = RoleData.CreateRole(name: Settings.Roles.FreelancerRole);
-        var employerRole = RoleData.CreateRole(name: Settings.Roles.EmployerRole);
-        await Context.AddAsync(employerRole);
-        await Context.AddAsync(freelancerRole);
-        
         _freelancerUser = UserData.CreateTestUser(
             id: UserId,
             email: "freelancer@test.com",
-            roleId: freelancerRole.Id
+            roleId: GetRoleIdByName(Settings.Roles.FreelancerRole)
         );
 
         _otherFreelancerUser = UserData.CreateTestUser(
             email: "otherfreelancer@test.com",
-            roleId: freelancerRole.Id
+            roleId: GetRoleIdByName(Settings.Roles.FreelancerRole)
         );
 
         _employerUser = UserData.CreateTestUser(
             email: "employer@test.com",
-            roleId: employerRole.Id
+            roleId: GetRoleIdByName(Settings.Roles.EmployerRole)
         );
 
         _freelancer = FreelancerData.CreateFreelancer(
@@ -439,19 +435,17 @@ public class FreelancerPortfolioControllerTests(IntegrationTestWebFactory factor
             portfolioUrl: "https://github.com/test/existing-project"
         );
 
-        await Context.AddAsync(_freelancerUser);
-        await Context.AddAsync(_otherFreelancerUser);
-        await Context.AddAsync(_employerUser);
-        await Context.AddAsync(_freelancer);
-        await Context.AddAsync(_otherFreelancer);
-        await Context.AddAsync(_existingPortfolio);
+        await Context.AddAuditableAsync(_freelancerUser);
+        await Context.AddAuditableAsync(_otherFreelancerUser);
+        await Context.AddAuditableAsync(_employerUser);
+        await Context.AddAuditableAsync(_freelancer);
+        await Context.AddAuditableAsync(_otherFreelancer);
+        await Context.AddAuditableAsync(_existingPortfolio);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.ChangeTracker.Clear();
-        await Task.CompletedTask;
+        await ClearDatabaseAsync();
     }
 }
-

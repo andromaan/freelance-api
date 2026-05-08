@@ -31,7 +31,7 @@ public class LanguageControllerTests(IntegrationTestWebFactory factory)
         var languageFromResponse = await JsonHelper.GetPayloadAsync<LanguageVM>(response);
         var languageId = languageFromResponse.Id;
 
-        var languageFromDb = await Context.Set<Language>().FirstOrDefaultAsync(x => x.Id == languageId);
+        var languageFromDb = await Context.Languages.FirstOrDefaultAsync(x => x.Id == languageId);
 
         languageFromDb.Should().NotBeNull();
         languageFromDb.Name.Should().Be(languageName);
@@ -55,7 +55,7 @@ public class LanguageControllerTests(IntegrationTestWebFactory factory)
         var languageFromResponse = await JsonHelper.GetPayloadAsync<LanguageVM>(response);
         var languageId = languageFromResponse.Id;
         
-        var languageFromDb = await Context.Set<Language>().FirstOrDefaultAsync(x => x.Id == languageId);
+        var languageFromDb = await Context.Languages.FirstOrDefaultAsync(x => x.Id == languageId);
         
         languageFromDb.Should().NotBeNull();
         languageFromDb.Name.Should().Be(languageName);
@@ -71,7 +71,7 @@ public class LanguageControllerTests(IntegrationTestWebFactory factory)
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
         
-        var languageFromDb = await Context.Set<Language>().FirstOrDefaultAsync(x => x.Id == _language.Id);
+        var languageFromDb = await Context.Languages.FirstOrDefaultAsync(x => x.Id == _language.Id);
         
         languageFromDb.Should().BeNull();
     }
@@ -162,7 +162,7 @@ public class LanguageControllerTests(IntegrationTestWebFactory factory)
 
     public async Task DisposeAsync()
     {
-        Context.Set<Language>().RemoveRange(Context.Set<Language>());
+        Context.Languages.RemoveRange(Context.Languages);
         await SaveChangesAsync();
     }
 }

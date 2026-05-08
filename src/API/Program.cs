@@ -31,6 +31,8 @@ builder.Host.UseSerilog();
 
 var app = builder.Build();
 
+await app.InitialiseDb();
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -44,11 +46,6 @@ app.UseCors(options => options
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-if (!app.Environment.IsEnvironment("Test"))
-{
-    await app.InitialiseDb();
-}
 
 app.MapControllers();
 
