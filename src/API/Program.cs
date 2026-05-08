@@ -31,6 +31,8 @@ builder.Host.UseSerilog();
 
 var app = builder.Build();
 
+await app.InitialiseDb();
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
