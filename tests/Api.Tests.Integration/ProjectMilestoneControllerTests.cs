@@ -246,7 +246,6 @@ public class ProjectMilestoneControllerTests(IntegrationTestWebFactory factory)
             Description = "Milestone",
             Amount = 900m,
             DueDate = DateTime.UtcNow.AddDays(10),
-            Status = ProjectMilestoneStatus.Pending,
             CreatedBy = UserId
         };
         await Context.AddAuditableAsync(milestone);
@@ -278,7 +277,6 @@ public class ProjectMilestoneControllerTests(IntegrationTestWebFactory factory)
             Description = "Test milestone",
             Amount = _project.Budget / 2,
             DueDate = DateTime.UtcNow.AddDays(30),
-            Status = ProjectMilestoneStatus.Pending,
             CreatedBy = _employerUser.Id
         };
         

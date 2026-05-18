@@ -11,9 +11,5 @@ public class ProjectMilestoneMapperProfile : Profile
         CreateMap<ProjectMilestone, ProjectMilestoneVM>().ReverseMap();
         CreateMap<ProjectMilestone, CreateProjectMilestoneVM>().ReverseMap();
         CreateMap<ProjectMilestone, UpdateProjectMilestoneVM>().ReverseMap();
-
-        CreateMap<CreateProjectMilestoneVM, ProjectMilestone>()
-            .ForMember(dest => dest.Status, 
-                opt => opt.MapFrom(src => ProjectMilestoneStatus.Pending));
     }
 }

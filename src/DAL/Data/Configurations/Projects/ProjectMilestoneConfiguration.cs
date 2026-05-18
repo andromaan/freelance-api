@@ -16,10 +16,6 @@ public class ProjectMilestoneConfiguration : IEntityTypeConfiguration<ProjectMil
         builder.Property(pm => pm.Description).HasMaxLength(2000);
         builder.Property(pm => pm.Amount).HasPrecision(18, 2).IsRequired();
         builder.Property(pm => pm.DueDate).IsRequired();
-        builder.Property(pm => pm.Status).HasMaxLength(32)
-            .HasConversion(
-                v => v.ToString(), 
-                v => (ProjectMilestoneStatus)Enum.Parse(typeof(ProjectMilestoneStatus), v)).IsRequired();
 
         builder.HasOne(pm => pm.Project)
             .WithMany()

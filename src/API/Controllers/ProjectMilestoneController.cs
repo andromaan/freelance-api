@@ -3,7 +3,6 @@ using BLL;
 using BLL.CommandsQueries.ProjectMilestones;
 using BLL.ViewModels;
 using BLL.ViewModels.ProjectMilestone;
-using Domain.Models.Projects;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -25,16 +24,6 @@ public class ProjectMilestoneController(ISender sender)
         var query = new GetProjectMilestonesByProjectIdQuery { ProjectId = projectId };
         var result = await Sender.Send(query, ct);
         return GetResult(result);
-    }
-    
-    [HttpGet("milestone-status-enums")]
-    public IActionResult GetPlatformsAsync()
-    {
-        var platforms = Enum.GetValues<ProjectMilestoneStatus>()
-            .Select(x => new { Name = x.ToString(), Value = (int)x })
-            .ToList();
-
-        return Ok(platforms);
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
