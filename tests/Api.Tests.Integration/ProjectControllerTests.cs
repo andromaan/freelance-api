@@ -205,6 +205,45 @@ public class ProjectControllerTests(IntegrationTestWebFactory factory)
         projectFromDb.Categories.Should().Contain(c => c.Id == category1.Id);
         projectFromDb.Categories.Should().Contain(c => c.Id == category2.Id);
     }
+    
+    [Fact]
+    public async Task ShouldUpdateAlreadyExistingProjectCategories()
+    {
+        // Arrange
+        var category1 = new Category { Id = 0, Name = "TestCategory1" };
+        var category2 = new Category { Id = 0, Name = "TestCategory2" };
+        var category3 = new Category { Id = 0, Name = "TestCategory3" };
+        await Context.AddAsync(category1);
+        await Context.AddAsync(category2);
+        await Context.AddAsync(category3);
+        await SaveChangesAsync();
+
+        var request = new UpdateProjectCategoriesVM
+        {
+            CategoryIds = new List<int> { category1.Id, category2.Id }
+        };
+
+        await Client.PatchAsync($"Project/categories/{_project.Id}",
+            JsonContent.Create(request));
+
+        // Act
+        var response = await Client.PatchAsync($"Project/categories/{_project.Id}",
+            JsonContent.Create(new UpdateProjectCategoriesVM
+            {
+                CategoryIds = new List<int> { category2.Id, category3.Id }
+            }));
+        
+        // Assert
+        response.IsSuccessStatusCode.Should().BeTrue();
+
+        var projectFromDb = await Context.Set<Project>()
+            .Include(p => p.Categories)
+            .FirstOrDefaultAsync(x => x.Id == _project.Id);
+
+        projectFromDb!.Categories.Should().HaveCount(2);
+        projectFromDb.Categories.Should().Contain(c => c.Id == category2.Id);
+        projectFromDb.Categories.Should().Contain(c => c.Id == category3.Id);
+    }
 
     public async Task InitializeAsync()
     {

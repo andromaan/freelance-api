@@ -34,7 +34,7 @@ public class Update
             CancellationToken cancellationToken)
         {
             // 1. Check entity existence
-            var existingEntity = await queries.GetByIdAsync(request.Id, cancellationToken, asNoTracking: true);
+            var existingEntity = await queries.GetByIdAsync(request.Id, cancellationToken);
 
             if (existingEntity == null)
             {
