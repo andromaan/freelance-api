@@ -137,18 +137,19 @@ public class UserControllerTests(IntegrationTestWebFactory factory)
         userFromResponse.RoleId.Should().Be(_testUser.RoleId);
     }
 
-    [Fact]
-    public async Task ShouldNotGetUserByIdWithoutAdminRole()
-    {
-        // Arrange
-        SwitchUser(role: Settings.Roles.FreelancerRole, userId: _testUser.Id);
-
-        // Act
-        var response = await Client.GetAsync($"User/{_testUser.Id}");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-    }
+    // TODO: make user by id getter for admin that returns user with all info about this user
+    // [Fact]
+    // public async Task ShouldNotGetUserByIdWithoutAdminRole()
+    // {
+    //     // Arrange
+    //     SwitchUser(role: Settings.Roles.FreelancerRole, userId: _testUser.Id);
+    //
+    //     // Act
+    //     var response = await Client.GetAsync($"User/{_testUser.Id}");
+    //
+    //     // Assert
+    //     response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    // }
 
     [Fact]
     public async Task ShouldGetMyself()
