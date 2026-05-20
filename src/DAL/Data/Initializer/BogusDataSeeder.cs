@@ -8,6 +8,7 @@ using Domain.Models.Employers;
 using Domain.Models.Freelance;
 using Domain.Models.Projects;
 using Domain.Models.Users;
+using Domain.Models.Payments;
 using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Data.Initializer;
@@ -130,6 +131,19 @@ public static class BogusDataSeeder
             ModifiedAt = u.ModifiedAt
         }).ToList();
         context.Freelancers.AddRange(freelancerProfiles);
+
+        var freelancerWallets = freelancersUsers.Select(u => new UserWallet
+        {
+            Id = Guid.NewGuid(),
+            Balance = faker.Random.Decimal(100, 1000),
+            Currency = "USD",
+            CreatedBy = u.Id,
+            CreatedAt = u.CreatedAt,
+            ModifiedBy = u.Id,
+            ModifiedAt = u.ModifiedAt
+        }).ToList();
+        context.UserWallets.AddRange(freelancerWallets);
+
         await context.SaveChangesAsync();
 
         return freelancersUsers;
@@ -171,6 +185,19 @@ public static class BogusDataSeeder
             ModifiedAt = u.ModifiedAt
         }).ToList();
         context.Employers.AddRange(employerProfiles);
+
+        var employerWallets = employerUsers.Select(u => new UserWallet
+        {
+            Id = Guid.NewGuid(),
+            Balance = faker.Random.Decimal(5000, 50000),
+            Currency = "USD",
+            CreatedBy = u.Id,
+            CreatedAt = u.CreatedAt,
+            ModifiedBy = u.Id,
+            ModifiedAt = u.ModifiedAt
+        }).ToList();
+        context.UserWallets.AddRange(employerWallets);
+
         await context.SaveChangesAsync();
 
         return employerUsers;

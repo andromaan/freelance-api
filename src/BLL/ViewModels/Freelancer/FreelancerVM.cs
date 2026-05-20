@@ -9,4 +9,5 @@ public class FreelancerVM
     public string? Location { get; set; }
     public List<SkillVM> Skills { get; set; } = [];
     public List<PortfolioVM> Portfolio { get; set; } = [];
+    public Guid CreatedBy { get; set; }
 }

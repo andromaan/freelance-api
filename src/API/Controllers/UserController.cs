@@ -100,10 +100,6 @@ public class UserController(ISender sender)
         => base.GetAll(ct);
 
     [Authorize(Roles = Settings.Roles.AdminRole)]
-    public override Task<IActionResult> GetById(Guid id, CancellationToken ct)
-        => base.GetById(id, ct);
-
-    [Authorize(Roles = Settings.Roles.AdminRole)]
     public override Task<IActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
     => base.GetAllPaginated(pagedVm, ct);
 }
