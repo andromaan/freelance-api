@@ -16,6 +16,7 @@ public class BidRepository(AppDbContext context, IUserProvider provider)
         return await _context.Set<Bid>()
             .AsNoTracking()
             .Where(x => x.ProjectId == projectId)
+            .OrderByDescending(x => x.ModifiedAt)
             .ToListAsync(cancellationToken);
     }
 }

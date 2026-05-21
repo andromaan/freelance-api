@@ -14,7 +14,8 @@ public class NotificationService(
         string message,
         NotificationType type,
         Guid? userId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? linkAddress = null)
     {
         // 1. Зберігаємо в БД
         var notification = new Notification
@@ -24,7 +25,8 @@ public class NotificationService(
             Type = type,
             IsRead = false,
             SentAt = DateTime.UtcNow,
-            UserId = userId
+            UserId = userId,
+            LinkAddress = linkAddress
         };
 
         await notificationRepository.CreateAsync(notification, cancellationToken);

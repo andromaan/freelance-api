@@ -69,7 +69,8 @@ public class CreateBidHandler(
                 message: $"You received a new bid of {createModel.Amount:C} on your project \"{existingProject.Title}\".",
                 type: NotificationType.NewBidReceived,
                 userId: existingProject.CreatedBy,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken,
+                linkAddress: $"/my-projects/{existingProject.Id}/bids");
         }
 
         // Return success with processed entity

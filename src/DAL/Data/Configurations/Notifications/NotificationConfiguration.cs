@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DAL.Data.Configurations.Notifications;
 
-public class NotificationConfigurator : IEntityTypeConfiguration<Notification>
+public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
 {
     public void Configure(EntityTypeBuilder<Notification> builder)
     {
@@ -26,6 +26,9 @@ public class NotificationConfigurator : IEntityTypeConfiguration<Notification>
         builder.Property(n => n.IsRead)
             .IsRequired()
             .HasDefaultValue(false);
+
+        builder.Property(n => n.LinkAddress)
+            .IsRequired(false);
         
         builder.Property(n => n.SentAt)
             .HasConversion(new DateTimeUtcConverter())

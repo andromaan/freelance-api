@@ -11,6 +11,6 @@ public interface INotificationService
         string message,
         NotificationType type,
         Guid? userId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        string? linkAddress = null);
 }
-

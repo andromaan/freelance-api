@@ -9,6 +9,7 @@ public class Notification : Entity<Guid>
     public bool IsRead { get; set; }
     public DateTime SentAt { get; set; }
     public Guid? UserId { get; set; }
+    public string? LinkAddress { get; set; }
 }
 
 public enum NotificationType

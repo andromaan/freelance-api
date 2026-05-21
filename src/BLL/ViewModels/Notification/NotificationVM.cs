@@ -10,4 +10,5 @@ public class NotificationVM
     public bool IsRead { get; set; }
     public DateTime SentAt { get; set; }
     public Guid? UserId { get; set; }
+    public string? LinkAddress { get; set; }
 }
