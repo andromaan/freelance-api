@@ -13,7 +13,6 @@ namespace API.Controllers;
 [ApiController]
 [Route("[controller]")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Policy = Settings.Roles.AdminOrFreelancer)]
 public class BidController(ISender sender)
     : GenericCrudController<Guid, BidVM, CreateBidVM, UpdateBidVM>(sender)
 {
@@ -26,7 +25,20 @@ public class BidController(ISender sender)
         var result = await Sender.Send(query, ct);
         return GetResult(result);
     }
-    
+
+    [Authorize(Policy = Settings.Roles.AdminOrEmployer)]
+    [HttpPatch("is-interesting/{id}")]
+    public async Task<IActionResult> UpdateIsInteresting(Guid id, bool isInteresting, CancellationToken ct)
+    {
+        var command = new UpdateBidInterestingCommand
+        {
+            BidId = id,
+            IsInteresting = isInteresting
+        };
+        var result = await Sender.Send(command, ct);
+        return GetResult(result);
+    }
+
     [AllowAnonymous]
     public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
         => await base.GetById(id, ct);

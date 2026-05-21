@@ -10,4 +10,6 @@ public class BidVM
     public DateTime CreatedAt { get; set; }
     public DateTime ModifiedAt { get; set; }
     public Guid CreatedBy { get; set; }
+    
+    public bool? IsInteresting { get; set; }
 }

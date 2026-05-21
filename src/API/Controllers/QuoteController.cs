@@ -1,5 +1,4 @@
 using API.Controllers.Common;
-using BLL;
 using BLL.CommandsQueries.Quotes;
 using BLL.ViewModels;
 using BLL.ViewModels.Quote;
@@ -13,11 +12,9 @@ namespace API.Controllers;
 [ApiController]
 [Route("[controller]")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Policy = Settings.Roles.AdminOrFreelancer)]
 public class QuoteController(ISender sender)
     : GenericCrudController<Guid, QuoteVM, CreateQuoteVM, UpdateQuoteVM>(sender)
 {
-    [AllowAnonymous]
     [HttpGet("by-project/{projectId}")]
     public async Task<IActionResult> GetByProjectId(Guid projectId, CancellationToken ct)
     {
@@ -25,10 +22,6 @@ public class QuoteController(ISender sender)
         var result = await Sender.Send(query, ct);
         return GetResult(result);
     }
-
-    [AllowAnonymous]
-    public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
-        => await base.GetById(id, ct);
 
     [ApiExplorerSettings(IgnoreApi = true)]
     public override Task<IActionResult> GetAll(CancellationToken ct)

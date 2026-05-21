@@ -15,6 +15,8 @@ public class Notification : Entity<Guid>
 public enum NotificationType
 {
     NewBidReceived,         // Новий bid на проект (для роботодавця)
+    InterestedInYourBid,    // Ставкою зацікавилися
+    NotInterestedInYourBid, // Ставкою не зацікавилися
     NewMessage,             // Нове повідомлення в чаті
     MilestoneApproved,      // Milestone схвалено (для фрілансера)
     MilestoneRejected,      // Milestone відхилено (для фрілансера)

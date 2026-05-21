@@ -14,6 +14,7 @@ public class BidConfiguration : IEntityTypeConfiguration<Bid>
 
         builder.Property(b => b.Amount).HasPrecision(18, 2).IsRequired();
         builder.Property(b => b.Message).IsRequired(false);
+        builder.Property(b => b.IsInteresting).HasDefaultValue(null);
 
         builder.HasOne(b => b.Project)
             .WithMany(b => b.Bids)

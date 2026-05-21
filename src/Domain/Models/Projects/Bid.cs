@@ -13,4 +13,6 @@ public class Bid : AuditableEntity<Guid>
     
     public decimal Amount { get; set; }
     public string? Message { get; set; }
+    
+    public bool? IsInteresting { get; set; }
 }
