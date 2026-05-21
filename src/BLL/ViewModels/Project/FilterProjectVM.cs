@@ -1,5 +1,3 @@
-using Domain.Models.Projects;
-
 namespace BLL.ViewModels.Project;
 
 public class FilterProjectVM
@@ -8,7 +6,6 @@ public class FilterProjectVM
     public string? Description { get; set; }
     public decimal? BudgetMin { get; set; }
     public decimal? BudgetMax { get; set; }
-    public ProjectStatus? Status { get; set; }
     public DateTime? DeadlineMax { get; set; }
     public List<int>? CategoryIds { get; set; } = new();
 }

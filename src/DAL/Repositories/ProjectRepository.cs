@@ -25,11 +25,11 @@ public class ProjectRepository(AppDbContext appDbContext, IUserProvider userProv
             p => p.Bids, p => p.Quotes);
     }
 
-    public Task<List<Project>> GetByEmployer(CancellationToken cancellationToken)
+    public async Task<List<Project>> GetByEmployer(CancellationToken cancellationToken)
     {
-        var userId = _userProvider.GetUserId().GetAwaiter().GetResult();
+        var userId = await _userProvider.GetUserId();
         
-        return _appDbContext.Set<Project>().Where(p => p.CreatedBy == userId)
+        return await _appDbContext.Set<Project>().Where(p => p.CreatedBy == userId)
             .Include(p => p.Categories)
             .Include(p => p.Bids)
             .Include(p => p.Quotes)

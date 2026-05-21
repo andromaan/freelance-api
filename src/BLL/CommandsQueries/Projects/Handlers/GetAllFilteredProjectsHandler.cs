@@ -13,37 +13,36 @@ public class GetAllFilteredProjectsHandler(ICategoryQueries categoryQueries)
         List<Project> entities, FilterProjectVM filter,
         CancellationToken cancellationToken)
     {
-        List<Project> filteredEntities = entities;
+        List<Project> filteredEntities = entities.Where(e => e.Status == ProjectStatus.Open).ToList();
 
         if (filter.Title != null)
         {
-            filteredEntities = entities.Where(e => e.Title.Contains(filter.Title)).ToList();
+            filteredEntities = filteredEntities
+                .Where(e => e.Title.IndexOf(filter.Title, StringComparison.OrdinalIgnoreCase) >= 0)
+                .ToList();
         }
 
         if (filter.Description != null)
         {
-            filteredEntities = entities.Where(e => e.Description != null && e.Description.Contains(filter.Description))
+            filteredEntities = filteredEntities
+                .Where(e => e.Description != null && 
+                            e.Description.IndexOf(filter.Description, StringComparison.OrdinalIgnoreCase) >= 0)
                 .ToList();
         }
 
         if (filter.BudgetMin != null)
         {
-            filteredEntities = entities.Where(e => e.Budget >= filter.BudgetMin).ToList();
+            filteredEntities = filteredEntities.Where(e => e.Budget >= filter.BudgetMin).ToList();
         }
 
         if (filter.BudgetMax != null)
         {
-            filteredEntities = entities.Where(e => e.Budget <= filter.BudgetMax).ToList();
-        }
-
-        if (filter.Status != null)
-        {
-            filteredEntities = entities.Where(e => e.Status == filter.Status).ToList();
+            filteredEntities = filteredEntities.Where(e => e.Budget <= filter.BudgetMax).ToList();
         }
 
         if (filter.DeadlineMax != null)
         {
-            filteredEntities = entities.Where(e => e.Deadline <= filter.DeadlineMax).ToList();
+            filteredEntities = filteredEntities.Where(e => e.Deadline <= filter.DeadlineMax).ToList();
         }
 
         if (filter.CategoryIds != null && filter.CategoryIds.Count > 0)
@@ -56,7 +55,7 @@ public class GetAllFilteredProjectsHandler(ICategoryQueries categoryQueries)
                     return (ServiceResponse.NotFound($"Category with id {filterCategoryId} not found"), null);
                 }
 
-                filteredEntities = entities.Where(e => e.Categories.Any(c => c.Id == filterCategoryId)).ToList();
+                filteredEntities = filteredEntities.Where(e => e.Categories.Any(c => c.Id == filterCategoryId)).ToList();
             }
         }
 
