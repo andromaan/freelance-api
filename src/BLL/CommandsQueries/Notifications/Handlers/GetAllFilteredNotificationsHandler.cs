@@ -16,12 +16,12 @@ public class GetAllFilteredNotificationsHandler
 
         if (filter.IsRead != null)
         {
-            filteredEntities = entities.Where(e => e.IsRead == filter.IsRead).ToList();
+            filteredEntities = filteredEntities.Where(e => e.IsRead == filter.IsRead).ToList();
         }
         
         if (filter.NotificationType != null)
         {
-            filteredEntities = entities.Where(e => e.Type == filter.NotificationType).ToList();
+            filteredEntities = filteredEntities.Where(e => e.Type == filter.NotificationType).ToList();
         }
 
         return Task.FromResult<(ServiceResponse, List<Notification>?)>((ServiceResponse.Ok(), filteredEntities));

@@ -5,6 +5,8 @@ namespace BLL.ViewModels.Notification;
 public enum NotificationTypeFreelancer
 {
     NewMessage = NotificationType.NewMessage,
+    InterestedInYourBid = NotificationType.InterestedInYourBid,    
+    NotInterestedInYourBid = NotificationType.NotInterestedInYourBid, 
     MilestoneApproved = NotificationType.MilestoneApproved,
     MilestoneRejected = NotificationType.MilestoneRejected,
     ContractCreated = NotificationType.ContractCreated,
