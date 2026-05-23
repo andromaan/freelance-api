@@ -29,6 +29,8 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldCreateContract()
     {
         // Arrange
+        Context.Contracts.Remove(_contract);
+        
         var newQuote = QuoteData.CreateQuote(
             projectId: _project.Id,
             freelancerId: _freelancer.Id,

@@ -56,7 +56,7 @@ public class CreateContractCommandHandler(
         var contract = new Contract
         {
             Id = Guid.NewGuid(),
-            ProjectId = project!.Id,
+            ProjectId = project.Id,
             FreelancerId = quote.FreelancerId,
             StartDate = DateTime.UtcNow,
             EndDate = projectMilestones.Any()
