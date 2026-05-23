@@ -11,9 +11,9 @@ namespace BLL.CommandsQueries.Messages.Handlers;
 public class CreateMessageHandler(
     IUserQueries userQueries,
     IUserProvider userProvider,
-    IContractQueries contractQueries) : ICreateHandler<Message, CreateMessageVM>
+    IContractQueries contractQueries) : ICreateHandler<Message, CreateMessageVM, MessageVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(Message? entity, CreateMessageVM createModel,
+    public async Task<ServiceResponse<MessageVM?>> HandleAsync(Message? entity, CreateMessageVM createModel,
         CancellationToken cancellationToken)
     {
         var senderId = await userProvider.GetUserId();
@@ -22,24 +22,24 @@ public class CreateMessageHandler(
         var contract = await contractQueries.GetByIdAsync(createModel.ContractId, cancellationToken);
         if (contract == null)
         {
-            return ServiceResponse.BadRequest($"Contract with ID {createModel.ContractId} not found");
+            return ServiceResponse<MessageVM?>.BadRequest($"Contract with ID {createModel.ContractId} not found");
         }
 
         // Перевірка, чи існує одержувач
         var receiver = await userQueries.GetByEmailAsync(createModel.ReceiverEmail, cancellationToken);
         if (receiver == null)
         {
-            return ServiceResponse.BadRequest("Receiver with the specified email does not exist");
+            return ServiceResponse<MessageVM?>.BadRequest("Receiver with the specified email does not exist");
         }
 
         // Перевірка, чи не намагається користувач відправити повідомлення самому собі
         if (receiver.Id == senderId)
         {
-            return ServiceResponse.BadRequest("Cannot send a message to yourself");
+            return ServiceResponse<MessageVM?>.BadRequest("Cannot send a message to yourself");
         }
 
         entity!.ReceiverId = receiver.Id;
 
-        return ServiceResponse.Ok(); // Validation passed
+        return ServiceResponse<MessageVM?>.Ok(); // Validation passed
     }
 }

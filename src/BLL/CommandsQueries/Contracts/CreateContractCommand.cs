@@ -16,7 +16,7 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Contracts;
 
-public class CreateContractCommand : IRequest<ServiceResponse>
+public class CreateContractCommand : IRequest<ServiceResponse<ContractVM?>>
 {
     public required Guid QuoteId { get; init; }
 }
@@ -33,14 +33,14 @@ public class CreateContractCommandHandler(
     IBidQueries bidQueries,
     INotificationService notificationService,
     IFreelancerQueries freelancerQueries)
-    : IRequestHandler<CreateContractCommand, ServiceResponse>
+    : IRequestHandler<CreateContractCommand, ServiceResponse<ContractVM?>>
 {
-    public async Task<ServiceResponse> Handle(CreateContractCommand request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<ContractVM?>> Handle(CreateContractCommand request, CancellationToken cancellationToken)
     {
         var quote = await quoteQueries.GetByIdAsync(request.QuoteId, cancellationToken);
         if (quote is null)
         {
-            return ServiceResponse.NotFound($"Quote with id {request.QuoteId} not found");
+            return ServiceResponse<ContractVM?>.NotFound($"Quote with id {request.QuoteId} not found");
         }
 
         var project = await projectQueries.GetByIdAsync(quote.ProjectId, cancellationToken);
@@ -50,7 +50,7 @@ public class CreateContractCommandHandler(
         if (!await contractQueries.IsContractCanBeCreated(project!.Id, project.CreatedBy, quote.FreelancerId,
                 cancellationToken))
         {
-            return ServiceResponse.InternalError("Contract cannot be created. Contract already exists for this quote.");
+            return ServiceResponse<ContractVM?>.InternalError("Contract cannot be created. Contract already exists for this quote.");
         }
 
         var contract = new Contract
@@ -92,12 +92,12 @@ public class CreateContractCommandHandler(
 
             await SendNotificationsToFreelancers(quote, project, cancellationToken);
 
-            return ServiceResponse.Ok($"Contract created",
+            return ServiceResponse<ContractVM?>.Ok($"Contract created",
                 mapper.Map<ContractVM>(createdEntity));
         }
         catch (Exception exception)
         {
-            return ServiceResponse.InternalError(exception.Message, data: exception.InnerException?.Message);
+            return ServiceResponse<ContractVM?>.InternalError(exception.Message);
         }
     }
 
@@ -128,12 +128,12 @@ public class CreateContractCommandHandler(
             NotificationType.ProposalAccepted, freelancer.CreatedBy, cancellationToken);
     }
 
-    private async Task<ServiceResponse?> UpdateStatusAsync(Guid quoteProjectId, CancellationToken cancellationToken)
+    private async Task<ServiceResponse<ContractVM?>> UpdateStatusAsync(Guid quoteProjectId, CancellationToken cancellationToken)
     {
         var project = await projectQueries.GetByIdAsync(quoteProjectId, cancellationToken);
         if (project is null)
         {
-            return ServiceResponse.NotFound($"Project with id {quoteProjectId} not found");
+            return ServiceResponse<ContractVM?>.NotFound($"Project with id {quoteProjectId} not found");
         }
 
         project.Status = ProjectStatus.InProgress;
@@ -144,7 +144,7 @@ public class CreateContractCommandHandler(
         }
         catch (Exception e)
         {
-            return ServiceResponse.InternalError(e.Message, e.InnerException);
+            return ServiceResponse<ContractVM?>.InternalError(e.Message);
         }
 
         return null;

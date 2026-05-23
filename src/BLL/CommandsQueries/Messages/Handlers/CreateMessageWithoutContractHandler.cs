@@ -10,9 +10,9 @@ namespace BLL.CommandsQueries.Messages.Handlers;
 public class CreateMessageWithoutContractHandler(
     IUserProvider userProvider,
     IUserQueries userQueries
-) : ICreateHandler<Message, CreateMessageWithoutContractVM>
+) : ICreateHandler<Message, CreateMessageWithoutContractVM, MessageVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(Message entity,
+    public async Task<ServiceResponse<MessageVM?>> HandleAsync(Message entity,
         CreateMessageWithoutContractVM createModel, CancellationToken cancellationToken)
     {
         var senderId = await userProvider.GetUserId();
@@ -20,16 +20,16 @@ public class CreateMessageWithoutContractHandler(
         var receiver = await userQueries.GetByEmailAsync(createModel.ReceiverEmail, cancellationToken);
         if (receiver == null)
         {
-            return ServiceResponse.BadRequest("Receiver with the specified email does not exist");
+            return ServiceResponse<MessageVM?>.BadRequest("Receiver with the specified email does not exist");
         }
 
         if (receiver.Id == senderId)
         {
-            return ServiceResponse.BadRequest("Cannot send a message to yourself");
+            return ServiceResponse<MessageVM?>.BadRequest("Cannot send a message to yourself");
         }
 
         entity.ReceiverId = receiver.Id;
 
-        return ServiceResponse.Ok(); // Validation passed
+        return ServiceResponse<MessageVM?>.Ok(); // Validation passed
     }
 }

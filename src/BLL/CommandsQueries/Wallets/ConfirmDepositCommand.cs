@@ -13,16 +13,16 @@ namespace BLL.CommandsQueries.Wallets;
 /// Verifies that the Stripe PaymentIntent has succeeded, then credits the user's wallet.
 /// Should be called by the frontend after Stripe.js confirms the payment.
 /// </summary>
-public record ConfirmDepositCommand(ConfirmDepositVM Vm) : IRequest<ServiceResponse>;
+public record ConfirmDepositCommand(ConfirmDepositVM Vm) : IRequest<ServiceResponse<object?>>;
 
 public class ConfirmDepositCommandHandler(
     IStripeService stripeService,
     IUserProvider userProvider,
     IUserWalletRepository userWalletRepository,
     IWalletTransactionRepository walletTransactionRepository)
-    : IRequestHandler<ConfirmDepositCommand, ServiceResponse>
+    : IRequestHandler<ConfirmDepositCommand, ServiceResponse<object?>>
 {
-    public async Task<ServiceResponse> Handle(
+    public async Task<ServiceResponse<object?>> Handle(
         ConfirmDepositCommand request,
         CancellationToken cancellationToken)
     {
@@ -36,7 +36,7 @@ public class ConfirmDepositCommandHandler(
                 cancellationToken);
 
             if (paymentIntent.Status != "succeeded")
-                return ServiceResponse.BadRequest(
+                return ServiceResponse<object?>.BadRequest(
                     $"Payment has not been completed. Current status: '{paymentIntent.Status}'. " +
                     "Please confirm payment on the client side first.");
 
@@ -47,7 +47,7 @@ public class ConfirmDepositCommandHandler(
             // Credit the wallet
             var wallet = await userWalletRepository.DepositAsync(userId, amount, cancellationToken);
             if (wallet is null)
-                return ServiceResponse.NotFound("Wallet not found for current user.");
+                return ServiceResponse<object?>.NotFound("Wallet not found for current user.");
             
             // Record the transaction
             await walletTransactionRepository.CreateAsync(new WalletTransaction
@@ -59,7 +59,7 @@ public class ConfirmDepositCommandHandler(
                 TransactionDate = DateTime.UtcNow
             }, cancellationToken);
 
-            return ServiceResponse.Ok("Deposit successful.", new
+            return ServiceResponse<object?>.Ok("Deposit successful.", new
             {
                 NewBalance = wallet.Balance,
                 DepositedAmount = amount,
@@ -68,7 +68,7 @@ public class ConfirmDepositCommandHandler(
         }
         catch (Exception ex)
         {
-            return ServiceResponse.InternalError(ex.Message);
+            return ServiceResponse<object?>.InternalError(ex.Message);
         }
     }
 }

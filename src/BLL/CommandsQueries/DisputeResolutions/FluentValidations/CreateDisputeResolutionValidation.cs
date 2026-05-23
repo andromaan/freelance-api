@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace BLL.CommandsQueries.DisputeResolutions.FluentValidations;
 
-public class CreateDisputeResolutionValidation : AbstractValidator<Create.Command<CreateDisputeResolutionVM>>
+public class CreateDisputeResolutionValidation : AbstractValidator<Create.Command<CreateDisputeResolutionVM, DisputeResolutionVM>>
 {
     public CreateDisputeResolutionValidation()
     {

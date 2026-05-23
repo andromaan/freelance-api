@@ -28,9 +28,9 @@ public class UpdateContractMilestoneStatusModeratorHandler(
     IProjectRepository projectRepository,
     IProjectQueries projectQueries
 )
-    : IUpdateHandler<ContractMilestone, UpdContractMilestoneStatusModeratorVM>
+    : IUpdateHandler<ContractMilestone, UpdContractMilestoneStatusModeratorVM, ContractMilestoneVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(
+    public async Task<ServiceResponse<ContractMilestoneVM?>> HandleAsync(
         ContractMilestone existingEntity,
         UpdContractMilestoneStatusModeratorVM updateModel,
         CancellationToken cancellationToken)
@@ -67,10 +67,10 @@ public class UpdateContractMilestoneStatusModeratorHandler(
 
         mapper.Map(updateModel, existingEntity);
 
-        return ServiceResponse.Ok();
+        return ServiceResponse<ContractMilestoneVM?>.Ok();
     }
 
-    private static ServiceResponse? ValidateMilestoneStatus(
+    private static ServiceResponse<ContractMilestoneVM?> ValidateMilestoneStatus(
         ContractMilestone milestone)
     {
         if (milestone.Status == ContractMilestoneStatus.Approved)
@@ -81,7 +81,7 @@ public class UpdateContractMilestoneStatusModeratorHandler(
 
     // --- Contract & Project Completion ---
 
-    private async Task<ServiceResponse?> CompleteContractAndProjectAsync(
+    private async Task<ServiceResponse<ContractMilestoneVM?>> CompleteContractAndProjectAsync(
         Contract contract,
         CancellationToken cancellationToken)
     {
@@ -97,7 +97,7 @@ public class UpdateContractMilestoneStatusModeratorHandler(
         }
         catch (Exception e)
         {
-            return ServiceResponse.InternalError(e.Message, e.InnerException);
+            return ServiceResponse<ContractMilestoneVM?>.InternalError(e.Message);
         }
 
         return null;
@@ -105,7 +105,7 @@ public class UpdateContractMilestoneStatusModeratorHandler(
 
     // --- Payment Processing ---
 
-    private async Task<ServiceResponse?> ProcessPaymentAsync(
+    private async Task<ServiceResponse<ContractMilestoneVM?>> ProcessPaymentAsync(
         ContractMilestone milestone,
         Contract contract,
         List<ContractMilestone> otherMilestones,
@@ -138,7 +138,7 @@ public class UpdateContractMilestoneStatusModeratorHandler(
         return null;
     }
 
-    private async Task<ServiceResponse?> ProcessMilestonePaymentAsync(
+    private async Task<ServiceResponse<ContractMilestoneVM?>> ProcessMilestonePaymentAsync(
         ContractMilestone milestone,
         Contract contract,
         Guid freelancerUserId,
@@ -165,7 +165,7 @@ public class UpdateContractMilestoneStatusModeratorHandler(
         return null;
     }
 
-    private async Task<ServiceResponse?> ProcessFinalPaymentAsync(
+    private async Task<ServiceResponse<ContractMilestoneVM?>> ProcessFinalPaymentAsync(
         ContractMilestone milestone,
         Contract contract,
         Guid freelancerUserId,
@@ -238,6 +238,6 @@ public class UpdateContractMilestoneStatusModeratorHandler(
             WalletId = walletId
         };
 
-    private static ServiceResponse BadRequest(string message) =>
-        ServiceResponse.GetResponse(message, false, null, HttpStatusCode.BadRequest);
+    private static ServiceResponse<ContractMilestoneVM?> BadRequest(string message) =>
+        ServiceResponse<ContractMilestoneVM?>.GetResponse(message, false, null, HttpStatusCode.BadRequest);
 }

@@ -7,12 +7,12 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Users;
 
-public record GetUserByTokenQuery : IRequest<ServiceResponse>;
+public record GetUserByTokenQuery : IRequest<ServiceResponse<UserVM?>>;
 
 public class QueryHandler(IUserQueries userQueries, IMapper mapper, IUserProvider userProvider)
-    : IRequestHandler<GetUserByTokenQuery, ServiceResponse>
+    : IRequestHandler<GetUserByTokenQuery, ServiceResponse<UserVM?>>
 {
-    public async Task<ServiceResponse> Handle(GetUserByTokenQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<UserVM?>> Handle(GetUserByTokenQuery request, CancellationToken cancellationToken)
     {
         try
         {
@@ -20,11 +20,11 @@ public class QueryHandler(IUserQueries userQueries, IMapper mapper, IUserProvide
             
             var user = await userQueries.GetByIdAsync(userId, cancellationToken);
 
-            return ServiceResponse.Ok("Your profile retrieved", mapper.Map<UserVM>(user));
+            return ServiceResponse<UserVM?>.Ok("Your profile retrieved", mapper.Map<UserVM>(user));
         }
         catch (Exception exception)
         {
-            return ServiceResponse.InternalError(exception.Message);
+            return ServiceResponse<UserVM?>.InternalError(exception.Message);
         }
     }
 }

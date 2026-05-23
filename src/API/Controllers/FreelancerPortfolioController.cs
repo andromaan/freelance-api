@@ -19,14 +19,14 @@ public class FreelancerPortfolioController(ISender sender)
 {
     [AllowAnonymous]
     [HttpGet("get-by-freelancer/{freelancerId:guid}")]
-    public virtual async Task<IActionResult> GetByUser(Guid freelancerId, CancellationToken ct)
+    public virtual async Task<ActionResult> GetByUser(Guid freelancerId, CancellationToken ct)
         => GetResult(await Sender.Send(new GetPortfoliosByFreelancerIdQuery(freelancerId), ct));
     
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<IActionResult> GetAll(CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound());
+    public override Task<ActionResult> GetAll(CancellationToken ct)
+        => Task.FromResult<ActionResult>(NotFound());
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<IActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound());
+    public override Task<ActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+        => Task.FromResult<ActionResult>(NotFound());
 }

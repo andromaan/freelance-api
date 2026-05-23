@@ -19,7 +19,7 @@ public class DisputeResolutionController(ISender sender) : BaseController
 {
     [HttpGet]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<IActionResult> GetAll(CancellationToken ct)
+    public async Task<ActionResult> GetAll(CancellationToken ct)
     {
         var query = new GetAll.Query<DisputeResolutionVM>();
         var result = await sender.Send(query, ct);
@@ -28,7 +28,7 @@ public class DisputeResolutionController(ISender sender) : BaseController
     
     // TODO: make get by user disputeResolution -> dispute -> createdBy
     // [HttpGet("by-user")]
-    // public async Task<IActionResult> GetAllByUser(CancellationToken ct)
+    // public async Task<ActionResult> GetAllByUser(CancellationToken ct)
     // {
     //     var query = new GetDisputesByUserQuery();
     //     var result = await sender.Send(query, ct);
@@ -37,7 +37,7 @@ public class DisputeResolutionController(ISender sender) : BaseController
 
     [HttpGet("{id}")]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+    public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
     {
         var query = new GetById.Query<Guid, DisputeResolutionVM> { Id = id };
         var result = await sender.Send(query, ct);
@@ -46,7 +46,7 @@ public class DisputeResolutionController(ISender sender) : BaseController
 
     [HttpPost]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<IActionResult> Create([FromBody] CreateDisputeResolutionVM vm, CancellationToken ct)
+    public async Task<ActionResult> Create([FromBody] CreateDisputeResolutionVM vm, CancellationToken ct)
     {
         var command = new Create.Command<CreateDisputeResolutionVM, DisputeResolutionVM> { Model = vm };
         var result = await sender.Send(command, ct);
@@ -55,7 +55,7 @@ public class DisputeResolutionController(ISender sender) : BaseController
 
     [HttpDelete("{id}")]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
         var command = new Delete.Command<DisputeResolutionVM, Guid> { Id = id };
         var result = await sender.Send(command, ct);

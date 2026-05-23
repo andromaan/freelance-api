@@ -5,7 +5,7 @@ using FluentValidation;
 namespace BLL.CommandsQueries.ContractMilestones.FluentValidations;
 
 public class
-    UpdCMilestoneForFreelancerCmdValidation : AbstractValidator<Update.Command<UpdContractMilestoneStatusFreelancerVM, Guid>>
+    UpdCMilestoneForFreelancerCmdValidation : AbstractValidator<Update.Command<UpdContractMilestoneStatusFreelancerVM, Guid, ContractMilestoneVM>>
 {
     public UpdCMilestoneForFreelancerCmdValidation()
     {

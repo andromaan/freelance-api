@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace BLL.CommandsQueries.Messages.FluentValidations;
 
-public class CreateMessageWithoutContractValidator : AbstractValidator<Create.Command<CreateMessageWithoutContractVM>>
+public class CreateMessageWithoutContractValidator : AbstractValidator<Create.Command<CreateMessageWithoutContractVM, MessageVM>>
 {
     public CreateMessageWithoutContractValidator()
     {

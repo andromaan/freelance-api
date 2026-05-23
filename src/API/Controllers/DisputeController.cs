@@ -21,7 +21,7 @@ public class DisputeController(ISender sender) : BaseController
 {
     [HttpGet]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<IActionResult> GetAll(CancellationToken ct)
+    public async Task<ActionResult> GetAll(CancellationToken ct)
     {
         var query = new GetAll.Query<DisputeVM>();
         var result = await sender.Send(query, ct);
@@ -29,7 +29,7 @@ public class DisputeController(ISender sender) : BaseController
     }
     
     [HttpGet("by-user")]
-    public async Task<IActionResult> GetAllByUser(CancellationToken ct)
+    public async Task<ActionResult> GetAllByUser(CancellationToken ct)
     {
         var query = new GetDisputesByUserQuery();
         var result = await sender.Send(query, ct);
@@ -38,7 +38,7 @@ public class DisputeController(ISender sender) : BaseController
 
     [HttpGet("{id}")]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+    public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
     {
         var query = new GetById.Query<Guid, DisputeVM> { Id = id };
         var result = await sender.Send(query, ct);
@@ -46,7 +46,7 @@ public class DisputeController(ISender sender) : BaseController
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateDisputeVM vm, CancellationToken ct)
+    public async Task<ActionResult> Create([FromBody] CreateDisputeVM vm, CancellationToken ct)
     {
         var command = new Create.Command<CreateDisputeVM, DisputeVM> { Model = vm };
         var result = await sender.Send(command, ct);
@@ -55,7 +55,7 @@ public class DisputeController(ISender sender) : BaseController
 
     [HttpDelete("{id}")]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
         var command = new Delete.Command<DisputeVM, Guid> { Id = id };
         var result = await sender.Send(command, ct);
@@ -64,7 +64,7 @@ public class DisputeController(ISender sender) : BaseController
 
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
     [HttpGet("status-moderator-enums")]
-    public IActionResult GetModeratorStatusEnumsAsync()
+    public ActionResult GetModeratorStatusEnumsAsync()
     {
         var platforms = Enum.GetValues<DisputeStatusForModerator>()
             .Select(x => new { Name = x.ToString(), Value = (int)x })
@@ -75,7 +75,7 @@ public class DisputeController(ISender sender) : BaseController
     
     [HttpPut("{id}/status")]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateDisputeStatusForModeratorVM vm,
+    public async Task<ActionResult> UpdateStatus(Guid id, [FromBody] UpdateDisputeStatusForModeratorVM vm,
         CancellationToken ct)
     {
         var command = new Update.Command<UpdateDisputeStatusForModeratorVM, Guid, DisputeVM> { Id = id, Model = vm };

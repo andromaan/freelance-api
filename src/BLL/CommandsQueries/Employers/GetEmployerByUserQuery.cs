@@ -7,7 +7,7 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Employers;
 
-public class GetEmployerByUserQuery : IRequest<ServiceResponse>
+public class GetEmployerByUserQuery : IRequest<ServiceResponse<EmployerVM?>>
 {
 }
 
@@ -15,9 +15,9 @@ public class QueryHandler(
     IEmployerQueries queriesEmployer,
     IUserProvider userProvider,
     IMapper mapper)
-    : IRequestHandler<GetEmployerByUserQuery, ServiceResponse>
+    : IRequestHandler<GetEmployerByUserQuery, ServiceResponse<EmployerVM?>>
 {
-    public async Task<ServiceResponse> Handle(GetEmployerByUserQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<EmployerVM?>> Handle(GetEmployerByUserQuery request, CancellationToken cancellationToken)
     {
         try
         {
@@ -26,15 +26,15 @@ public class QueryHandler(
             var employer = await queriesEmployer.GetByUserId(userId, cancellationToken);
             if (employer == null)
             {
-                return ServiceResponse.NotFound("Employer not found");
+                return ServiceResponse<EmployerVM?>.NotFound("Employer not found");
             }
 
-            return ServiceResponse.Ok("Employer retrieved",
+            return ServiceResponse<EmployerVM?>.Ok("Employer retrieved",
                 mapper.Map<EmployerVM>(employer));
         }
         catch (Exception exception)
         {
-            return ServiceResponse.InternalError(exception.Message);
+            return ServiceResponse<EmployerVM?>.InternalError(exception.Message);
         }
     }
 }

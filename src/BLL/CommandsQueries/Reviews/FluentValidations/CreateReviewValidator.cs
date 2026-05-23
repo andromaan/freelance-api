@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace BLL.CommandsQueries.Reviews.FluentValidations;
 
-public class CreateReviewValidation : AbstractValidator<Create.Command<CreateReviewVM>>
+public class CreateReviewValidation : AbstractValidator<Create.Command<CreateReviewVM, ReviewVM>>
 {
     public CreateReviewValidation()
     {

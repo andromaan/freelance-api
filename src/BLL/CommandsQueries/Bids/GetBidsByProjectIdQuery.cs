@@ -7,7 +7,7 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Bids;
 
-public record GetBidsByProjectIdQuery : IRequest<ServiceResponse>
+public record GetBidsByProjectIdQuery : IRequest<ServiceResponse<List<BidVM>?>>
 {
     public required Guid ProjectId { get; init; }
 }
@@ -16,19 +16,19 @@ public class QueryHandler(
     IBidQueries bidQueries,
     IProjectQueries projectQueries,
     IMapper mapper)
-    : IRequestHandler<GetBidsByProjectIdQuery, ServiceResponse>
+    : IRequestHandler<GetBidsByProjectIdQuery, ServiceResponse<List<BidVM>?>>
 {
-    public async Task<ServiceResponse> Handle(GetBidsByProjectIdQuery request,
+    public async Task<ServiceResponse<List<BidVM>?>> Handle(GetBidsByProjectIdQuery request,
         CancellationToken cancellationToken)
     {
         var existingProject = await projectQueries.GetByIdAsync(request.ProjectId, cancellationToken, true);
         if (existingProject == null)
         {
-            return ServiceResponse.NotFound($"Project with id {request.ProjectId} not found");
+            return ServiceResponse<List<BidVM>?>.NotFound($"Project with id {request.ProjectId} not found");
         }
 
         var result = await bidQueries.GetByProjectIdAsync(request.ProjectId, cancellationToken);
-        return ServiceResponse.Ok("Bids receive successfully",
+        return ServiceResponse<List<BidVM>?>.Ok("Bids receive successfully",
             mapper.Map<List<BidVM>>(result));
     }
 }

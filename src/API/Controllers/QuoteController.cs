@@ -17,7 +17,7 @@ public class QuoteController(ISender sender)
     : GenericCrudController<Guid, QuoteVM, CreateQuoteVM, UpdateQuoteVM>(sender)
 {
     [HttpGet("by-project/{projectId}")]
-    public async Task<IActionResult> GetByProjectId(Guid projectId, CancellationToken ct)
+    public async Task<ActionResult> GetByProjectId(Guid projectId, CancellationToken ct)
     {
         var query = new GetQuotesByProjectIdQuery { ProjectId = projectId };
         var result = await Sender.Send(query, ct);
@@ -26,7 +26,7 @@ public class QuoteController(ISender sender)
     
     [Authorize(Roles = Settings.Roles.FreelancerRole)]
     [HttpGet("by-freelancer")]
-    public async Task<IActionResult> GetByFreelancer(CancellationToken ct)
+    public async Task<ActionResult> GetByFreelancer(CancellationToken ct)
     {
         var query = new GetQuotesByFreelancerQuery();
         var result = await Sender.Send(query, ct);
@@ -34,10 +34,10 @@ public class QuoteController(ISender sender)
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<IActionResult> GetAll(CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound());
+    public override Task<ActionResult> GetAll(CancellationToken ct)
+        => Task.FromResult<ActionResult>(NotFound());
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<IActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound());
+    public override Task<ActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+        => Task.FromResult<ActionResult>(NotFound());
 }

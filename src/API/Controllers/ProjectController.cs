@@ -20,7 +20,7 @@ public class ProjectController(ISender sender)
     : GenericCrudController<Guid, ProjectVM, CreateProjectVM, UpdateProjectVM>(sender)
 {
     [HttpPatch("categories/{projectId}")]
-    public async Task<IActionResult> UpdateProjectCategories(Guid projectId, [FromBody] UpdateProjectCategoriesVM vm,
+    public async Task<ActionResult> UpdateProjectCategories(Guid projectId, [FromBody] UpdateProjectCategoriesVM vm,
         CancellationToken ct)
     {
         var command = new Update.Command<UpdateProjectCategoriesVM, Guid, ProjectVM>
@@ -33,7 +33,7 @@ public class ProjectController(ISender sender)
     }
 
     [HttpGet("by-employer")]
-    public async Task<IActionResult> GetProjectsByEmployer(CancellationToken ct)
+    public async Task<ActionResult> GetProjectsByEmployer(CancellationToken ct)
     {
         var query = new GetProjectsByEmployerQuery();
         var result = await Sender.Send(query, ct);
@@ -41,20 +41,20 @@ public class ProjectController(ISender sender)
     }
 
     [AllowAnonymous]
-    public override async Task<IActionResult> GetAll(CancellationToken ct)
+    public override async Task<ActionResult> GetAll(CancellationToken ct)
         => await base.GetAll(ct);
 
     [AllowAnonymous]
-    public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+    public override async Task<ActionResult> GetById(Guid id, CancellationToken ct)
         => await base.GetById(id, ct);
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override async Task<IActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+    public override async Task<ActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
         => await base.GetAllPaginated(pagedVm, ct);
 
     [AllowAnonymous]
     [HttpGet("search")]
-    public async Task<IActionResult> GetAllPaginatedFiltered(PagedVM pagedVm, [FromQuery] FilterProjectVM filterProjectVm,
+    public async Task<ActionResult> GetAllPaginatedFiltered(PagedVM pagedVm, [FromQuery] FilterProjectVM filterProjectVm,
         CancellationToken ct)
     {
         var query = new GetAllFilteredPaginated.Query<FilterProjectVM, ProjectVM>(pagedVm, filterProjectVm);

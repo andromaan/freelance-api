@@ -19,7 +19,7 @@ public class ProjectMilestoneController(ISender sender)
 {
     [AllowAnonymous]
     [HttpGet("by-project/{projectId}")]
-    public async Task<IActionResult> GetByProjectId(Guid projectId, CancellationToken ct)
+    public async Task<ActionResult> GetByProjectId(Guid projectId, CancellationToken ct)
     {
         var query = new GetProjectMilestonesByProjectIdQuery { ProjectId = projectId };
         var result = await Sender.Send(query, ct);
@@ -27,10 +27,10 @@ public class ProjectMilestoneController(ISender sender)
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<IActionResult> GetAll(CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound());
+    public override Task<ActionResult> GetAll(CancellationToken ct)
+        => Task.FromResult<ActionResult>(NotFound());
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<IActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound());
+    public override Task<ActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+        => Task.FromResult<ActionResult>(NotFound());
 }

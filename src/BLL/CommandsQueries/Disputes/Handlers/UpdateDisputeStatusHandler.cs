@@ -5,13 +5,13 @@ using Domain.Models.Disputes;
 
 namespace BLL.CommandsQueries.Disputes.Handlers;
 
-public class UpdateDisputeStatusHandler : IUpdateHandler<Dispute, UpdateDisputeStatusForModeratorVM>
+public class UpdateDisputeStatusHandler : IUpdateHandler<Dispute, UpdateDisputeStatusForModeratorVM, DisputeVM>
 {
-    public Task<ServiceResponse?> HandleAsync(Dispute existingEntity, UpdateDisputeStatusForModeratorVM updateModel,
+    public Task<ServiceResponse<DisputeVM?>> HandleAsync(Dispute existingEntity, UpdateDisputeStatusForModeratorVM updateModel,
         CancellationToken cancellationToken)
     {
         existingEntity.Status = (DisputeStatus)updateModel.Status;
 
-        return Task.FromResult<ServiceResponse?>(ServiceResponse.Ok());
+        return Task.FromResult(ServiceResponse<DisputeVM?>.Ok());
     }
 }

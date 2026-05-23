@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace BLL.CommandsQueries.Employers.FluentValidations;
 
-public class UpdateEmployerCommandValidator : AbstractValidator<UpdateByUser.Command<UpdateEmployerVM>>
+public class UpdateEmployerCommandValidator : AbstractValidator<UpdateByUser.Command<UpdateEmployerVM, EmployerVM>>
 {
     public UpdateEmployerCommandValidator()
     {

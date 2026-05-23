@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace BLL.CommandsQueries.Languages.FluentValidations;
 
-public class CreateLanguageCommandValidator : AbstractValidator<Create.Command<CreateLanguageVM>>
+public class CreateLanguageCommandValidator : AbstractValidator<Create.Command<CreateLanguageVM, LanguageVM>>
 {
     public CreateLanguageCommandValidator()
     {

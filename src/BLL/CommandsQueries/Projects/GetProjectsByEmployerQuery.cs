@@ -6,22 +6,22 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Projects;
 
-public record GetProjectsByEmployerQuery : IRequest<ServiceResponse>;
+public record GetProjectsByEmployerQuery : IRequest<ServiceResponse<List<ProjectVM>?>>;
 
 public class QueryHandler(IProjectQueries projectQueries, IMapper mapper)
-    : IRequestHandler<GetProjectsByEmployerQuery, ServiceResponse>
+    : IRequestHandler<GetProjectsByEmployerQuery, ServiceResponse<List<ProjectVM>?>>
 {
-    public async Task<ServiceResponse> Handle(GetProjectsByEmployerQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<List<ProjectVM>?>> Handle(GetProjectsByEmployerQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var projects = await projectQueries.GetByEmployer(cancellationToken);
 
-            return ServiceResponse.Ok("Projects retrieved", mapper.Map<List<ProjectVM>>(projects));
+            return ServiceResponse<List<ProjectVM>?>.Ok("Projects retrieved", mapper.Map<List<ProjectVM>>(projects));
         }
         catch (Exception exception)
         {
-            return ServiceResponse.InternalError(exception.Message);
+            return ServiceResponse<List<ProjectVM>?>.InternalError(exception.Message);
         }
     }
 }

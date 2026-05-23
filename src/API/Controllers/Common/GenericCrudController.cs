@@ -19,7 +19,7 @@ public abstract class GenericCrudController<TKey, TViewModel, TCreateViewModel, 
     protected readonly ISender Sender = sender;
 
     [HttpGet]
-    public virtual async Task<IActionResult> GetAll(CancellationToken ct)
+    public virtual async Task<ActionResult> GetAll(CancellationToken ct)
     {
         var query = new GetAll.Query<TViewModel>();
         var result = await Sender.Send(query, ct);
@@ -27,7 +27,7 @@ public abstract class GenericCrudController<TKey, TViewModel, TCreateViewModel, 
     }
 
     [HttpGet("paginated")]
-    public virtual async Task<IActionResult> GetAllPaginated([FromQuery] PagedVM pagedVm, CancellationToken ct)
+    public virtual async Task<ActionResult> GetAllPaginated([FromQuery] PagedVM pagedVm, CancellationToken ct)
     {
         var query = new GetAllPaginated.Query<TViewModel>(pagedVm);
         var result = await Sender.Send(query, ct);
@@ -35,7 +35,7 @@ public abstract class GenericCrudController<TKey, TViewModel, TCreateViewModel, 
     }
 
     [HttpGet("{id}")]
-    public virtual async Task<IActionResult> GetById(TKey id, CancellationToken ct)
+    public virtual async Task<ActionResult> GetById(TKey id, CancellationToken ct)
     {
         var query = new GetById.Query<TKey, TViewModel> { Id = id };
         var result = await Sender.Send(query, ct);
@@ -43,7 +43,7 @@ public abstract class GenericCrudController<TKey, TViewModel, TCreateViewModel, 
     }
 
     [HttpPost]
-    public virtual async Task<IActionResult> Create([FromBody] TCreateViewModel vm, CancellationToken ct)
+    public virtual async Task<ActionResult> Create([FromBody] TCreateViewModel vm, CancellationToken ct)
     {
         var command = new Create.Command<TCreateViewModel, TViewModel> { Model = vm };
         var result = await Sender.Send(command, ct);
@@ -51,7 +51,7 @@ public abstract class GenericCrudController<TKey, TViewModel, TCreateViewModel, 
     }
 
     [HttpPut("{id}")]
-    public virtual async Task<IActionResult> Update(TKey id, [FromBody] TUpdateViewModel vm, CancellationToken ct)
+    public virtual async Task<ActionResult> Update(TKey id, [FromBody] TUpdateViewModel vm, CancellationToken ct)
     {
         var command = new Update.Command<TUpdateViewModel, TKey, TViewModel> { Id = id, Model = vm };
         var result = await Sender.Send(command, ct);
@@ -59,7 +59,7 @@ public abstract class GenericCrudController<TKey, TViewModel, TCreateViewModel, 
     }
 
     [HttpDelete("{id}")]
-    public virtual async Task<IActionResult> Delete(TKey id, CancellationToken ct)
+    public virtual async Task<ActionResult> Delete(TKey id, CancellationToken ct)
     {
         var command = new Delete.Command<TViewModel, TKey> { Id = id };
         var result = await Sender.Send(command, ct);

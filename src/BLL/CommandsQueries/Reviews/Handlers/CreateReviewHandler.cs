@@ -18,20 +18,20 @@ public class CreateReviewHandler(
     IContractQueries contractQueries,
     IFreelancerQueries freelancerQueries,
     IReviewQueries reviewQueries)
-    : ICreateHandler<Review, CreateReviewVM>
+    : ICreateHandler<Review, CreateReviewVM, ReviewVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(Review entity, CreateReviewVM createModel,
+    public async Task<ServiceResponse<ReviewVM?>> HandleAsync(Review entity, CreateReviewVM createModel,
         CancellationToken cancellationToken)
     {
         var contract = await contractQueries.GetByIdAsync(createModel.ContractId, cancellationToken);
         if (contract is null)
         {
-            return ServiceResponse.NotFound($"Contract with Id {createModel.ContractId} not found");
+            return ServiceResponse<ReviewVM?>.NotFound($"Contract with Id {createModel.ContractId} not found");
         }
 
         if (contract.Status != ContractStatus.Completed)
         {
-            return ServiceResponse.GetResponse(
+            return ServiceResponse<ReviewVM?>.GetResponse(
                 "You can only review a contract that has been completed",
                 false, null, HttpStatusCode.BadRequest);
         }
@@ -44,7 +44,7 @@ public class CreateReviewHandler(
 
         if (contract.CreatedBy != reviewerId && contract.FreelancerId != freelancer?.Id)
         {
-            return ServiceResponse.Unauthorized("You are not authorized to review this contract");
+            return ServiceResponse<ReviewVM?>.Unauthorized("You are not authorized to review this contract");
         }
 
         // Determine the reviewed user ID
@@ -54,7 +54,7 @@ public class CreateReviewHandler(
             var contractFreelancer = await freelancerQueries.GetByIdAsync(contract.FreelancerId, cancellationToken);
             if (contractFreelancer is null)
             {
-                return ServiceResponse.NotFound("Freelancer not found");
+                return ServiceResponse<ReviewVM?>.NotFound("Freelancer not found");
             }
 
             entity.ReviewedUserId = contractFreelancer.CreatedBy;
@@ -68,7 +68,7 @@ public class CreateReviewHandler(
         if (await reviewQueries.GetByReviewerAndReviewedUser(reviewerId, entity.ReviewedUserId, contract.Id, cancellationToken) is
             not null)
         {
-            return ServiceResponse.GetResponse(
+            return ServiceResponse<ReviewVM?>.GetResponse(
                 "You have already reviewed this user",
                 false, null, HttpStatusCode.BadRequest);
         }
@@ -76,6 +76,6 @@ public class CreateReviewHandler(
         entity.ReviewerRoleId = reviewerRole;
         entity.ContractId = createModel.ContractId;
 
-        return ServiceResponse.Ok();
+        return ServiceResponse<ReviewVM?>.Ok();
     }
 }

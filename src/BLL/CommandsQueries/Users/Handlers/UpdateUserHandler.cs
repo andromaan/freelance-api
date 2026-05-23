@@ -6,16 +6,16 @@ using Domain.Models.Users;
 
 namespace BLL.CommandsQueries.Users.Handlers;
 
-public class UpdateUserHandler(ICountryQueries countryQueries) : IUpdateHandler<User, UpdateUserVM>
+public class UpdateUserHandler(ICountryQueries countryQueries) : IUpdateHandler<User, UpdateUserVM, UserVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(User existingEntity, UpdateUserVM updateModel,
+    public async Task<ServiceResponse<UserVM?>> HandleAsync(User existingEntity, UpdateUserVM updateModel,
         CancellationToken cancellationToken)
     {
         if (await countryQueries.GetByIdAsync(updateModel.CountryId, cancellationToken) == null)
         {
-            return ServiceResponse.NotFound($"Country with id {updateModel.CountryId} not found");
+            return ServiceResponse<UserVM?>.NotFound($"Country with id {updateModel.CountryId} not found");
         }
         
-        return ServiceResponse.Ok();
+        return ServiceResponse<UserVM?>.Ok();
     }
 }

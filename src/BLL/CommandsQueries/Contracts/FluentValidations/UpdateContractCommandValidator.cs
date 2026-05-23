@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace BLL.CommandsQueries.Contracts.FluentValidations;
 
-public class UpdateContractCommandValidator : AbstractValidator<Update.Command<UpdateContractVM, Guid>>
+public class UpdateContractCommandValidator : AbstractValidator<Update.Command<UpdateContractVM, Guid, ContractVM>>
 {
     public UpdateContractCommandValidator()
     {

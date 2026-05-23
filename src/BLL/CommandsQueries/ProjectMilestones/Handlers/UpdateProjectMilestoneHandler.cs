@@ -12,16 +12,16 @@ public class UpdateProjectMilestoneHandler(
     IProjectQueries projectQueries,
     IProjectMilestoneQueries milestoneQueries,
     IMapper mapper
-    ) : IUpdateHandler<ProjectMilestone, UpdateProjectMilestoneVM>
+    ) : IUpdateHandler<ProjectMilestone, UpdateProjectMilestoneVM, ProjectMilestoneVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(
+    public async Task<ServiceResponse<ProjectMilestoneVM?>> HandleAsync(
         ProjectMilestone existingEntity,
         UpdateProjectMilestoneVM updateModel, CancellationToken cancellationToken)
     {
         // Перевірка чи змінився amount
         if (existingEntity.Amount == updateModel.Amount)
         {
-            return ServiceResponse.Ok(); // Якщо amount не змінився, повертаємо null - це означає використовувати entity після маппінгу в Update.cs
+            return ServiceResponse<ProjectMilestoneVM?>.Ok(); // Якщо amount не змінився, повертаємо null - це означає використовувати entity після маппінгу в Update.cs
         }
 
         // Отримай проєкт
@@ -32,7 +32,7 @@ public class UpdateProjectMilestoneHandler(
             
         if (project == null)
         {
-            return ServiceResponse.NotFound(
+            return ServiceResponse<ProjectMilestoneVM?>.NotFound(
                 $"Project with ID {existingEntity.ProjectId} not found");
         }
 
@@ -49,7 +49,7 @@ public class UpdateProjectMilestoneHandler(
         // Перевір чи не перевищує бюджет
         if (totalAmount > project.Budget)
         {
-            return ServiceResponse.BadRequest(
+            return ServiceResponse<ProjectMilestoneVM?>.BadRequest(
                 $"The total amount ({totalAmount}) of milestones exceeds " +
                 $"the project's budged ({project.Budget})");
         }
@@ -57,6 +57,6 @@ public class UpdateProjectMilestoneHandler(
         mapper.Map(updateModel, existingEntity);
 
         // Валідація пройшла успішно, повертаємо null щоб використати entity після маппінгу в Update.cs
-        return ServiceResponse.Ok();
+        return ServiceResponse<ProjectMilestoneVM?>.Ok();
     }
 }

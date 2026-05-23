@@ -23,9 +23,9 @@ public class CreateBidHandler(
     IEmployerQueries employerQueries,
     INotificationService notificationService,
     IBidQueries bidQueries)
-    : ICreateHandler<Bid, CreateBidVM>
+    : ICreateHandler<Bid, CreateBidVM, BidVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(
+    public async Task<ServiceResponse<BidVM?>> HandleAsync(
         Bid entity,
         CreateBidVM createModel,
         CancellationToken cancellationToken)
@@ -35,7 +35,7 @@ public class CreateBidHandler(
 
         if (existingProject is null)
         {
-            return ServiceResponse.NotFound($"Project with Id {createModel.ProjectId} not found");
+            return ServiceResponse<BidVM?>.NotFound($"Project with Id {createModel.ProjectId} not found");
         }
 
         // Processing: Set FreelancerId from current user
@@ -44,12 +44,12 @@ public class CreateBidHandler(
 
         if (existingFreelancer is null)
         {
-            return ServiceResponse.NotFound("Freelancer not found for current user");
+            return ServiceResponse<BidVM?>.NotFound("Freelancer not found for current user");
         }
 
         if (existingProject.Budget < createModel.Amount)
         {
-            return ServiceResponse.BadRequest(
+            return ServiceResponse<BidVM?>.BadRequest(
                 $"Bid amount {createModel.Amount} exceeds project budget {existingProject.Budget}");
         }
 
@@ -58,7 +58,7 @@ public class CreateBidHandler(
         var bidsByProject = await bidQueries.GetByProjectIdAsync(createModel.ProjectId, cancellationToken);
         if (bidsByProject.Any(b => b.FreelancerId == entity.FreelancerId))
         {
-            return ServiceResponse.BadRequest("You have already placed a bid on this project");
+            return ServiceResponse<BidVM?>.BadRequest("You have already placed a bid on this project");
         }
 
         // Notify: Find employer (owner of the project) and send notification
@@ -74,7 +74,7 @@ public class CreateBidHandler(
         }
 
         // Return success with processed entity
-        return ServiceResponse.Ok();
+        return ServiceResponse<BidVM?>.Ok();
     }
 }
 

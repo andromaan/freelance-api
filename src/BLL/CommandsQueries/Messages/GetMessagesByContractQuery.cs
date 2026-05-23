@@ -7,7 +7,7 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Messages;
 
-public record GetMessagesByContractQuery : IRequest<ServiceResponse>
+public record GetMessagesByContractQuery : IRequest<ServiceResponse<List<MessageVM>?>>
 {
     public required Guid ContractId { get; set; }
 }
@@ -16,24 +16,24 @@ public class GetMessagesByContractQueryHandler(
     IMessageQueries messageQueries,
     IMapper mapper,
     IContractQueries contractQueries)
-    : IRequestHandler<GetMessagesByContractQuery, ServiceResponse>
+    : IRequestHandler<GetMessagesByContractQuery, ServiceResponse<List<MessageVM>?>>
 {
-    public async Task<ServiceResponse> Handle(GetMessagesByContractQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<List<MessageVM>?>> Handle(GetMessagesByContractQuery request, CancellationToken cancellationToken)
     {
         if (await contractQueries.GetByIdAsync(request.ContractId, cancellationToken) is null)
         {
-            return ServiceResponse.NotFound($"Contract with id {request.ContractId} not found");
+            return ServiceResponse<List<MessageVM>?>.NotFound($"Contract with id {request.ContractId} not found");
         }
-        
+
         try
         {
             var messages = await messageQueries.GetByContractAsync(request.ContractId, cancellationToken);
 
-            return ServiceResponse.Ok("Messages retrieved", mapper.Map<List<MessageVM>>(messages));
+            return ServiceResponse<List<MessageVM>?>.Ok("Messages retrieved", mapper.Map<List<MessageVM>>(messages));
         }
         catch (Exception exception)
         {
-            return ServiceResponse.InternalError(exception.Message);
+            return ServiceResponse<List<MessageVM>?>.InternalError(exception.Message);
         }
     }
 }

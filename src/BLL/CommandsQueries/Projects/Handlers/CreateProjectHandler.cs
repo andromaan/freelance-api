@@ -6,9 +6,9 @@ using Domain.Models.Projects;
 
 namespace BLL.CommandsQueries.Projects.Handlers;
 
-public class CreateProjectHandler(ICategoryQueries categoryQueries) : ICreateHandler<Project, CreateProjectVM>
+public class CreateProjectHandler(ICategoryQueries categoryQueries) : ICreateHandler<Project, CreateProjectVM, ProjectVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(Project entity, CreateProjectVM createModel, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<ProjectVM?>> HandleAsync(Project entity, CreateProjectVM createModel, CancellationToken cancellationToken)
     {
         var categoriesIds = createModel.CategoryIds.Distinct();
         
@@ -17,12 +17,12 @@ public class CreateProjectHandler(ICategoryQueries categoryQueries) : ICreateHan
             var existingCategory = await categoryQueries.GetByIdAsync(categId, cancellationToken);
             if (existingCategory == null)
             {
-                return ServiceResponse.NotFound($"Category with id {categId} not found");
+                return ServiceResponse<ProjectVM?>.NotFound($"Category with id {categId} not found");
             }
 
             entity.Categories.Add(existingCategory);
         }
         
-        return ServiceResponse.Ok();
+        return ServiceResponse<ProjectVM?>.Ok();
     }
 }

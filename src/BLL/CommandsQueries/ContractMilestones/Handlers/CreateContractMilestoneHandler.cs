@@ -13,9 +13,9 @@ public class CreateContractMilestoneHandler(
     IUserProvider userProvider,
     IContractQueries contractQueries,
     IContractMilestoneQueries milestoneQueries
-) : ICreateHandler<ContractMilestone, CreateContractMilestoneVM>
+) : ICreateHandler<ContractMilestone, CreateContractMilestoneVM, ContractMilestoneVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(ContractMilestone? entity,
+    public async Task<ServiceResponse<ContractMilestoneVM?>> HandleAsync(ContractMilestone? entity,
         CreateContractMilestoneVM createModel, CancellationToken cancellationToken)
     {
         var userRole = userProvider.GetUserRole();
@@ -25,12 +25,12 @@ public class CreateContractMilestoneHandler(
 
         if (existingContract is null)
         {
-            return ServiceResponse.NotFound($"Contract with Id {createModel.ContractId} not found");
+            return ServiceResponse<ContractMilestoneVM?>.NotFound($"Contract with Id {createModel.ContractId} not found");
         }
 
         if (existingContract.CreatedBy != userId && userRole != Settings.Roles.AdminRole)
         {
-            return ServiceResponse.Unauthorized("You are not authorized to create a milestone for this contract");
+            return ServiceResponse<ContractMilestoneVM?>.Unauthorized("You are not authorized to create a milestone for this contract");
         }
 
         var existingMilestones =
@@ -39,12 +39,12 @@ public class CreateContractMilestoneHandler(
         var totalMilestoneAmount = existingMilestones.Sum(x => x.Amount) + createModel.Amount;
         if (totalMilestoneAmount > existingContract.AgreedRate)
         {
-            return ServiceResponse.GetResponse(
+            return ServiceResponse<ContractMilestoneVM?>.GetResponse(
                 $"The total amount ({totalMilestoneAmount}) of milestones exceeds " +
                 $"the contract's agreed rate ({existingContract.AgreedRate})",
                 false, null, HttpStatusCode.BadRequest);
         }
 
-        return ServiceResponse.Ok(); // Валідація пройшла успішно
+        return ServiceResponse<ContractMilestoneVM?>.Ok(); // Валідація пройшла успішно
     }
 }

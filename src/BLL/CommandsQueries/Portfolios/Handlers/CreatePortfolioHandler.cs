@@ -10,9 +10,9 @@ namespace BLL.CommandsQueries.Portfolios.Handlers;
 public class CreatePortfolioHandler(
     IUserProvider userProvider,
     IFreelancerQueries freelancerQueries)
-    : ICreateHandler<Portfolio, CreatePortfolioVM>
+    : ICreateHandler<Portfolio, CreatePortfolioVM, PortfolioVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(Portfolio entity, CreatePortfolioVM createModel,
+    public async Task<ServiceResponse<PortfolioVM?>> HandleAsync(Portfolio entity, CreatePortfolioVM createModel,
         CancellationToken cancellationToken)
     {
         var userId = await userProvider.GetUserId();
@@ -21,6 +21,6 @@ public class CreatePortfolioHandler(
         
         entity.FreelancerId = freelancer!.Id;
         
-        return ServiceResponse.Ok();
+        return ServiceResponse<PortfolioVM?>.Ok();
     }
 }

@@ -22,7 +22,7 @@ public class UserController(ISender sender)
     : GenericCrudController<Guid, UserVM, CreateUserByAdminVM, UpdateUserByAdminVM>(sender)
 {
     [HttpGet("roles")]
-    public async Task<IActionResult> GetRoles(CancellationToken ct)
+    public async Task<ActionResult> GetRoles(CancellationToken ct)
     {
         var command = new GetAll.Query<RoleVM>();
         var result = await Sender.Send(command, ct);
@@ -30,7 +30,7 @@ public class UserController(ISender sender)
     }
     
     [HttpGet("get-myself")]
-    public async Task<IActionResult> GetMyself(CancellationToken ct)
+    public async Task<ActionResult> GetMyself(CancellationToken ct)
     {
         var command = new GetUserByTokenQuery();
         var result = await Sender.Send(command, ct);
@@ -38,7 +38,7 @@ public class UserController(ISender sender)
     }
 
     [HttpPatch("update-avatar")]
-    public async Task<IActionResult> UpdateAvatar(IFormFile file, CancellationToken ct)
+    public async Task<ActionResult> UpdateAvatar(IFormFile file, CancellationToken ct)
     {
         var command = new UpdateUserAvatarCommand(file);
         var result = await Sender.Send(command, ct);
@@ -46,7 +46,7 @@ public class UserController(ISender sender)
     }
     
     [HttpGet("proficiency-levels")]
-    public IActionResult GetProficiencyLevelsAsync()
+    public ActionResult GetProficiencyLevelsAsync()
     {
         var platforms = Enum.GetValues<ProficiencyLevel>()
             .Select(x => new { Name = x.ToString(), Value = (int)x })
@@ -56,7 +56,7 @@ public class UserController(ISender sender)
     }
 
     [HttpPost("languages")]
-    public async Task<IActionResult> CreateLanguage(CreateUserLanguageVM vm, CancellationToken ct)
+    public async Task<ActionResult> CreateLanguage(CreateUserLanguageVM vm, CancellationToken ct)
     {
         var command = new CreateUserLanguageCommand(vm);
         var result = await Sender.Send(command, ct);
@@ -64,7 +64,7 @@ public class UserController(ISender sender)
     }
     
     [HttpPut("languages")]
-    public async Task<IActionResult> UpdateLanguage(UpdateUserLanguageVM vm, CancellationToken ct)
+    public async Task<ActionResult> UpdateLanguage(UpdateUserLanguageVM vm, CancellationToken ct)
     {
         var command = new UpdateUserLanguageCommand(vm);
         var result = await Sender.Send(command, ct);
@@ -72,7 +72,7 @@ public class UserController(ISender sender)
     }
     
     [HttpDelete("languages/{languageId}")]
-    public async Task<IActionResult> DeleteLanguage(int languageId, CancellationToken ct)
+    public async Task<ActionResult> DeleteLanguage(int languageId, CancellationToken ct)
     {
         var command = new DeleteUserLanguageCommand(languageId);
         var result = await Sender.Send(command, ct);
@@ -80,7 +80,7 @@ public class UserController(ISender sender)
     }
 
     [Authorize(Roles = Settings.Roles.AdminRole)]
-    public override async Task<IActionResult> Create(CreateUserByAdminVM byAdminVm, CancellationToken ct)
+    public override async Task<ActionResult> Create(CreateUserByAdminVM byAdminVm, CancellationToken ct)
     {
         var command = new CreateUserByAdminCommand(byAdminVm);
         var result = await Sender.Send(command, ct);
@@ -88,18 +88,18 @@ public class UserController(ISender sender)
     }
 
     [Authorize(Roles = Settings.Roles.AdminRole)]
-    public override Task<IActionResult> Update(Guid id, UpdateUserByAdminVM byAdminVm, CancellationToken ct)
+    public override Task<ActionResult> Update(Guid id, UpdateUserByAdminVM byAdminVm, CancellationToken ct)
         => base.Update(id, byAdminVm, ct);
 
     [Authorize(Roles = Settings.Roles.AdminRole)]
-    public override Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    public override Task<ActionResult> Delete(Guid id, CancellationToken ct)
         => base.Delete(id, ct);
 
     [Authorize(Roles = Settings.Roles.AdminRole)]
-    public override Task<IActionResult> GetAll(CancellationToken ct)
+    public override Task<ActionResult> GetAll(CancellationToken ct)
         => base.GetAll(ct);
 
     [Authorize(Roles = Settings.Roles.AdminRole)]
-    public override Task<IActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+    public override Task<ActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
     => base.GetAllPaginated(pagedVm, ct);
 }

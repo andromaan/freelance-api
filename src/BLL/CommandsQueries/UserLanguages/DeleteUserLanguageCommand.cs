@@ -6,20 +6,20 @@ using MediatR;
 
 namespace BLL.CommandsQueries.UserLanguages;
 
-public record DeleteUserLanguageCommand(int LanguageId) : IRequest<ServiceResponse>;
+public record DeleteUserLanguageCommand(int LanguageId) : IRequest<ServiceResponse<string?>>;
 
 public class DeleteUserLanguageCommandHandler(
     IUserProvider userProvider,
     IUserLanguageRepository userLanguageRepository,
     IUserLanguageQueries userLanguageQueries,
-    ILanguageQueries languageQueries) : IRequestHandler<DeleteUserLanguageCommand, ServiceResponse>
+    ILanguageQueries languageQueries) : IRequestHandler<DeleteUserLanguageCommand, ServiceResponse<string?>>
 {
-    public async Task<ServiceResponse> Handle(DeleteUserLanguageCommand request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<string?>> Handle(DeleteUserLanguageCommand request, CancellationToken cancellationToken)
     {
         var language = await languageQueries.GetByIdAsync(request.LanguageId, cancellationToken);
         if (language == null)
         {
-            return ServiceResponse.NotFound("Language not found");
+            return ServiceResponse<string?>.NotFound("Language not found");
         }
 
         try
@@ -29,17 +29,17 @@ public class DeleteUserLanguageCommandHandler(
 
             if (existingUserLanguage == null)
             {
-                return ServiceResponse.NotFound("User language not found");
+                return ServiceResponse<string?>.NotFound("User language not found");
             }
 
             await userLanguageRepository.DeleteAsync(existingUserLanguage.LanguageId, existingUserLanguage.UserId,
                 cancellationToken);
 
-            return ServiceResponse.Ok("User language deleted");
+            return ServiceResponse<string?>.Ok("User language deleted");
         }
         catch (Exception exception)
         {
-            return ServiceResponse.InternalError(exception.Message);
+            return ServiceResponse<string?>.InternalError(exception.Message);
         }
     }
 }

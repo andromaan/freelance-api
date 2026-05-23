@@ -16,7 +16,7 @@ namespace API.Controllers;
 public class NotificationController(ISender sender) : BaseController
 {
     [HttpGet("is-not-read")]
-    public async Task<IActionResult> GetAll(CancellationToken ct)
+    public async Task<ActionResult> GetAll(CancellationToken ct)
     {
         var query = new GetAll.Query<NotificationVM>();
         var result = await sender.Send(query, ct);
@@ -24,7 +24,7 @@ public class NotificationController(ISender sender) : BaseController
     }
 
     [HttpGet("paginated")]
-    public async Task<IActionResult> GetAllPaginated([FromQuery] PagedVM pagedVm, CancellationToken ct)
+    public async Task<ActionResult> GetAllPaginated([FromQuery] PagedVM pagedVm, CancellationToken ct)
     {
         var query = new GetAllPaginated.Query<NotificationVM>(pagedVm);
         var result = await sender.Send(query, ct);
@@ -32,7 +32,7 @@ public class NotificationController(ISender sender) : BaseController
     }
 
     [HttpGet("type-employer-enums")]
-    public IActionResult GetEmployerTypesEnumsAsync()
+    public ActionResult GetEmployerTypesEnumsAsync()
     {
         var platforms = Enum.GetValues<NotificationTypeEmployer>()
             .Select(x => new { Name = x.ToString(), Value = (int)x })
@@ -42,7 +42,7 @@ public class NotificationController(ISender sender) : BaseController
     }
 
     [HttpGet("type-freelancer-enums")]
-    public IActionResult GetFreelancerTypesEnumsAsync()
+    public ActionResult GetFreelancerTypesEnumsAsync()
     {
         var platforms = Enum.GetValues<NotificationTypeFreelancer>()
             .Select(x => new { Name = x.ToString(), Value = (int)x })
@@ -52,7 +52,7 @@ public class NotificationController(ISender sender) : BaseController
     }
     
     [HttpGet("filtered")]
-    public async Task<IActionResult> GetAllFiltered([FromQuery] PagedVM pagedVm,
+    public async Task<ActionResult> GetAllFiltered([FromQuery] PagedVM pagedVm,
         [FromQuery] FilterNotificationVM filterVm, CancellationToken ct)
     {
         var query = new GetAllFilteredPaginated.Query<FilterNotificationVM, NotificationVM>(pagedVm, filterVm);
@@ -61,7 +61,7 @@ public class NotificationController(ISender sender) : BaseController
     }
 
     [HttpPatch("{id:guid}/toggle-read")]
-    public async Task<IActionResult> ToggleRead(Guid id, CancellationToken ct)
+    public async Task<ActionResult> ToggleRead(Guid id, CancellationToken ct)
     {
         var command = new MarkNotificationAsRead.Command(id);
         var result = await sender.Send(command, ct);
@@ -69,7 +69,7 @@ public class NotificationController(ISender sender) : BaseController
     }
 
     [HttpPatch("read-all")]
-    public async Task<IActionResult> MarkAllRead(CancellationToken ct)
+    public async Task<ActionResult> MarkAllRead(CancellationToken ct)
     {
         var command = new MarkAllNotificationsAsRead.Command();
         var result = await sender.Send(command, ct);

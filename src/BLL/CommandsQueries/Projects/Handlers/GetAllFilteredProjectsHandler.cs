@@ -1,15 +1,16 @@
 using BLL.Common.Handlers;
 using BLL.Common.Interfaces.Repositories.Categories;
 using BLL.Services;
+using BLL.ViewModels;
 using BLL.ViewModels.Project;
 using Domain.Models.Projects;
 
 namespace BLL.CommandsQueries.Projects.Handlers;
 
 public class GetAllFilteredProjectsHandler(ICategoryQueries categoryQueries)
-    : IGetAllFilteredHandler<Project, FilterProjectVM>
+    : IGetAllFilteredHandler<Project, FilterProjectVM, ProjectVM>
 {
-    public async Task<(ServiceResponse response, List<Project>? filteredEntities)> HandleAsync(
+    public async Task<(ServiceResponse<PaginatedItemsVM<ProjectVM>?> response, List<Project>? filteredEntities)> HandleAsync(
         List<Project> entities, FilterProjectVM filter,
         CancellationToken cancellationToken)
     {
@@ -52,13 +53,13 @@ public class GetAllFilteredProjectsHandler(ICategoryQueries categoryQueries)
                 var category = await categoryQueries.GetByIdAsync(filterCategoryId, cancellationToken);
                 if (category == null)
                 {
-                    return (ServiceResponse.NotFound($"Category with id {filterCategoryId} not found"), null);
+                    return (ServiceResponse<PaginatedItemsVM<ProjectVM>?>.NotFound($"Category with id {filterCategoryId} not found"), null);
                 }
 
                 filteredEntities = filteredEntities.Where(e => e.Categories.Any(c => c.Id == filterCategoryId)).ToList();
             }
         }
 
-        return (ServiceResponse.Ok(), filteredEntities);
+        return (ServiceResponse<PaginatedItemsVM<ProjectVM>?>.Ok(), filteredEntities);
     }
 }

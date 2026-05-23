@@ -8,6 +8,7 @@ using BLL.Models;
 using BLL.Services;
 using BLL.Services.JwtService;
 using BLL.Services.PasswordHasher;
+using BLL.ViewModels;
 using BLL.ViewModels.Auth;
 using Domain.Models.Employers;
 using Domain.Models.Freelance;
@@ -19,7 +20,7 @@ using Stripe;
 
 namespace BLL.CommandsQueries.Auth;
 
-public record SignUpCommand(SignUpVM Vm) : IRequest<ServiceResponse>;
+public record SignUpCommand(SignUpVM Vm) : IRequest<ServiceResponse<JwtVM?>>;
 
 public class SignUpCommandHandler(
     IUserRepository userRepository,
@@ -32,21 +33,21 @@ public class SignUpCommandHandler(
     IUserWalletRepository userWalletRepository,
     IRoleQueries roleQueries,
     IOptions<StripeModel> stripeModel,
-    CustomerService customerService) : IRequestHandler<SignUpCommand, ServiceResponse>
+    CustomerService customerService) : IRequestHandler<SignUpCommand, ServiceResponse<JwtVM?>>
 {
     private readonly StripeModel _stripeModel = stripeModel.Value;
 
-    public async Task<ServiceResponse> Handle(SignUpCommand request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<JwtVM?>> Handle(SignUpCommand request, CancellationToken cancellationToken)
     {
         var vm = request.Vm;
         if (!await userQueries.IsUniqueEmailAsync(vm.Email, cancellationToken))
         {
-            return ServiceResponse.BadRequest($"{vm.Email} already exists");
+            return ServiceResponse<JwtVM?>.BadRequest($"{vm.Email} already exists");
         }
 
         if (vm is not { UserRole: Settings.Roles.EmployerRole or Settings.Roles.FreelancerRole })
         {
-            return ServiceResponse.BadRequest(
+            return ServiceResponse<JwtVM?>.BadRequest(
                 $"Invalid user role, must be '{Settings.Roles.EmployerRole}' or '{Settings.Roles.FreelancerRole}'");
         }
 
@@ -56,7 +57,7 @@ public class SignUpCommandHandler(
         var roleEntity = await roleQueries.GetByNameAsync(userRole, cancellationToken);
         if (roleEntity is null)
         {
-            return ServiceResponse.InternalError("User role not found in database");
+            return ServiceResponse<JwtVM?>.InternalError("User role not found in database");
         }
 
         var customer = await CreateStripeCustomerAsync(vm.Email, vm.DisplayName, cancellationToken);
@@ -110,12 +111,12 @@ public class SignUpCommandHandler(
         }
         catch (Exception e)
         {
-            return ServiceResponse.InternalError(e.Message, e.InnerException?.Message);
+            return ServiceResponse<JwtVM?>.InternalError(e.Message);
         }
 
         var tokens = await jwtTokenService.GenerateTokensAsync(user, cancellationToken);
 
-        return ServiceResponse.Ok($"User {vm.Email} successfully created", tokens);
+        return ServiceResponse<JwtVM?>.Ok($"User {vm.Email} successfully created", tokens);
     }
 
     private async Task<Customer> CreateStripeCustomerAsync(string email, string? displayName,

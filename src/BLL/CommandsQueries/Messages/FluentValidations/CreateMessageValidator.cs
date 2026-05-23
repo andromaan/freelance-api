@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace BLL.CommandsQueries.Messages.FluentValidations;
 
-public class CreateMessageValidator : AbstractValidator<Create.Command<CreateMessageVM>>
+public class CreateMessageValidator : AbstractValidator<Create.Command<CreateMessageVM, MessageVM>>
 {
     public CreateMessageValidator()
     {

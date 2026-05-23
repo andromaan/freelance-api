@@ -17,7 +17,7 @@ public class MessageController(ISender sender)
     : GenericCrudController<Guid, MessageVM, CreateMessageVM, UpdateMessageVM>(sender)
 {
     [HttpPost("without-contract")]
-    public async Task<IActionResult> CreateWithoutContract(CreateMessageWithoutContractVM vm, CancellationToken ct)
+    public async Task<ActionResult> CreateWithoutContract(CreateMessageWithoutContractVM vm, CancellationToken ct)
     {
         var command = new Create.Command<CreateMessageWithoutContractVM, MessageVM> { Model = vm };
         var result = await Sender.Send(command, ct);
@@ -25,7 +25,7 @@ public class MessageController(ISender sender)
     }
     
     [HttpGet("by-user")]
-    public async Task<IActionResult> GetProjectsByEmployer(CancellationToken ct)
+    public async Task<ActionResult> GetProjectsByEmployer(CancellationToken ct)
     {
         var query = new GetMessagesByUserQuery();
         var result = await Sender.Send(query, ct);
@@ -33,7 +33,7 @@ public class MessageController(ISender sender)
     }
     
     [HttpGet("by-contract/{contractId}")]
-    public async Task<IActionResult> GetProjectsByEmployer(Guid contractId, CancellationToken ct)
+    public async Task<ActionResult> GetProjectsByEmployer(Guid contractId, CancellationToken ct)
     {
         var query = new GetMessagesByContractQuery() { ContractId = contractId };
         var result = await Sender.Send(query, ct);
@@ -41,10 +41,10 @@ public class MessageController(ISender sender)
     }
     
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<IActionResult> GetAll(CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound());
+    public override Task<ActionResult> GetAll(CancellationToken ct)
+        => Task.FromResult<ActionResult>(NotFound());
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<IActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound());
+    public override Task<ActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+        => Task.FromResult<ActionResult>(NotFound());
 }

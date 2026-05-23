@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace BLL.CommandsQueries.Portfolios.FluentValidators;
 
-public class CreatePortfolioValidator : AbstractValidator<Create.Command<CreatePortfolioVM>>
+public class CreatePortfolioValidator : AbstractValidator<Create.Command<CreatePortfolioVM, PortfolioVM>>
 {
     public CreatePortfolioValidator()
     {

@@ -13,9 +13,9 @@ public class CreateProjectMilestoneHandler(
     IUserProvider userProvider,
     IProjectQueries projectQueries,
     IProjectMilestoneQueries milestoneQueries
-) : ICreateHandler<ProjectMilestone, CreateProjectMilestoneVM>
+) : ICreateHandler<ProjectMilestone, CreateProjectMilestoneVM, ProjectMilestoneVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(ProjectMilestone? entity,
+    public async Task<ServiceResponse<ProjectMilestoneVM?>> HandleAsync(ProjectMilestone? entity,
         CreateProjectMilestoneVM createModel, CancellationToken cancellationToken)
     {
         var userRole = userProvider.GetUserRole();
@@ -25,12 +25,12 @@ public class CreateProjectMilestoneHandler(
 
         if (existingProject is null)
         {
-            return ServiceResponse.NotFound($"Project with Id {createModel.ProjectId} not found");
+            return ServiceResponse<ProjectMilestoneVM?>.NotFound($"Project with Id {createModel.ProjectId} not found");
         }
 
         if (existingProject.CreatedBy != userId && userRole != Settings.Roles.AdminRole)
         {
-            return ServiceResponse.Unauthorized("You are not authorized to create a milestone for this project");
+            return ServiceResponse<ProjectMilestoneVM?>.Unauthorized("You are not authorized to create a milestone for this project");
         }
 
         var existingMilestones =
@@ -39,12 +39,12 @@ public class CreateProjectMilestoneHandler(
         var totalMilestoneAmount = existingMilestones.Sum(x => x.Amount) + createModel.Amount;
         if (totalMilestoneAmount > existingProject.Budget)
         {
-            return ServiceResponse.GetResponse(
+            return ServiceResponse<ProjectMilestoneVM?>.GetResponse(
                 $"The total amount ({totalMilestoneAmount}) of milestones exceeds " +
                 $"the project's budged ({existingProject.Budget})",
                 false, null, HttpStatusCode.BadRequest);
         }
 
-        return ServiceResponse.Ok(); // Валідація пройшла успішно
+        return ServiceResponse<ProjectMilestoneVM?>.Ok(); // Валідація пройшла успішно
     }
 }

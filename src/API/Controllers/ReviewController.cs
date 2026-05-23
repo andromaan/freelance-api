@@ -17,7 +17,7 @@ public class ReviewController(ISender sender)
     : GenericCrudController<Guid, ReviewVM, CreateReviewVM, UpdateReviewVM>(sender)
 {
     [HttpGet("by-reviewed-user/{reviewedUserEmail}")]
-    public async Task<IActionResult> GetByGetReviewedUser(string reviewedUserEmail, CancellationToken ct)
+    public async Task<ActionResult> GetByGetReviewedUser(string reviewedUserEmail, CancellationToken ct)
     {
         var query = new GetByReviewedUserQuery { ReviewedUserEmail = reviewedUserEmail };
         var result = await Sender.Send(query, ct);
@@ -25,7 +25,7 @@ public class ReviewController(ISender sender)
     }
 
     [HttpGet("average-rating/{reviewedUserEmail}")]
-    public async Task<IActionResult> GetAverageRating(string reviewedUserEmail, CancellationToken ct)
+    public async Task<ActionResult> GetAverageRating(string reviewedUserEmail, CancellationToken ct)
     {
         var query = new GetAverageRatingQuery { ReviewedUserEmail = reviewedUserEmail };
         var result = await Sender.Send(query, ct);
@@ -33,7 +33,7 @@ public class ReviewController(ISender sender)
     }
     
     [HttpGet("by-user")]
-    public async Task<IActionResult> GetByGetReviewer(CancellationToken ct)
+    public async Task<ActionResult> GetByGetReviewer(CancellationToken ct)
     {
         var query = new GetByReviewerQuery();
         var result = await Sender.Send(query, ct);
@@ -41,6 +41,6 @@ public class ReviewController(ISender sender)
     }
     
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<IActionResult> GetAll(CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound());
+    public override Task<ActionResult> GetAll(CancellationToken ct)
+        => Task.FromResult<ActionResult>(NotFound());
 }

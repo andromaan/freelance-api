@@ -17,22 +17,22 @@ namespace API.Controllers;
 public class FreelancerController(ISender sender) : BaseController
 {
     [HttpGet]
-    public virtual async Task<IActionResult> GetByUser(CancellationToken ct)
+    public virtual async Task<ActionResult> GetByUser(CancellationToken ct)
         => GetResult(await sender.Send(new GetFreelancerByUserQuery(), ct));
     
     [HttpGet("{id:guid}")]
-    public virtual async Task<IActionResult> GetByUser(Guid id, CancellationToken ct)
+    public virtual async Task<ActionResult> GetByUser(Guid id, CancellationToken ct)
         => GetResult(await sender.Send(new GetFreelancerByIdQuery(id), ct));
     
     [HttpGet("{email}")]
-    public virtual async Task<IActionResult> GetByUserEmail(string email, CancellationToken ct)
+    public virtual async Task<ActionResult> GetByUserEmail(string email, CancellationToken ct)
         => GetResult(await sender.Send(new GetFreelancerByEmailQuery(email), ct));
 
     [HttpPut]
-    public virtual async Task<IActionResult> Update(UpdateFreelancerVM vm, CancellationToken ct)
+    public virtual async Task<ActionResult> Update(UpdateFreelancerVM vm, CancellationToken ct)
         => GetResult(await sender.Send(new UpdateByUser.Command<UpdateFreelancerVM, FreelancerVM> { Model = vm }, ct));
 
     [HttpPut("skills")]
-    public virtual async Task<IActionResult> UpdateSkills(UpdateFreelancerSkillsVM vm, CancellationToken ct)
+    public virtual async Task<ActionResult> UpdateSkills(UpdateFreelancerSkillsVM vm, CancellationToken ct)
         => GetResult(await sender.Send(new UpdateByUser.Command<UpdateFreelancerSkillsVM, FreelancerVM> { Model = vm }, ct));
 }

@@ -23,9 +23,9 @@ public class CreateQuoteHandler(
     IQuoteQueries quoteQueries,
     INotificationService notificationService,
     IEmployerQueries employerQueries)
-    : ICreateHandler<Quote, CreateQuoteVM>
+    : ICreateHandler<Quote, CreateQuoteVM, QuoteVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(
+    public async Task<ServiceResponse<QuoteVM?>> HandleAsync(
         Quote entity,
         CreateQuoteVM createModel,
         CancellationToken cancellationToken)
@@ -35,7 +35,7 @@ public class CreateQuoteHandler(
 
         if (existingProject is null)
         {
-            return ServiceResponse.NotFound($"Project with Id {createModel.ProjectId} not found");
+            return ServiceResponse<QuoteVM?>.NotFound($"Project with Id {createModel.ProjectId} not found");
         }
 
         // Processing: Set FreelancerId from current user
@@ -44,7 +44,7 @@ public class CreateQuoteHandler(
 
         if (existingFreelancer is null)
         {
-            return ServiceResponse.NotFound("Freelancer not found for current user");
+            return ServiceResponse<QuoteVM?>.NotFound("Freelancer not found for current user");
         }
         
         entity.FreelancerId = existingFreelancer.Id;
@@ -52,12 +52,12 @@ public class CreateQuoteHandler(
         var quotesByProject = await quoteQueries.GetByProjectIdAsync(createModel.ProjectId, cancellationToken);
         if (quotesByProject.Any(b => b.FreelancerId == entity.FreelancerId))
         {
-            return ServiceResponse.BadRequest("You have already placed a quote on this project");
+            return ServiceResponse<QuoteVM?>.BadRequest("You have already placed a quote on this project");
         }
 
         if (existingProject.Budget < createModel.Amount)
         {
-            return ServiceResponse.BadRequest(
+            return ServiceResponse<QuoteVM?>.BadRequest(
                 $"Quote amount {createModel.Amount} exceeds project budget {existingProject.Budget}");
         }
         
@@ -74,6 +74,6 @@ public class CreateQuoteHandler(
         }
 
         // Return success with processed entity
-        return ServiceResponse.Ok();
+        return ServiceResponse<QuoteVM?>.Ok();
     }
 }

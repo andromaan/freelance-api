@@ -12,9 +12,9 @@ public class UpdateUserByAdminHandler(
     IPasswordHasher passwordHasher,
     IUserQueries userQueries,
     ICountryQueries countryQueries)
-    : IUpdateHandler<User, UpdateUserByAdminVM>
+    : IUpdateHandler<User, UpdateUserByAdminVM, UserVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(User existingEntity, UpdateUserByAdminVM updateModel,
+    public async Task<ServiceResponse<UserVM?>> HandleAsync(User existingEntity, UpdateUserByAdminVM updateModel,
         CancellationToken cancellationToken)
     {
         if (updateModel.Email != null)
@@ -22,7 +22,7 @@ public class UpdateUserByAdminHandler(
             var emailExists = await userQueries.GetByEmailAsync(updateModel.Email, cancellationToken);
             if (emailExists != null && emailExists.Id != existingEntity.Id)
             {
-                return ServiceResponse.BadRequest("Email is already in use.");
+                return ServiceResponse<UserVM?>.BadRequest("Email is already in use.");
             }
 
             existingEntity.Email = updateModel.Email;
@@ -42,12 +42,12 @@ public class UpdateUserByAdminHandler(
         {
             if (await countryQueries.GetByIdAsync((int)updateModel.CountryId, cancellationToken) == null)
             {
-                return ServiceResponse.NotFound($"Country with id {updateModel.CountryId} not found");
+                return ServiceResponse<UserVM?>.NotFound($"Country with id {updateModel.CountryId} not found");
             }
 
             existingEntity.CountryId = updateModel.CountryId;
         }
 
-        return ServiceResponse.Ok();
+        return ServiceResponse<UserVM?>.Ok();
     }
 }

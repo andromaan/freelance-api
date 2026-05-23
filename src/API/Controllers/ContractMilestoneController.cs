@@ -20,7 +20,7 @@ public class ContractMilestoneController(ISender sender)
 {
     [AllowAnonymous]
     [HttpGet("by-contract/{contractId}")]
-    public async Task<IActionResult> GetByContractId(Guid contractId, CancellationToken ct)
+    public async Task<ActionResult> GetByContractId(Guid contractId, CancellationToken ct)
     {
         var query = new GetContractMilestonesByContractIdQuery { ContractId = contractId };
         var result = await Sender.Send(query, ct);
@@ -28,7 +28,7 @@ public class ContractMilestoneController(ISender sender)
     }
     
     [HttpGet("milestone-status-enums")]
-    public IActionResult GetPlatformsAsync()
+    public ActionResult GetPlatformsAsync()
     {
         var platforms = Enum.GetValues<ContractMilestoneStatus>()
             .Select(x => new { Name = x.ToString(), Value = (int)x })
@@ -38,7 +38,7 @@ public class ContractMilestoneController(ISender sender)
     }
     
     [HttpGet("status-freelancer-enums")]
-    public IActionResult GetFreelancerStatusEnumsAsync()
+    public ActionResult GetFreelancerStatusEnumsAsync()
     {
         var platforms = Enum.GetValues<ContractMilestoneFreelancerStatus>()
             .Select(x => new { Name = x.ToString(), Value = (int)x })
@@ -49,7 +49,7 @@ public class ContractMilestoneController(ISender sender)
     
     [Authorize(Roles = Settings.Roles.FreelancerRole)]
     [HttpPut("status/{id:guid}/freelancer")]
-    public async Task<IActionResult> UpdateContractMilestoneStatusForFreelancer(
+    public async Task<ActionResult> UpdateContractMilestoneStatusForFreelancer(
         Guid id,
         [FromBody] UpdContractMilestoneStatusFreelancerVM vm,
         CancellationToken ct)
@@ -64,7 +64,7 @@ public class ContractMilestoneController(ISender sender)
     }
     
     [HttpGet("status-employer-enums")]
-    public IActionResult GetEmployerStatusEnumsAsync()
+    public ActionResult GetEmployerStatusEnumsAsync()
     {
         var platforms = Enum.GetValues<ContractMilestoneEmployerStatus>()
             .Select(x => new { Name = x.ToString(), Value = (int)x })
@@ -75,7 +75,7 @@ public class ContractMilestoneController(ISender sender)
     
     [Authorize(Roles = Settings.Roles.EmployerRole)]
     [HttpPut("status/{id:guid}/employer")]
-    public async Task<IActionResult> UpdateContractMilestoneStatusForEmployer(
+    public async Task<ActionResult> UpdateContractMilestoneStatusForEmployer(
         Guid id,
         [FromBody] UpdContractMilestoneStatusEmployerVM vm,
         CancellationToken ct)
@@ -91,7 +91,7 @@ public class ContractMilestoneController(ISender sender)
     
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
     [HttpGet("status-moderator-enums")]
-    public IActionResult GetModeratorStatusEnumsAsync()
+    public ActionResult GetModeratorStatusEnumsAsync()
     {
         var platforms = Enum.GetValues<ContractMilestoneStatus>()
             .Select(x => new { Name = x.ToString(), Value = (int)x })
@@ -102,7 +102,7 @@ public class ContractMilestoneController(ISender sender)
     
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
     [HttpPut("status/{id:guid}/moderator")]
-    public async Task<IActionResult> UpdateContractMilestoneStatusForModerator(
+    public async Task<ActionResult> UpdateContractMilestoneStatusForModerator(
         Guid id,
         [FromBody] UpdContractMilestoneStatusModeratorVM vm,
         CancellationToken ct)
@@ -117,13 +117,13 @@ public class ContractMilestoneController(ISender sender)
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<IActionResult> GetAll(CancellationToken ct)
+    public override Task<ActionResult> GetAll(CancellationToken ct)
     {
         throw new NotImplementedException();
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<IActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+    public override Task<ActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
     {
         throw new NotImplementedException();
     }

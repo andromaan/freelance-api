@@ -17,14 +17,14 @@ public class CountryController(ISender sender)
     : GenericCrudController<int, CountryVM, CreateCountryVM, UpdateCountryVM>(sender)
 {
     [AllowAnonymous]
-    public override async Task<IActionResult> GetAll(CancellationToken ct)
+    public override async Task<ActionResult> GetAll(CancellationToken ct)
         => await base.GetAll(ct);
 
     [AllowAnonymous]
-    public override async Task<IActionResult> GetById(int id, CancellationToken ct)
+    public override async Task<ActionResult> GetById(int id, CancellationToken ct)
         => await base.GetById(id, ct);
 
     [AllowAnonymous]
-    public override async Task<IActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+    public override async Task<ActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
         => await base.GetAllPaginated(pagedVm, ct);
 }
