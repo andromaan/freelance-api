@@ -49,27 +49,21 @@ public class UpdateBidInterestingCommandHandler(
 
         existingEntity.IsInteresting = request.IsInteresting;
 
-        if (request.IsInteresting)
-        {
-            await notificationService.SendAsync(
-                message: $"Your bid for project \"{project.Title}\" is interesting to employer.",
-                type: NotificationType.InterestedInYourBid,
-                userId: existingEntity.CreatedBy,
-                cancellationToken: cancellationToken);
-        }
-        else
-        {
-            await notificationService.SendAsync(
-                message: $"Your bid for project \"{project.Title}\" is NOT interesting to employer.",
-                type: NotificationType.NotInterestedInYourBid,
-                userId: existingEntity.CreatedBy,
-                cancellationToken: cancellationToken);
-        }
+        await notificationService.SendAsync(
+            message: request.IsInteresting
+                ? $"Your bid for project \"{project.Title}\" is interesting to employer."
+                : $"Your bid for project \"{project.Title}\" is NOT interesting to employer.",
+            type: request.IsInteresting
+                ? NotificationType.InterestedInYourBid
+                : NotificationType.NotInterestedInYourBid,
+            userId: existingEntity.CreatedBy,
+            cancellationToken: cancellationToken,
+            linkAddress: "/profile/my-bids");
 
         try
         {
             await bidRepository.UpdateAsync(existingEntity, cancellationToken);
-            return ServiceResponse.Ok("Bid interesting status updated", 
+            return ServiceResponse.Ok("Bid interesting status updated",
                 mapper.Map<BidVM>(existingEntity));
         }
         catch (Exception e)

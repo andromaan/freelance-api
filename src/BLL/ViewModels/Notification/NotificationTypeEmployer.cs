@@ -9,5 +9,6 @@ public enum NotificationTypeEmployer
     DisputeOpened = NotificationType.DisputeOpened,
     ReviewLeft = NotificationType.ReviewLeft,
     SystemAnnouncement = NotificationType.SystemAnnouncement,
-    ProjectDeadlineReminder = NotificationType.ProjectDeadlineReminder
+    ProjectDeadlineReminder = NotificationType.ProjectDeadlineReminder,
+    NewQuoteReceived = NotificationType.NewQuoteReceived,
 }

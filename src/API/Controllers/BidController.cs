@@ -25,7 +25,17 @@ public class BidController(ISender sender)
         var result = await Sender.Send(query, ct);
         return GetResult(result);
     }
-
+    
+    [Authorize(Roles = Settings.Roles.FreelancerRole)]
+    [HttpGet("by-freelancer")]
+    public async Task<IActionResult> GetByFreelancer(CancellationToken ct)
+    {
+        var query = new GetBidsByFreelancerQuery();
+        var result = await Sender.Send(query, ct);
+        return GetResult(result);
+    }
+    
+    
     [Authorize(Policy = Settings.Roles.AdminOrEmployer)]
     [HttpPatch("is-interesting/{id}")]
     public async Task<IActionResult> UpdateIsInteresting(Guid id, bool isInteresting, CancellationToken ct)

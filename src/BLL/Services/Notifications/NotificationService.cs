@@ -1,5 +1,7 @@
+using AutoMapper;
 using BLL.Common.Interfaces.Repositories.Notifications;
 using BLL.Hubs;
+using BLL.ViewModels.Notification;
 using Domain.Models.Notifications;
 using Microsoft.AspNetCore.SignalR;
 
@@ -7,7 +9,8 @@ namespace BLL.Services.Notifications;
 
 public class NotificationService(
     INotificationRepository notificationRepository,
-    IHubContext<NotificationHub> hubContext)
+    IHubContext<NotificationHub> hubContext,
+    IMapper mapper)
     : INotificationService
 {
     public async Task SendAsync(
@@ -35,12 +38,12 @@ public class NotificationService(
         if (userId is null)
         {
             await hubContext.Clients.All
-                .SendAsync("ReceiveNotification", notification, cancellationToken);
+                .SendAsync("ReceiveNotification", mapper.Map<NotificationVM>(notification), cancellationToken);
         }
         else
         {
             await hubContext.Clients.User(userId.ToString()!)
-                .SendAsync("ReceiveNotification", notification, cancellationToken);
+                .SendAsync("ReceiveNotification", mapper.Map<NotificationVM>(notification), cancellationToken);
         }
     }
 }

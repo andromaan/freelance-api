@@ -1,4 +1,5 @@
 using API.Controllers.Common;
+using BLL;
 using BLL.CommandsQueries.Quotes;
 using BLL.ViewModels;
 using BLL.ViewModels.Quote;
@@ -19,6 +20,15 @@ public class QuoteController(ISender sender)
     public async Task<IActionResult> GetByProjectId(Guid projectId, CancellationToken ct)
     {
         var query = new GetQuotesByProjectIdQuery { ProjectId = projectId };
+        var result = await Sender.Send(query, ct);
+        return GetResult(result);
+    }
+    
+    [Authorize(Roles = Settings.Roles.FreelancerRole)]
+    [HttpGet("by-freelancer")]
+    public async Task<IActionResult> GetByFreelancer(CancellationToken ct)
+    {
+        var query = new GetQuotesByFreelancerQuery();
         var result = await Sender.Send(query, ct);
         return GetResult(result);
     }

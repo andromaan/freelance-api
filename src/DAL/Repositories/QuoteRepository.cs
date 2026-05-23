@@ -13,9 +13,18 @@ public class QuoteRepository(AppDbContext context, IUserProvider provider)
     
     public async Task<IEnumerable<Quote>> GetByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
-        return await _context.Set<Quote>()
+        return await _context.Quotes
             .AsNoTracking()
             .Where(x => x.ProjectId == projectId)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Quote>> GetByFreelancerIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Quotes
+            .AsNoTracking()
+            .Where(x => x.CreatedBy == userId)
+            .OrderByDescending(x => x.ModifiedAt)
             .ToListAsync(cancellationToken);
     }
 }

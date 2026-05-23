@@ -22,7 +22,7 @@ public static class BogusDataSeeder
             return; // Already seeded
         }
 
-        var faker = new Faker("en");
+        var faker = new Faker(); // "en"
         var passwordHasher = new PasswordHasher();
         var defaultPasswordHash = passwordHasher.HashPassword("password123");
         var adminId = Guid.Parse(Settings.Roles.AdminId);

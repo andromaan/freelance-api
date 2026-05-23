@@ -28,4 +28,5 @@ public enum NotificationType
     ProjectDeadlineReminder, // Нагадування про дедлайн проекту
     ProposalAccepted,         // Пропозиція прийнята (для фрілансера)
     ProposalRejected,         // Пропозиція відхилена (для фрілансера)
+    NewQuoteReceived,      // Новий quote на проект (для роботодавця)
 }

@@ -1,10 +1,13 @@
 using BLL.Common.Handlers;
 using BLL.Common.Interfaces;
+using BLL.Common.Interfaces.Repositories.Employers;
 using BLL.Common.Interfaces.Repositories.Freelancers;
 using BLL.Common.Interfaces.Repositories.Projects;
 using BLL.Common.Interfaces.Repositories.Quotes;
 using BLL.Services;
+using BLL.Services.Notifications;
 using BLL.ViewModels.Quote;
+using Domain.Models.Notifications;
 using Domain.Models.Projects;
 
 namespace BLL.CommandsQueries.Quotes;
@@ -17,7 +20,9 @@ public class CreateQuoteHandler(
     IProjectQueries projectQueries,
     IUserProvider userProvider,
     IFreelancerQueries freelancerQueries,
-    IQuoteQueries quoteQueries)
+    IQuoteQueries quoteQueries,
+    INotificationService notificationService,
+    IEmployerQueries employerQueries)
     : ICreateHandler<Quote, CreateQuoteVM>
 {
     public async Task<ServiceResponse?> HandleAsync(
@@ -54,6 +59,18 @@ public class CreateQuoteHandler(
         {
             return ServiceResponse.BadRequest(
                 $"Quote amount {createModel.Amount} exceeds project budget {existingProject.Budget}");
+        }
+        
+        // Notify: Find employer (owner of the project) and send notification
+        var employer = await employerQueries.GetByUserId(existingProject.CreatedBy, cancellationToken);
+        if (employer is not null)
+        {
+            await notificationService.SendAsync(
+                message: $"You received a new quote of {createModel.Amount:C} on your project \"{existingProject.Title}\".",
+                type: NotificationType.NewQuoteReceived,
+                userId: existingProject.CreatedBy,
+                cancellationToken: cancellationToken,
+                linkAddress: $"/my-projects/{existingProject.Id}/quotes");
         }
 
         // Return success with processed entity

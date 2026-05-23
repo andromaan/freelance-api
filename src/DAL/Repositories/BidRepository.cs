@@ -19,4 +19,13 @@ public class BidRepository(AppDbContext context, IUserProvider provider)
             .OrderByDescending(x => x.ModifiedAt)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IEnumerable<Bid>> GetByFreelancerIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<Bid>()
+            .AsNoTracking()
+            .Where(x => x.CreatedBy == userId)
+            .OrderByDescending(x => x.ModifiedAt)
+            .ToListAsync(cancellationToken);
+    }
 }
