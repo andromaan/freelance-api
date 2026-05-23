@@ -16,84 +16,84 @@ public static class CommandRegistrationExtensions
         where TViewModel : class
         where TUpdateViewModel : class
         where TQueries : class, IQueries<TEntity, TKey>
-        
     {
         services.AddTransient(
-            typeof(IRequestHandler<Update.Command<TUpdateViewModel, TKey>, ServiceResponse>),
+            typeof(IRequestHandler<Update.Command<TUpdateViewModel, TKey, TViewModel>, ServiceResponse<TViewModel?>>),
             typeof(Update.CommandHandler<TUpdateViewModel, TViewModel, TEntity, TKey, TQueries>)
         );
-        
+
         if (specificUpdateVMs != null)
         {
             foreach (var updateVm in specificUpdateVMs)
             {
-                var requestType = typeof(Update.Command<,>).MakeGenericType(updateVm, typeof(TKey));
+                var requestType = typeof(Update.Command<,,>).MakeGenericType(updateVm, typeof(TKey), typeof(TViewModel));
                 var handlerType = typeof(Update.CommandHandler<,,,,>)
                     .MakeGenericType(updateVm, typeof(TViewModel), typeof(TEntity), typeof(TKey), typeof(TQueries));
-                var serviceType = typeof(IRequestHandler<,>).MakeGenericType(requestType, typeof(ServiceResponse));
+                var responseType = typeof(ServiceResponse<>).MakeGenericType(typeof(TViewModel));
+                var serviceType = typeof(IRequestHandler<,>).MakeGenericType(requestType, responseType);
 
                 services.AddTransient(serviceType, handlerType);
             }
         }
-        
+
         return services;
     }
-    
+
     public static IServiceCollection AddUpdateByUserCommandHandler<TEntity, TKey, TViewModel, TUpdateViewModel, TQueries>(
         this IServiceCollection services, Type[]? specificUpdateVMs = null)
         where TEntity : Entity<TKey>
         where TViewModel : class
         where TUpdateViewModel : class
         where TQueries : class, IQueries<TEntity, TKey>, IByUserQuery<TEntity, TKey>
-        
     {
         services.AddTransient(
-            typeof(IRequestHandler<UpdateByUser.Command<TUpdateViewModel>, ServiceResponse>),
+            typeof(IRequestHandler<UpdateByUser.Command<TUpdateViewModel, TViewModel>, ServiceResponse<TViewModel?>>),
             typeof(UpdateByUser.CommandHandler<TUpdateViewModel, TViewModel, TEntity, TKey, TQueries>)
         );
-        
+
         if (specificUpdateVMs != null)
         {
             foreach (var updateVm in specificUpdateVMs)
             {
-                var requestType = typeof(UpdateByUser.Command<>).MakeGenericType(updateVm);
+                var requestType = typeof(UpdateByUser.Command<,>).MakeGenericType(updateVm, typeof(TViewModel));
                 var handlerType = typeof(UpdateByUser.CommandHandler<,,,,>)
                     .MakeGenericType(updateVm, typeof(TViewModel), typeof(TEntity), typeof(TKey), typeof(TQueries));
-                var serviceType = typeof(IRequestHandler<,>).MakeGenericType(requestType, typeof(ServiceResponse));
+                var responseType = typeof(ServiceResponse<>).MakeGenericType(typeof(TViewModel));
+                var serviceType = typeof(IRequestHandler<,>).MakeGenericType(requestType, responseType);
 
                 services.AddTransient(serviceType, handlerType);
             }
         }
-        
+
         return services;
     }
-    
+
     public static IServiceCollection AddCreateCommandHandler<TEntity, TKey, TViewModel, TCreateViewModel, TQueries>(
         this IServiceCollection services, Type[]? specificCreateVMs = null)
         where TEntity : Entity<TKey>
         where TViewModel : class
         where TCreateViewModel : class
         where TQueries : class, IQueries<TEntity, TKey>
-        
     {
         services.AddTransient(
-            typeof(IRequestHandler<Create.Command<TCreateViewModel>, ServiceResponse>),
+            typeof(IRequestHandler<Create.Command<TCreateViewModel, TViewModel>, ServiceResponse<TViewModel?>>),
             typeof(Create.CommandHandler<TCreateViewModel, TViewModel, TEntity, TKey, TQueries>)
         );
-        
+
         if (specificCreateVMs != null)
         {
             foreach (var createVm in specificCreateVMs)
             {
-                var requestType = typeof(Create.Command<>).MakeGenericType(createVm);
+                var requestType = typeof(Create.Command<,>).MakeGenericType(createVm, typeof(TViewModel));
                 var handlerType = typeof(Create.CommandHandler<,,,,>)
                     .MakeGenericType(createVm, typeof(TViewModel), typeof(TEntity), typeof(TKey), typeof(TQueries));
-                var serviceType = typeof(IRequestHandler<,>).MakeGenericType(requestType, typeof(ServiceResponse));
+                var responseType = typeof(ServiceResponse<>).MakeGenericType(typeof(TViewModel));
+                var serviceType = typeof(IRequestHandler<,>).MakeGenericType(requestType, responseType);
 
                 services.AddTransient(serviceType, handlerType);
             }
         }
-        
+
         return services;
     }
 }
