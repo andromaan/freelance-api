@@ -23,6 +23,7 @@ public class CreateContractCommand : IRequest<ServiceResponse>
 
 public class CreateContractCommandHandler(
     IContractRepository contractRepository,
+    IContractQueries contractQueries,
     IQuoteQueries quoteQueries,
     IProjectQueries projectQueries,
     IMapper mapper,
@@ -45,6 +46,12 @@ public class CreateContractCommandHandler(
         var project = await projectQueries.GetByIdAsync(quote.ProjectId, cancellationToken);
         var projectMilestones
             = (await projectMilestoneQueries.GetByProjectIdAsync(quote.ProjectId, cancellationToken)).ToList();
+
+        if (!await contractQueries.IsContractCanBeCreated(project!.Id, project.CreatedBy, quote.FreelancerId,
+                cancellationToken))
+        {
+            return ServiceResponse.InternalError("Contract cannot be created. Contract already exists for this quote.");
+        }
 
         var contract = new Contract
         {
@@ -98,24 +105,25 @@ public class CreateContractCommandHandler(
         CancellationToken cancellationToken)
     {
         var bids = await bidQueries.GetByProjectIdAsync(project.Id, cancellationToken);
-        var freelancerIdsToNotifyAboutTakenProject = bids.Select(b => b.FreelancerId).Where(id => id != quote.FreelancerId).ToList();
+        var freelancerIdsToNotifyAboutTakenProject =
+            bids.Select(b => b.FreelancerId).Where(id => id != quote.FreelancerId).ToList();
 
         foreach (var freelancerId in freelancerIdsToNotifyAboutTakenProject)
         {
             var freelancerUser = await freelancerQueries.GetByIdAsync(freelancerId, cancellationToken);
-            
+
             if (freelancerUser is null)
                 continue;
-            
+
             await notificationService.SendAsync($"Project '{project.Title}' has been taken by another freelancer.",
                 NotificationType.ProposalRejected, freelancerUser.CreatedBy, cancellationToken);
         }
-        
+
         var freelancer = await freelancerQueries.GetByIdAsync(quote.FreelancerId, cancellationToken);
-        
+
         if (freelancer is null)
             throw new Exception($"Freelancer with id {quote.FreelancerId} not found");
-        
+
         await notificationService.SendAsync($"Your quote for project '{project.Title}' has been accepted.",
             NotificationType.ProposalAccepted, freelancer.CreatedBy, cancellationToken);
     }

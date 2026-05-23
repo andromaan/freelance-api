@@ -62,6 +62,22 @@ public class ContractController(ISender sender) : BaseController
         return GetResult(result);
     }
 
+    [HttpGet("can-contract-be-created/{quoteId:guid}")]
+    public async Task<IActionResult> CanContractBeCreated(Guid quoteId, CancellationToken ct)
+    {
+        var query = new CanContractBeCreatedQuery { QuoteId = quoteId };
+        var result = await sender.Send(query, ct);
+        return GetResult(result);
+    }
+    
+    [HttpGet("is-exists-by-quote/{quoteId:guid}")]
+    public async Task<IActionResult> IsExistsByQuote(Guid quoteId, CancellationToken ct)
+    {
+        var query = new IsExistsByQuoteQuery { QuoteId = quoteId };
+        var result = await sender.Send(query, ct);
+        return GetResult(result);
+    }
+
     [HttpGet("completed-by-freelancer-id/{freelancerId:guid}")]
     public async Task<IActionResult> GetProjectsByEmployer(Guid freelancerId, CancellationToken ct)
     {

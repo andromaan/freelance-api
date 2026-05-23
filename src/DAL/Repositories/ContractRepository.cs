@@ -32,4 +32,32 @@ public class ContractRepository(AppDbContext appDbContext, IUserProvider userPro
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<bool> IsContractCanBeCreated(Guid projectId, Guid createdById, Guid freelancerId,
+        CancellationToken cancellationToken)
+    {
+        var activeStatuses = new[]
+        {
+            ContractStatus.Active,
+            ContractStatus.InProgress,
+            ContractStatus.Pending
+        };
+
+        return !await _appDbContext.Contracts.AnyAsync(
+            p => p.FreelancerId == freelancerId &&
+                 p.CreatedBy == createdById &&
+                 p.ProjectId == projectId &&
+                 activeStatuses.Contains(p.Status),
+            cancellationToken);
+    }
+
+    public async Task<bool> IsExistsByQuoteQuery(Guid projectId, Guid createdById, Guid freelancerId,
+        CancellationToken cancellationToken)
+    {
+        return !await _appDbContext.Contracts.AnyAsync(
+            p => p.FreelancerId == freelancerId &&
+                 p.CreatedBy == createdById &&
+                 p.ProjectId == projectId,
+            cancellationToken);
+    }
 }

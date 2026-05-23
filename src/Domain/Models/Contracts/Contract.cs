@@ -25,9 +25,9 @@ public enum ContractStatus
 {
     Pending,
     Active,
+    InProgress,
     Completed,
     Cancelled,
-    InProgress,
     Disputed,
     Refunded
 }
