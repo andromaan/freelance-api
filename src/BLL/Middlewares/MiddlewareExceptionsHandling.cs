@@ -17,17 +17,17 @@ public class MiddlewareExceptionsHandling(RequestDelegate next)
         catch (SecurityTokenException ex)
         {
             await context.Response.WriteJsonResponseAsync(StatusCodes.Status426UpgradeRequired,
-                ServiceResponse.GetResponse(ex.Message, false, null, HttpStatusCode.UpgradeRequired));
+                ServiceResponse<object>.GetResponse(ex.Message, false, null, HttpStatusCode.UpgradeRequired));
         }
         catch (ValidationException ex)
         {
             await context.Response.WriteJsonResponseAsync(StatusCodes.Status400BadRequest,
-                ServiceResponse.BadRequest(ex.Message ?? throw new ArgumentNullException(nameof(ex))));
+                ServiceResponse<object>.BadRequest(ex.Message ?? throw new ArgumentNullException(nameof(ex))));
         }
         catch (Exception ex)
         {
             await context.Response.WriteJsonResponseAsync(StatusCodes.Status500InternalServerError,
-                ServiceResponse.InternalError(ex.Message));
+                ServiceResponse<object>.InternalError(ex.Message));
         }
     }
 }

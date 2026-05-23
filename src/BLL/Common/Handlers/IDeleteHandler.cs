@@ -6,8 +6,9 @@ namespace BLL.Common.Handlers;
 /// Unified handler for Delete operations that combines validation and processing logic.
 /// Returns ServiceResponse on validation/logic failure, or the processed entity on success.
 /// </summary>
-public interface IDeleteHandler<TEntity>
+public interface IDeleteHandler<TEntity, TViewModel>
     where TEntity : class
+    where TViewModel : class
 {
     /// <summary>
     /// Handles validation and processing for entity creation.
@@ -19,7 +20,7 @@ public interface IDeleteHandler<TEntity>
     /// - Success case contains the processed entity
     /// - Failure case contains ServiceResponse with error details
     /// </returns>
-    Task<ServiceResponse?> HandleAsync(
+    Task<ServiceResponse<TViewModel?>> HandleAsync(
         TEntity entity,
         CancellationToken cancellationToken);
 }

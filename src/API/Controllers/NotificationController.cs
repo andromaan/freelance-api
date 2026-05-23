@@ -55,7 +55,7 @@ public class NotificationController(ISender sender) : BaseController
     public async Task<IActionResult> GetAllFiltered([FromQuery] PagedVM pagedVm,
         [FromQuery] FilterNotificationVM filterVm, CancellationToken ct)
     {
-        var query = new GetAllFilteredPaginated.Query<FilterNotificationVM>(pagedVm, filterVm);
+        var query = new GetAllFilteredPaginated.Query<FilterNotificationVM, NotificationVM>(pagedVm, filterVm);
         var result = await sender.Send(query, ct);
         return GetResult(result);
     }

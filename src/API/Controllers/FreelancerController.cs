@@ -30,9 +30,9 @@ public class FreelancerController(ISender sender) : BaseController
 
     [HttpPut]
     public virtual async Task<IActionResult> Update(UpdateFreelancerVM vm, CancellationToken ct)
-        => GetResult(await sender.Send(new UpdateByUser.Command<UpdateFreelancerVM> { Model = vm }, ct));
+        => GetResult(await sender.Send(new UpdateByUser.Command<UpdateFreelancerVM, FreelancerVM> { Model = vm }, ct));
 
     [HttpPut("skills")]
     public virtual async Task<IActionResult> UpdateSkills(UpdateFreelancerSkillsVM vm, CancellationToken ct)
-        => GetResult(await sender.Send(new UpdateByUser.Command<UpdateFreelancerSkillsVM> { Model = vm }, ct));
+        => GetResult(await sender.Send(new UpdateByUser.Command<UpdateFreelancerSkillsVM, FreelancerVM> { Model = vm }, ct));
 }

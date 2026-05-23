@@ -19,7 +19,7 @@ public class MessageController(ISender sender)
     [HttpPost("without-contract")]
     public async Task<IActionResult> CreateWithoutContract(CreateMessageWithoutContractVM vm, CancellationToken ct)
     {
-        var command = new Create.Command<CreateMessageWithoutContractVM> { Model = vm };
+        var command = new Create.Command<CreateMessageWithoutContractVM, MessageVM> { Model = vm };
         var result = await Sender.Send(command, ct);
         return GetResult(result);
     }

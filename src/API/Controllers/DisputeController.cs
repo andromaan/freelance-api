@@ -48,7 +48,7 @@ public class DisputeController(ISender sender) : BaseController
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateDisputeVM vm, CancellationToken ct)
     {
-        var command = new Create.Command<CreateDisputeVM> { Model = vm };
+        var command = new Create.Command<CreateDisputeVM, DisputeVM> { Model = vm };
         var result = await sender.Send(command, ct);
         return GetResult(result);
     }
@@ -78,7 +78,7 @@ public class DisputeController(ISender sender) : BaseController
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateDisputeStatusForModeratorVM vm,
         CancellationToken ct)
     {
-        var command = new Update.Command<UpdateDisputeStatusForModeratorVM, Guid> { Id = id, Model = vm };
+        var command = new Update.Command<UpdateDisputeStatusForModeratorVM, Guid, DisputeVM> { Id = id, Model = vm };
         var result = await sender.Send(command, ct);
         return GetResult(result);
     }

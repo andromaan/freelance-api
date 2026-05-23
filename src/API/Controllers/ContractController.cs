@@ -39,7 +39,7 @@ public class ContractController(ISender sender) : BaseController
     [HttpPut]
     public async Task<IActionResult> UpdateContract(Guid contractId, UpdateContractVM vm, CancellationToken ct)
     {
-        var command = new Update.Command<UpdateContractVM, Guid> { Id = contractId, Model = vm };
+        var command = new Update.Command<UpdateContractVM, Guid, ContractVM> { Id = contractId, Model = vm };
         var result = await sender.Send(command, ct);
         return GetResult(result);
     }
@@ -49,7 +49,7 @@ public class ContractController(ISender sender) : BaseController
     public async Task<IActionResult> UpdateContractStatus(Guid contractId, UpdateContractStatusVM vm,
         CancellationToken ct)
     {
-        var command = new Update.Command<UpdateContractStatusVM, Guid> { Id = contractId, Model = vm };
+        var command = new Update.Command<UpdateContractStatusVM, Guid, ContractVM> { Id = contractId, Model = vm };
         var result = await sender.Send(command, ct);
         return GetResult(result);
     }

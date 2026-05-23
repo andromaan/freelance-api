@@ -23,7 +23,7 @@ public class ProjectController(ISender sender)
     public async Task<IActionResult> UpdateProjectCategories(Guid projectId, [FromBody] UpdateProjectCategoriesVM vm,
         CancellationToken ct)
     {
-        var command = new Update.Command<UpdateProjectCategoriesVM, Guid>
+        var command = new Update.Command<UpdateProjectCategoriesVM, Guid, ProjectVM>
         {
             Id = projectId,
             Model = vm
@@ -57,7 +57,7 @@ public class ProjectController(ISender sender)
     public async Task<IActionResult> GetAllPaginatedFiltered(PagedVM pagedVm, [FromQuery] FilterProjectVM filterProjectVm,
         CancellationToken ct)
     {
-        var query = new GetAllFilteredPaginated.Query<FilterProjectVM>(pagedVm, filterProjectVm);
+        var query = new GetAllFilteredPaginated.Query<FilterProjectVM, ProjectVM>(pagedVm, filterProjectVm);
         var result = await Sender.Send(query, ct);
         return GetResult(result);
     }

@@ -48,7 +48,7 @@ public class DisputeResolutionController(ISender sender) : BaseController
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
     public async Task<IActionResult> Create([FromBody] CreateDisputeResolutionVM vm, CancellationToken ct)
     {
-        var command = new Create.Command<CreateDisputeResolutionVM> { Model = vm };
+        var command = new Create.Command<CreateDisputeResolutionVM, DisputeResolutionVM> { Model = vm };
         var result = await sender.Send(command, ct);
         return GetResult(result);
     }

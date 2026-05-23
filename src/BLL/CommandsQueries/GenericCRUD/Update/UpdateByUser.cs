@@ -10,8 +10,9 @@ namespace BLL.CommandsQueries.GenericCRUD.Update;
 
 public class UpdateByUser
 {
-    public record Command<TUpdateViewModel> : IRequest<ServiceResponse>
+    public record Command<TUpdateViewModel, TViewModel> : IRequest<ServiceResponse<TViewModel?>>
         where TUpdateViewModel : class
+        where TViewModel : class
     {
         public required TUpdateViewModel Model { get; init; }
     }
@@ -21,15 +22,15 @@ public class UpdateByUser
         TQueries queries,
         IMapper mapper,
         IUserProvider userProvider,
-        IEnumerable<IUpdateHandler<TEntity, TUpdateViewModel>> handlers)
-        : IRequestHandler<Command<TUpdateViewModel>, ServiceResponse>
+        IEnumerable<IUpdateHandler<TEntity, TUpdateViewModel, TViewModel>> handlers)
+        : IRequestHandler<Command<TUpdateViewModel, TViewModel>, ServiceResponse<TViewModel?>>
         where TEntity : Entity<TKey>
         where TUpdateViewModel : class
         where TViewModel : class
         where TQueries : IQueries<TEntity, TKey>, IByUserQuery<TEntity, TKey>
     {
-        public async Task<ServiceResponse> Handle(
-            Command<TUpdateViewModel> request,
+        public async Task<ServiceResponse<TViewModel?>> Handle(
+            Command<TUpdateViewModel, TViewModel> request,
             CancellationToken cancellationToken)
         {
             var userId = await userProvider.GetUserId();
@@ -39,7 +40,7 @@ public class UpdateByUser
 
             if (existingEntity == null)
             {
-                return ServiceResponse.NotFound(
+                return ServiceResponse<TViewModel?>.NotFound(
                     $"{typeof(TEntity).Name} not found by user id {userId}");
             }
 
@@ -67,13 +68,13 @@ public class UpdateByUser
             try
             {
                 await repository.UpdateAsync(existingEntity, cancellationToken);
-                return ServiceResponse.Ok(
+                return ServiceResponse<TViewModel?>.Ok(
                     $"{typeof(TEntity).Name} updated",
                     mapper.Map<TViewModel>(existingEntity));
             }
             catch (Exception exception)
             {
-                return ServiceResponse.InternalError(exception.Message);
+                return ServiceResponse<TViewModel?>.InternalError(exception.Message);
             }
         }
     }

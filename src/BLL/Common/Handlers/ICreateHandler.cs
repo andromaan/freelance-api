@@ -6,9 +6,10 @@ namespace BLL.Common.Handlers;
 /// Unified handler for Create operations that combines validation and processing logic.
 /// Returns ServiceResponse on validation/logic failure, or the processed entity on success.
 /// </summary>
-public interface ICreateHandler<TEntity, TCreateViewModel>
+public interface ICreateHandler<TEntity, TCreateViewModel, TViewModel>
     where TEntity : class
     where TCreateViewModel : class
+    where TViewModel : class
 {
     /// <summary>
     /// Handles validation and processing for entity creation.
@@ -21,7 +22,7 @@ public interface ICreateHandler<TEntity, TCreateViewModel>
     /// - Success case contains the processed entity
     /// - Failure case contains ServiceResponse with error details
     /// </returns>
-    Task<ServiceResponse?> HandleAsync(
+    Task<ServiceResponse<TViewModel?>> HandleAsync(
         TEntity entity,
         TCreateViewModel createModel,
         CancellationToken cancellationToken);

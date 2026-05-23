@@ -54,7 +54,7 @@ public class ContractMilestoneController(ISender sender)
         [FromBody] UpdContractMilestoneStatusFreelancerVM vm,
         CancellationToken ct)
     {
-        var command = new Update.Command<UpdContractMilestoneStatusFreelancerVM, Guid>
+        var command = new Update.Command<UpdContractMilestoneStatusFreelancerVM, Guid, ContractMilestoneVM>
         {
             Id = id,
             Model = vm
@@ -80,7 +80,7 @@ public class ContractMilestoneController(ISender sender)
         [FromBody] UpdContractMilestoneStatusEmployerVM vm,
         CancellationToken ct)
     {
-        var command = new Update.Command<UpdContractMilestoneStatusEmployerVM, Guid>
+        var command = new Update.Command<UpdContractMilestoneStatusEmployerVM, Guid, ContractMilestoneVM>
         {
             Id = id,
             Model = vm
@@ -107,7 +107,7 @@ public class ContractMilestoneController(ISender sender)
         [FromBody] UpdContractMilestoneStatusModeratorVM vm,
         CancellationToken ct)
     {
-        var command = new Update.Command<UpdContractMilestoneStatusModeratorVM, Guid>
+        var command = new Update.Command<UpdContractMilestoneStatusModeratorVM, Guid, ContractMilestoneVM>
         {
             Id = id,
             Model = vm

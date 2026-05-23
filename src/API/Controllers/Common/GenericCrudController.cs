@@ -45,7 +45,7 @@ public abstract class GenericCrudController<TKey, TViewModel, TCreateViewModel, 
     [HttpPost]
     public virtual async Task<IActionResult> Create([FromBody] TCreateViewModel vm, CancellationToken ct)
     {
-        var command = new Create.Command<TCreateViewModel> { Model = vm };
+        var command = new Create.Command<TCreateViewModel, TViewModel> { Model = vm };
         var result = await Sender.Send(command, ct);
         return GetResult(result);
     }
@@ -53,7 +53,7 @@ public abstract class GenericCrudController<TKey, TViewModel, TCreateViewModel, 
     [HttpPut("{id}")]
     public virtual async Task<IActionResult> Update(TKey id, [FromBody] TUpdateViewModel vm, CancellationToken ct)
     {
-        var command = new Update.Command<TUpdateViewModel, TKey> { Id = id, Model = vm };
+        var command = new Update.Command<TUpdateViewModel, TKey, TViewModel> { Id = id, Model = vm };
         var result = await Sender.Send(command, ct);
         return GetResult(result);
     }

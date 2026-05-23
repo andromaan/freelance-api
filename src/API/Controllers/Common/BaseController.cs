@@ -5,7 +5,7 @@ namespace API.Controllers.Common;
 
 public class BaseController : ControllerBase
 {
-    protected IActionResult GetResult(ServiceResponse serviceResponse)
+    protected ActionResult GetResult<T>(ServiceResponse<T> serviceResponse)
     {
         return StatusCode((int)serviceResponse.StatusCode, serviceResponse.ToResponse());
     }

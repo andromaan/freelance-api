@@ -22,5 +22,5 @@ public class EmployerController(ISender sender) : BaseController
 
     [HttpPut]
     public virtual async Task<IActionResult> Update(UpdateEmployerVM vm, CancellationToken ct)
-        => GetResult(await sender.Send(new UpdateByUser.Command<UpdateEmployerVM> { Model = vm }, ct));
+        => GetResult(await sender.Send(new UpdateByUser.Command<UpdateEmployerVM, EmployerVM> { Model = vm }, ct));
 }
