@@ -1,6 +1,7 @@
 using API.Controllers.Common;
 using BLL;
 using BLL.CommandsQueries.ProjectMilestones;
+using BLL.Services;
 using BLL.ViewModels;
 using BLL.ViewModels.ProjectMilestone;
 using MediatR;
@@ -19,7 +20,8 @@ public class ProjectMilestoneController(ISender sender)
 {
     [AllowAnonymous]
     [HttpGet("by-project/{projectId}")]
-    public async Task<ActionResult> GetByProjectId(Guid projectId, CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<List<ProjectMilestoneVM>>>> GetByProjectId(Guid projectId,
+        CancellationToken ct)
     {
         var query = new GetProjectMilestonesByProjectIdQuery { ProjectId = projectId };
         var result = await Sender.Send(query, ct);
@@ -27,10 +29,11 @@ public class ProjectMilestoneController(ISender sender)
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<ActionResult> GetAll(CancellationToken ct)
-        => Task.FromResult<ActionResult>(NotFound());
+    public override Task<ActionResult<ServiceResponse<List<ProjectMilestoneVM>>>> GetAll(CancellationToken ct)
+        => Task.FromResult<ActionResult<ServiceResponse<List<ProjectMilestoneVM>>>>(NotFound());
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<ActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
-        => Task.FromResult<ActionResult>(NotFound());
+    public override Task<ActionResult<ServiceResponse<PaginatedItemsVM<ProjectMilestoneVM>>>> GetAllPaginated(
+        PagedVM pagedVm, CancellationToken ct)
+        => Task.FromResult<ActionResult<ServiceResponse<PaginatedItemsVM<ProjectMilestoneVM>>>>(NotFound());
 }

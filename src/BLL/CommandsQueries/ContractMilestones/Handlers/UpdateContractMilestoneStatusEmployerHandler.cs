@@ -69,7 +69,7 @@ public class UpdateContractMilestoneStatusEmployerHandler(
         return ServiceResponse<ContractMilestoneVM?>.Ok();
     }
 
-    private static ServiceResponse<ContractMilestoneVM?> ValidateMilestoneStatus(
+    private static ServiceResponse<ContractMilestoneVM?>? ValidateMilestoneStatus(
         ContractMilestone milestone)
     {
         if (milestone.Status == ContractMilestoneStatus.Approved)
@@ -83,7 +83,7 @@ public class UpdateContractMilestoneStatusEmployerHandler(
 
     // --- Contract & Project Completion ---
 
-    private async Task<ServiceResponse<ContractMilestoneVM?>> CompleteContractAndProjectAsync(
+    private async Task<ServiceResponse<ContractMilestoneVM?>?> CompleteContractAndProjectAsync(
         Contract contract,
         CancellationToken cancellationToken)
     {
@@ -107,7 +107,7 @@ public class UpdateContractMilestoneStatusEmployerHandler(
 
     // --- Payment Processing ---
 
-    private async Task<ServiceResponse<ContractMilestoneVM?>> ProcessPaymentAsync(
+    private async Task<ServiceResponse<ContractMilestoneVM?>?> ProcessPaymentAsync(
         ContractMilestone milestone,
         Contract contract,
         List<ContractMilestone> otherMilestones,
@@ -140,7 +140,7 @@ public class UpdateContractMilestoneStatusEmployerHandler(
         return null;
     }
 
-    private async Task<ServiceResponse<ContractMilestoneVM?>> ProcessMilestonePaymentAsync(
+    private async Task<ServiceResponse<ContractMilestoneVM?>?> ProcessMilestonePaymentAsync(
         ContractMilestone milestone,
         Contract contract,
         Guid freelancerUserId,
@@ -167,7 +167,7 @@ public class UpdateContractMilestoneStatusEmployerHandler(
         return null;
     }
 
-    private async Task<ServiceResponse<ContractMilestoneVM?>> ProcessFinalPaymentAsync(
+    private async Task<ServiceResponse<ContractMilestoneVM?>?> ProcessFinalPaymentAsync(
         ContractMilestone milestone,
         Contract contract,
         Guid freelancerUserId,

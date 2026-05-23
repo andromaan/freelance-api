@@ -2,6 +2,7 @@ using API.Controllers.Common;
 using BLL;
 using BLL.CommandsQueries.Employers;
 using BLL.CommandsQueries.GenericCRUD.Update;
+using BLL.Services;
 using BLL.ViewModels.Employer;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -17,10 +18,10 @@ namespace API.Controllers;
 public class EmployerController(ISender sender) : BaseController
 {
     [HttpGet]
-    public virtual async Task<ActionResult> GetByUser(CancellationToken ct)
+    public virtual async Task<ActionResult<ServiceResponse<EmployerVM>>> GetByUser(CancellationToken ct)
         => GetResult(await sender.Send(new GetEmployerByUserQuery(), ct));
 
     [HttpPut]
-    public virtual async Task<ActionResult> Update(UpdateEmployerVM vm, CancellationToken ct)
+    public virtual async Task<ActionResult<ServiceResponse<EmployerVM>>> Update(UpdateEmployerVM vm, CancellationToken ct)
         => GetResult(await sender.Send(new UpdateByUser.Command<UpdateEmployerVM, EmployerVM> { Model = vm }, ct));
 }

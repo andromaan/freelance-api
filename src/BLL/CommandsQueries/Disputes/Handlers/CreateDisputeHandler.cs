@@ -67,7 +67,7 @@ public class CreateDisputeHandler(
         }
         catch (Exception e)
         {
-            return ServiceResponse<DisputeVM?>.InternalError("An error occurred while creating the dispute");
+            return ServiceResponse<DisputeVM?>.InternalError(e.Message);
         }
 
         return ServiceResponse<DisputeVM?>.Ok();

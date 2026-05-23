@@ -49,7 +49,7 @@ public class UpdateContractMilestoneStatusFreelancerHandler(
         return ServiceResponse<ContractMilestoneVM?>.Ok(); // Валідація пройшла успішно
     }
 
-    private async Task<ServiceResponse<ContractMilestoneVM?>> UpdateContractStatusIfNeeded(ContractMilestone existingEntity,
+    private async Task<ServiceResponse<ContractMilestoneVM?>?> UpdateContractStatusIfNeeded(ContractMilestone existingEntity,
         Contract contract, UpdContractMilestoneStatusFreelancerVM updateModel, CancellationToken cancellationToken)
     {
         var contractMilestonesByContract =

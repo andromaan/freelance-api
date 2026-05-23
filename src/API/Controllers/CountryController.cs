@@ -1,5 +1,6 @@
 using API.Controllers.Common;
 using BLL;
+using BLL.Services;
 using BLL.ViewModels;
 using BLL.ViewModels.Country;
 using MediatR;
@@ -17,14 +18,14 @@ public class CountryController(ISender sender)
     : GenericCrudController<int, CountryVM, CreateCountryVM, UpdateCountryVM>(sender)
 {
     [AllowAnonymous]
-    public override async Task<ActionResult> GetAll(CancellationToken ct)
+    public override async Task<ActionResult<ServiceResponse<List<CountryVM>>>> GetAll(CancellationToken ct)
         => await base.GetAll(ct);
 
     [AllowAnonymous]
-    public override async Task<ActionResult> GetById(int id, CancellationToken ct)
+    public override async Task<ActionResult<ServiceResponse<CountryVM>>> GetById(int id, CancellationToken ct)
         => await base.GetById(id, ct);
 
     [AllowAnonymous]
-    public override async Task<ActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+    public override async Task<ActionResult<ServiceResponse<PaginatedItemsVM<CountryVM>>>> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
         => await base.GetAllPaginated(pagedVm, ct);
 }

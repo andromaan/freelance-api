@@ -2,6 +2,7 @@ using API.Controllers.Common;
 using BLL;
 using BLL.CommandsQueries.Contracts;
 using BLL.CommandsQueries.GenericCRUD.Update;
+using BLL.Services;
 using BLL.ViewModels.Contract;
 using Domain.Models.Contracts;
 using MediatR;
@@ -18,7 +19,7 @@ public class ContractController(ISender sender) : BaseController
 {
     [Authorize(Roles = Settings.Roles.EmployerRole)]
     [HttpPost("{quoteId:guid}")]
-    public async Task<ActionResult> CreateContract([FromRoute] Guid quoteId, CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<ContractVM>>> CreateContract([FromRoute] Guid quoteId, CancellationToken ct)
     {
         var command = new CreateContractCommand { QuoteId = quoteId };
         var result = await sender.Send(command, ct);
@@ -37,7 +38,7 @@ public class ContractController(ISender sender) : BaseController
 
     [Authorize(Roles = Settings.Roles.EmployerRole)]
     [HttpPut]
-    public async Task<ActionResult> UpdateContract(Guid contractId, UpdateContractVM vm, CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<ContractVM>>> UpdateContract(Guid contractId, UpdateContractVM vm, CancellationToken ct)
     {
         var command = new Update.Command<UpdateContractVM, Guid, ContractVM> { Id = contractId, Model = vm };
         var result = await sender.Send(command, ct);
@@ -46,7 +47,7 @@ public class ContractController(ISender sender) : BaseController
 
     [Authorize(Roles = Settings.Roles.EmployerRole)]
     [HttpPut("update-status/{contractId:guid}")]
-    public async Task<ActionResult> UpdateContractStatus(Guid contractId, UpdateContractStatusVM vm,
+    public async Task<ActionResult<ServiceResponse<ContractVM>>> UpdateContractStatus(Guid contractId, UpdateContractStatusVM vm,
         CancellationToken ct)
     {
         var command = new Update.Command<UpdateContractStatusVM, Guid, ContractVM> { Id = contractId, Model = vm };
@@ -55,7 +56,7 @@ public class ContractController(ISender sender) : BaseController
     }
 
     [HttpGet("by-user")]
-    public async Task<ActionResult> GetProjectsByEmployer(CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<List<ContractVM>>>> GetProjectsByEmployer(CancellationToken ct)
     {
         var query = new GetContractByUserQuery();
         var result = await sender.Send(query, ct);
@@ -63,7 +64,7 @@ public class ContractController(ISender sender) : BaseController
     }
 
     [HttpGet("can-contract-be-created/{quoteId:guid}")]
-    public async Task<ActionResult> CanContractBeCreated(Guid quoteId, CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<bool>>> CanContractBeCreated(Guid quoteId, CancellationToken ct)
     {
         var query = new CanContractBeCreatedQuery { QuoteId = quoteId };
         var result = await sender.Send(query, ct);
@@ -71,7 +72,7 @@ public class ContractController(ISender sender) : BaseController
     }
     
     [HttpGet("is-exists-by-quote/{quoteId:guid}")]
-    public async Task<ActionResult> IsExistsByQuote(Guid quoteId, CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<bool>>> IsExistsByQuote(Guid quoteId, CancellationToken ct)
     {
         var query = new IsExistsByQuoteQuery { QuoteId = quoteId };
         var result = await sender.Send(query, ct);
@@ -79,7 +80,7 @@ public class ContractController(ISender sender) : BaseController
     }
 
     [HttpGet("completed-by-freelancer-id/{freelancerId:guid}")]
-    public async Task<ActionResult> GetProjectsByEmployer(Guid freelancerId, CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<List<ContractVM>>>> GetProjectsByFreelancer(Guid freelancerId, CancellationToken ct)
     {
         var query = new GetContractByFreelancerIdQuery(freelancerId);
         var result = await sender.Send(query, ct);

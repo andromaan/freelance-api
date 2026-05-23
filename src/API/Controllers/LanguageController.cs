@@ -1,5 +1,6 @@
 using API.Controllers.Common;
 using BLL;
+using BLL.Services;
 using BLL.ViewModels;
 using BLL.ViewModels.Language;
 using MediatR;
@@ -17,14 +18,14 @@ public class LanguageController(ISender sender)
     : GenericCrudController<int, LanguageVM, CreateLanguageVM, UpdateLanguageVM>(sender)
 {
     [AllowAnonymous]
-    public override async Task<ActionResult> GetAll(CancellationToken ct)
+    public override async Task<ActionResult<ServiceResponse<List<LanguageVM>>>> GetAll(CancellationToken ct)
         => await base.GetAll(ct);
 
     [AllowAnonymous]
-    public override async Task<ActionResult> GetById(int id, CancellationToken ct)
+    public override async Task<ActionResult<ServiceResponse<LanguageVM>>> GetById(int id, CancellationToken ct)
         => await base.GetById(id, ct);
 
     [AllowAnonymous]
-    public override async Task<ActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+    public override async Task<ActionResult<ServiceResponse<PaginatedItemsVM<LanguageVM>>>> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
         => await base.GetAllPaginated(pagedVm, ct);
 }

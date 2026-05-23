@@ -1,6 +1,7 @@
 using API.Controllers.Common;
 using BLL.CommandsQueries.GenericCRUD.Create;
 using BLL.CommandsQueries.Messages;
+using BLL.Services;
 using BLL.ViewModels;
 using BLL.ViewModels.Message;
 using MediatR;
@@ -17,7 +18,7 @@ public class MessageController(ISender sender)
     : GenericCrudController<Guid, MessageVM, CreateMessageVM, UpdateMessageVM>(sender)
 {
     [HttpPost("without-contract")]
-    public async Task<ActionResult> CreateWithoutContract(CreateMessageWithoutContractVM vm, CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<MessageVM>>> CreateWithoutContract(CreateMessageWithoutContractVM vm, CancellationToken ct)
     {
         var command = new Create.Command<CreateMessageWithoutContractVM, MessageVM> { Model = vm };
         var result = await Sender.Send(command, ct);
@@ -25,7 +26,7 @@ public class MessageController(ISender sender)
     }
     
     [HttpGet("by-user")]
-    public async Task<ActionResult> GetProjectsByEmployer(CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<List<MessageVM>>>> GetMessagesByUser(CancellationToken ct)
     {
         var query = new GetMessagesByUserQuery();
         var result = await Sender.Send(query, ct);
@@ -33,18 +34,22 @@ public class MessageController(ISender sender)
     }
     
     [HttpGet("by-contract/{contractId}")]
-    public async Task<ActionResult> GetProjectsByEmployer(Guid contractId, CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<List<MessageVM>>>> GetMessagesByContract(Guid contractId, CancellationToken ct)
     {
         var query = new GetMessagesByContractQuery() { ContractId = contractId };
         var result = await Sender.Send(query, ct);
         return GetResult(result);
     }
-    
-    [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<ActionResult> GetAll(CancellationToken ct)
-        => Task.FromResult<ActionResult>(NotFound());
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<ActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
-        => Task.FromResult<ActionResult>(NotFound());
+    public override Task<ActionResult<ServiceResponse<List<MessageVM>>>> GetAll(CancellationToken ct)
+    {
+        return base.GetAll(ct);
+    }
+
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public override Task<ActionResult<ServiceResponse<PaginatedItemsVM<MessageVM>>>> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+    {
+        return base.GetAllPaginated(pagedVm, ct);
+    }
 }

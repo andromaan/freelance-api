@@ -128,7 +128,7 @@ public class CreateContractCommandHandler(
             NotificationType.ProposalAccepted, freelancer.CreatedBy, cancellationToken);
     }
 
-    private async Task<ServiceResponse<ContractVM?>> UpdateStatusAsync(Guid quoteProjectId, CancellationToken cancellationToken)
+    private async Task<ServiceResponse<ContractVM?>?> UpdateStatusAsync(Guid quoteProjectId, CancellationToken cancellationToken)
     {
         var project = await projectQueries.GetByIdAsync(quoteProjectId, cancellationToken);
         if (project is null)

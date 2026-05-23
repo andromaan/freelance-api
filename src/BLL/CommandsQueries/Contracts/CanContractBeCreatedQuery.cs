@@ -31,7 +31,7 @@ public class CanContractBeCreatedQueryHandler(
         if (!await contractQueries.IsContractCanBeCreated(project!.Id, project.CreatedBy, quote.FreelancerId,
                 cancellationToken))
         {
-            return ServiceResponse<bool>.Ok("Contract cannot be created. Contract already exists for this quote.", false);
+            return ServiceResponse<bool>.Ok("Contract cannot be created. Contract already exists for this quote.");
         }
 
         return ServiceResponse<bool>.Ok("Contract can be created", true);

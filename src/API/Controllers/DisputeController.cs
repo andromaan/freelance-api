@@ -6,6 +6,7 @@ using BLL.CommandsQueries.GenericCRUD.Delete;
 using BLL.CommandsQueries.GenericCRUD.GetAll;
 using BLL.CommandsQueries.GenericCRUD.GetById;
 using BLL.CommandsQueries.GenericCRUD.Update;
+using BLL.Services;
 using BLL.ViewModels.Dispute;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,7 +22,7 @@ public class DisputeController(ISender sender) : BaseController
 {
     [HttpGet]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<ActionResult> GetAll(CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<List<DisputeVM>>>> GetAll(CancellationToken ct)
     {
         var query = new GetAll.Query<DisputeVM>();
         var result = await sender.Send(query, ct);
@@ -29,7 +30,7 @@ public class DisputeController(ISender sender) : BaseController
     }
     
     [HttpGet("by-user")]
-    public async Task<ActionResult> GetAllByUser(CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<List<DisputeVM>>>> GetAllByUser(CancellationToken ct)
     {
         var query = new GetDisputesByUserQuery();
         var result = await sender.Send(query, ct);
@@ -38,7 +39,7 @@ public class DisputeController(ISender sender) : BaseController
 
     [HttpGet("{id}")]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<DisputeVM>>> GetById(Guid id, CancellationToken ct)
     {
         var query = new GetById.Query<Guid, DisputeVM> { Id = id };
         var result = await sender.Send(query, ct);
@@ -46,7 +47,7 @@ public class DisputeController(ISender sender) : BaseController
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create([FromBody] CreateDisputeVM vm, CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<DisputeVM>>> Create([FromBody] CreateDisputeVM vm, CancellationToken ct)
     {
         var command = new Create.Command<CreateDisputeVM, DisputeVM> { Model = vm };
         var result = await sender.Send(command, ct);
@@ -55,7 +56,7 @@ public class DisputeController(ISender sender) : BaseController
 
     [HttpDelete("{id}")]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
+    public async Task<ActionResult<ServiceResponse<DisputeVM>>> Delete(Guid id, CancellationToken ct)
     {
         var command = new Delete.Command<DisputeVM, Guid> { Id = id };
         var result = await sender.Send(command, ct);
@@ -75,7 +76,7 @@ public class DisputeController(ISender sender) : BaseController
     
     [HttpPut("{id}/status")]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<ActionResult> UpdateStatus(Guid id, [FromBody] UpdateDisputeStatusForModeratorVM vm,
+    public async Task<ActionResult<ServiceResponse<DisputeVM>>> UpdateStatus(Guid id, [FromBody] UpdateDisputeStatusForModeratorVM vm,
         CancellationToken ct)
     {
         var command = new Update.Command<UpdateDisputeStatusForModeratorVM, Guid, DisputeVM> { Id = id, Model = vm };
