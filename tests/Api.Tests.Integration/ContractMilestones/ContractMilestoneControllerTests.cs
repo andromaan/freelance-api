@@ -306,7 +306,7 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
     }
 
     [Fact]
-    public async Task ShouldUpdateContractStatusToInProgress_WhenFirstMilestoneInProgress()
+    public async Task ShouldUpdateContractStatusToActive_WhenFirstMilestoneInProgress()
     {
         // Arrange
         var contract =
@@ -330,7 +330,7 @@ public class ContractMilestoneControllerTests(IntegrationTestWebFactory factory)
         // Assert
         var contractFromDb = await Context.Contracts.FirstOrDefaultAsync(x => x.Id == contract.Id);
         contractFromDb.Should().NotBeNull();
-        contractFromDb.Status.Should().Be(ContractStatus.InProgress);
+        contractFromDb.Status.Should().Be(ContractStatus.Active);
     }
 
     [Fact]

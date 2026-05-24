@@ -35,6 +35,14 @@ public class ContractController(ISender sender) : BaseController
 
         return Ok(platforms);
     }
+    
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<Result<ContractVM>>> GetById(Guid id, CancellationToken ct)
+    {
+        var query = new GetContractByIdQuery { ContractId = id };
+        var result = await sender.Send(query, ct);
+        return GetResult(result);
+    }
 
     [Authorize(Roles = Settings.Roles.EmployerRole)]
     [HttpPut]
@@ -56,7 +64,7 @@ public class ContractController(ISender sender) : BaseController
     }
 
     [HttpGet("by-user")]
-    public async Task<ActionResult<Result<List<ContractVM>>>> GetProjectsByEmployer(CancellationToken ct)
+    public async Task<ActionResult<Result<List<ContractVM>>>> GetContractsByEmployer(CancellationToken ct)
     {
         var query = new GetContractByUserQuery();
         var result = await sender.Send(query, ct);
@@ -80,7 +88,7 @@ public class ContractController(ISender sender) : BaseController
     }
 
     [HttpGet("completed-by-freelancer-id/{freelancerId:guid}")]
-    public async Task<ActionResult<Result<List<ContractVM>>>> GetProjectsByFreelancer(Guid freelancerId, CancellationToken ct)
+    public async Task<ActionResult<Result<List<ContractVM>>>> GetContractsByFreelancer(Guid freelancerId, CancellationToken ct)
     {
         var query = new GetContractByFreelancerIdQuery(freelancerId);
         var result = await sender.Send(query, ct);

@@ -65,7 +65,7 @@ public class UpdateContractMilestoneStatusEmployerHandler(
         }
 
         mapper.Map(updateModel, existingEntity);
-        
+
         return Result<ContractMilestoneVM?>.Ok();
     }
 
@@ -75,7 +75,7 @@ public class UpdateContractMilestoneStatusEmployerHandler(
         if (milestone.Status == ContractMilestoneStatus.Approved)
             return BadRequest("Cannot change the status of an approved contract milestone.");
 
-        if (milestone.Status != ContractMilestoneStatus.Submitted)
+        if (milestone is not { Status: ContractMilestoneStatus.Submitted or  ContractMilestoneStatus.UnderReview })
             return BadRequest("Only milestones with 'Submitted' status can be updated by the employer.");
 
         return null;
@@ -178,7 +178,8 @@ public class UpdateContractMilestoneStatusEmployerHandler(
             milestone.CreatedBy, amount, cancellationToken);
 
         if (employerWallet is null)
-            return BadRequest("Insufficient funds in the employer's wallet to process the final payment for contract completion.");
+            return BadRequest(
+                "Insufficient funds in the employer's wallet to process the final payment for contract completion.");
 
         var freelancerWallet = await userWalletRepository.DepositAsync(
             freelancerUserId, amount, cancellationToken);

@@ -39,7 +39,6 @@ public class ContractRepository(AppDbContext appDbContext, IUserProvider userPro
         var activeStatuses = new[]
         {
             ContractStatus.Active,
-            ContractStatus.InProgress,
             ContractStatus.Pending
         };
 

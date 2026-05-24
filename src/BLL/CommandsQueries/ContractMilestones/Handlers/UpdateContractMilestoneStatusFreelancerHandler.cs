@@ -59,7 +59,7 @@ public class UpdateContractMilestoneStatusFreelancerHandler(
         if (contractMilestonesByContract.All(m => m.Status == ContractMilestoneStatus.Pending)
             && updateModel.Status == ContractMilestoneFreelancerStatus.InProgress)
         {
-            contract.Status = ContractStatus.InProgress;
+            contract.Status = ContractStatus.Active;
 
             try
             {
