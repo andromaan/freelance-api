@@ -9,20 +9,20 @@ using MediatR;
 
 namespace BLL.CommandsQueries.UserLanguages;
 
-public record UpdateUserLanguageCommand(UpdateUserLanguageVM UpdateModel) : IRequest<ServiceResponse>;
+public record UpdateUserLanguageCommand(UpdateUserLanguageVM UpdateModel) : IRequest<Result<UserLanguageVM?>>;
 
 public class UpdateUserLanguageCommandHandler(
     IUserProvider userProvider,
     IMapper mapper,
     IUserLanguageRepository userLanguageRepository,
-    ILanguageQueries languageQueries) : IRequestHandler<UpdateUserLanguageCommand, ServiceResponse>
+    ILanguageQueries languageQueries) : IRequestHandler<UpdateUserLanguageCommand, Result<UserLanguageVM?>>
 {
-    public async Task<ServiceResponse> Handle(UpdateUserLanguageCommand request, CancellationToken cancellationToken)
+    public async Task<Result<UserLanguageVM?>> Handle(UpdateUserLanguageCommand request, CancellationToken cancellationToken)
     {
         var language = await languageQueries.GetByIdAsync(request.UpdateModel.LanguageId, cancellationToken);
         if (language == null)
         {
-            return ServiceResponse.NotFound("Language not found");
+            return Result<UserLanguageVM?>.NotFound("Language not found");
         }
 
         try
@@ -32,11 +32,11 @@ public class UpdateUserLanguageCommandHandler(
 
             var updatedEntity = await userLanguageRepository.UpdateAsync(userLanguage, cancellationToken);
 
-            return ServiceResponse.Ok("User language updated", mapper.Map<UserLanguageVM>(updatedEntity));
+            return Result<UserLanguageVM?>.Ok("User language updated", mapper.Map<UserLanguageVM>(updatedEntity));
         }
         catch (Exception exception)
         {
-            return ServiceResponse.InternalError(exception.Message);
+            return Result<UserLanguageVM?>.InternalError(exception.Message);
         }
     }
 }

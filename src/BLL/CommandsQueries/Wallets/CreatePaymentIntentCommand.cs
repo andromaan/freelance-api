@@ -13,32 +13,32 @@ namespace BLL.CommandsQueries.Wallets;
 /// Returns the clientSecret (needed by the frontend to confirm payment via Stripe.js)
 /// and the paymentIntentId (needed to call ConfirmDepositCommand after payment is done).
 /// </summary>
-public record CreatePaymentIntentCommand(CreatePaymentIntentVM Vm) : IRequest<ServiceResponse>;
+public record CreatePaymentIntentCommand(CreatePaymentIntentVM Vm) : IRequest<Result<object?>>;
 
 public class CreatePaymentIntentCommandHandler(
     IStripeService stripeService,
     IUserProvider userProvider,
     IUserWalletQueries userWalletQueries,
     IUserQueries userQueries)
-    : IRequestHandler<CreatePaymentIntentCommand, ServiceResponse>
+    : IRequestHandler<CreatePaymentIntentCommand, Result<object?>>
 {
-    public async Task<ServiceResponse> Handle(
+    public async Task<Result<object?>> Handle(
         CreatePaymentIntentCommand request,
         CancellationToken cancellationToken)
     {
         try
         {
             var userId = await userProvider.GetUserId(cancellationToken);
-            
+
             var user = await userQueries.GetByIdAsync(userId, cancellationToken);
 
             // Ensure wallet exists for this user
             var userWallet = await userWalletQueries.GetByUserIdAsync(userId, cancellationToken);
             if (userWallet is null)
-                return ServiceResponse.NotFound("Wallet not found for current user.");
-            
+                return Result<object?>.NotFound("Wallet not found for current user.");
+
             if (user!.StripeCustomerId is null)
-                return ServiceResponse.BadRequest("User does not have a Stripe customer ID.");
+                return Result<object?>.BadRequest("User does not have a Stripe customer ID.");
 
             var paymentIntent = await stripeService.CreatePaymentIntentAsync(
                 request.Vm.Amount,
@@ -46,7 +46,7 @@ public class CreatePaymentIntentCommandHandler(
                 user.StripeCustomerId,
                 cancellationToken);
 
-            return ServiceResponse.Ok("PaymentIntent created successfully.", new
+            return Result<object?>.Ok("PaymentIntent created successfully.", new
             {
                 PaymentIntentId = paymentIntent.Id,
                 paymentIntent.ClientSecret,
@@ -56,7 +56,7 @@ public class CreatePaymentIntentCommandHandler(
         }
         catch (Exception ex)
         {
-            return ServiceResponse.InternalError(ex.Message);
+            return Result<object?>.InternalError(ex.Message);
         }
     }
 }

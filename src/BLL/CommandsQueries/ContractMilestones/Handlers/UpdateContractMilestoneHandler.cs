@@ -12,22 +12,22 @@ public class UpdateContractMilestoneHandler(
     IContractQueries contractQueries,
     IContractMilestoneQueries milestoneQueries,
     IMapper mapper
-    ) : IUpdateHandler<ContractMilestone, UpdateContractMilestoneVM>
+    ) : IUpdateHandler<ContractMilestone, UpdateContractMilestoneVM, ContractMilestoneVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(
+    public async Task<Result<ContractMilestoneVM?>> HandleAsync(
         ContractMilestone existingEntity,
         UpdateContractMilestoneVM updateModel, CancellationToken cancellationToken)
     {
         if (existingEntity is not { Status: ContractMilestoneStatus.Pending })
         {
-            return ServiceResponse.BadRequest(
+            return Result<ContractMilestoneVM?>.BadRequest(
                 "Only milestones with 'Pending' status can be updated");
         }
         
         // Перевірка чи змінився amount
         if (existingEntity.Amount == updateModel.Amount)
         {
-            return ServiceResponse.Ok();// Якщо amount не змінився, валідація не потрібна і змінна сутності теж
+            return Result<ContractMilestoneVM?>.Ok();// Якщо amount не змінився, валідація не потрібна і змінна сутності теж
         }
 
         // Отримай контракт
@@ -37,7 +37,7 @@ public class UpdateContractMilestoneHandler(
             
         if (contract == null)
         {
-            return ServiceResponse.NotFound(
+            return Result<ContractMilestoneVM?>.NotFound(
                 $"Contract with ID {existingEntity.ContractId} not found");
         }
 
@@ -54,13 +54,13 @@ public class UpdateContractMilestoneHandler(
         // Перевір чи не перевищує бюджет
         if (totalAmount > contract.AgreedRate)
         {
-            return ServiceResponse.BadRequest(
+            return Result<ContractMilestoneVM?>.BadRequest(
                 $"The total amount ({totalAmount}) of milestones exceeds " +
                 $"the contract's agreed rate ({contract.AgreedRate})");
         }
         
         mapper.Map(updateModel, existingEntity);
 
-        return ServiceResponse.Ok();  // Валідація пройшла успішно
+        return Result<ContractMilestoneVM?>.Ok();  // Валідація пройшла успішно
     }
 }

@@ -9,20 +9,20 @@ using MediatR;
 
 namespace BLL.CommandsQueries.UserLanguages;
 
-public record CreateUserLanguageCommand(CreateUserLanguageVM CreateModel) : IRequest<ServiceResponse>;
+public record CreateUserLanguageCommand(CreateUserLanguageVM CreateModel) : IRequest<Result<UserLanguageVM?>>;
 
 public class CreateUserLanguageCommandHandler(
     IUserProvider userProvider,
     IMapper mapper,
     IUserLanguageRepository userLanguageRepository,
-    ILanguageQueries languageQueries) : IRequestHandler<CreateUserLanguageCommand, ServiceResponse>
+    ILanguageQueries languageQueries) : IRequestHandler<CreateUserLanguageCommand, Result<UserLanguageVM?>>
 {
-    public async Task<ServiceResponse> Handle(CreateUserLanguageCommand request, CancellationToken cancellationToken)
+    public async Task<Result<UserLanguageVM?>> Handle(CreateUserLanguageCommand request, CancellationToken cancellationToken)
     {
         var language = await languageQueries.GetByIdAsync(request.CreateModel.LanguageId, cancellationToken);
         if (language == null)
         {
-            return ServiceResponse.NotFound("Language not found");
+            return Result<UserLanguageVM?>.NotFound("Language not found");
         }
 
         try
@@ -32,11 +32,11 @@ public class CreateUserLanguageCommandHandler(
 
             var createdEntity = await userLanguageRepository.CreateAsync(userLanguage, cancellationToken);
 
-            return ServiceResponse.Ok("User language created", mapper.Map<UserLanguageVM>(createdEntity));
+            return Result<UserLanguageVM?>.Ok("User language created", mapper.Map<UserLanguageVM>(createdEntity));
         }
         catch (Exception exception)
         {
-            return ServiceResponse.InternalError(exception.Message);
+            return Result<UserLanguageVM?>.InternalError(exception.Message);
         }
     }
 }

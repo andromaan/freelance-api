@@ -6,9 +6,11 @@ using Domain.Models.Freelance;
 
 namespace BLL.CommandsQueries.Freelancers.Handlers;
 
-public class UpdateFreelancerSkillsHandler(ISkillQueries skillQueries) : IUpdateHandler<Freelancer, UpdateFreelancerSkillsVM>
+public class UpdateFreelancerSkillsHandler(ISkillQueries skillQueries)
+    : IUpdateHandler<Freelancer, UpdateFreelancerSkillsVM, FreelancerVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(Freelancer existingEntity, UpdateFreelancerSkillsVM updateModel,
+    public async Task<Result<FreelancerVM?>> HandleAsync(Freelancer existingEntity,
+        UpdateFreelancerSkillsVM updateModel,
         CancellationToken cancellationToken)
     {
         existingEntity.Skills.Clear();
@@ -18,12 +20,12 @@ public class UpdateFreelancerSkillsHandler(ISkillQueries skillQueries) : IUpdate
             var existingSkill = await skillQueries.GetByIdAsync(langId, cancellationToken);
             if (existingSkill == null)
             {
-                return ServiceResponse.NotFound($"Skill with id {langId} not found");
+                return Result<FreelancerVM?>.NotFound($"Skill with id {langId} not found");
             }
 
             existingEntity.Skills.Add(existingSkill);
         }
-        
-        return ServiceResponse.Ok();
+
+        return Result<FreelancerVM?>.Ok();
     }
 }

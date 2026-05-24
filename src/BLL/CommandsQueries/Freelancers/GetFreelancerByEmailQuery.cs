@@ -7,15 +7,15 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Freelancers;
 
-public record GetFreelancerByEmailQuery(string Email) : IRequest<ServiceResponse>;
+public record GetFreelancerByEmailQuery(string Email) : IRequest<Result<FreelancerVM?>>;
 
 public class GetFreelancerByEmailQueryHandler(
     IFreelancerQueries queriesFreelancer,
     IMapper mapper,
     IUserQueries userQueries)
-    : IRequestHandler<GetFreelancerByEmailQuery, ServiceResponse>
+    : IRequestHandler<GetFreelancerByEmailQuery, Result<FreelancerVM?>>
 {
-    public async Task<ServiceResponse> Handle(GetFreelancerByEmailQuery request, CancellationToken cancellationToken)
+    public async Task<Result<FreelancerVM?>> Handle(GetFreelancerByEmailQuery request, CancellationToken cancellationToken)
     {
         try
         {
@@ -23,21 +23,21 @@ public class GetFreelancerByEmailQueryHandler(
             
             if (user == null)
             {
-                return ServiceResponse.NotFound("User not found with the provided email");
+                return Result<FreelancerVM?>.NotFound("User not found with the provided email");
             }
 
             var freelancer = await queriesFreelancer.GetByUserIdAsync(user.Id, cancellationToken);
             if (freelancer == null)
             {
-                return ServiceResponse.NotFound("Freelancer not found");
+                return Result<FreelancerVM?>.NotFound("Freelancer not found");
             }
 
-            return ServiceResponse.Ok("Freelancer retrieved",
+            return Result<FreelancerVM?>.Ok("Freelancer retrieved",
                 mapper.Map<FreelancerVM>(freelancer));
         }
         catch (Exception exception)
         {
-            return ServiceResponse.InternalError(exception.Message);
+            return Result<FreelancerVM?>.InternalError(exception.Message);
         }
     }
 }

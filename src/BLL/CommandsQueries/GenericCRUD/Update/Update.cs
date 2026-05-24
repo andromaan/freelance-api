@@ -10,8 +10,9 @@ namespace BLL.CommandsQueries.GenericCRUD.Update;
 
 public class Update
 {
-    public record Command<TUpdateViewModel, TKey> : IRequest<ServiceResponse>
+    public record Command<TUpdateViewModel, TKey, TViewModel> : IRequest<Result<TViewModel?>>
         where TUpdateViewModel : class
+        where TViewModel : class
     {
         public required TKey Id { get; init; }
         public required TUpdateViewModel Model { get; init; }
@@ -22,15 +23,15 @@ public class Update
         TQueries queries,
         IMapper mapper,
         IUserProvider userProvider,
-        IEnumerable<IUpdateHandler<TEntity, TUpdateViewModel>> handlers)
-        : IRequestHandler<Command<TUpdateViewModel, TKey>, ServiceResponse>
+        IEnumerable<IUpdateHandler<TEntity, TUpdateViewModel, TViewModel>> handlers)
+        : IRequestHandler<Command<TUpdateViewModel, TKey, TViewModel>, Result<TViewModel?>>
         where TEntity : Entity<TKey>
         where TUpdateViewModel : class
         where TViewModel : class
         where TQueries : IQueries<TEntity, TKey>
     {
-        public async Task<ServiceResponse> Handle(
-            Command<TUpdateViewModel, TKey> request,
+        public async Task<Result<TViewModel?>> Handle(
+            Command<TUpdateViewModel, TKey, TViewModel> request,
             CancellationToken cancellationToken)
         {
             // 1. Check entity existence
@@ -38,7 +39,7 @@ public class Update
 
             if (existingEntity == null)
             {
-                return ServiceResponse.NotFound(
+                return Result<TViewModel?>.NotFound(
                     $"{typeof(TEntity).Name} with ID {request.Id} not found");
             }
 
@@ -53,7 +54,7 @@ public class Update
                     if (auditable.CreatedBy != userId && userRole != Settings.Roles.AdminRole &&
                         userRole != Settings.Roles.ModeratorRole)
                     {
-                        return ServiceResponse.Forbidden(
+                        return Result<TViewModel?>.Forbidden(
                             "You do not have permission to edit this entity");
                     }
                 }
@@ -70,7 +71,7 @@ public class Update
             {
                 if (!await uniqueQuery.IsUniqueAsync(existingEntity, cancellationToken))
                 {
-                    return ServiceResponse.BadRequest(
+                    return Result<TViewModel?>.BadRequest(
                         $"{typeof(TEntity).Name} with the same unique fields already exists");
                 }
             }
@@ -93,13 +94,13 @@ public class Update
             try
             {
                 await repository.UpdateAsync(existingEntity, cancellationToken);
-                return ServiceResponse.Ok(
+                return Result<TViewModel?>.Ok(
                     $"{typeof(TEntity).Name} updated",
                     mapper.Map<TViewModel>(existingEntity));
             }
             catch (Exception exception)
             {
-                return ServiceResponse.InternalError(exception.Message);
+                return Result<TViewModel?>.InternalError(exception.Message);
             }
         }
     }

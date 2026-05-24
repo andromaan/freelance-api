@@ -1,6 +1,7 @@
 using API.Controllers.Common;
 using BLL;
 using BLL.CommandsQueries.Reviews;
+using BLL.Services;
 using BLL.ViewModels.Reviews;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -17,7 +18,7 @@ public class ReviewController(ISender sender)
     : GenericCrudController<Guid, ReviewVM, CreateReviewVM, UpdateReviewVM>(sender)
 {
     [HttpGet("by-reviewed-user/{reviewedUserEmail}")]
-    public async Task<IActionResult> GetByGetReviewedUser(string reviewedUserEmail, CancellationToken ct)
+    public async Task<ActionResult<Result<List<ReviewVM>>>> GetByGetReviewedUser(string reviewedUserEmail, CancellationToken ct)
     {
         var query = new GetByReviewedUserQuery { ReviewedUserEmail = reviewedUserEmail };
         var result = await Sender.Send(query, ct);
@@ -25,7 +26,7 @@ public class ReviewController(ISender sender)
     }
 
     [HttpGet("average-rating/{reviewedUserEmail}")]
-    public async Task<IActionResult> GetAverageRating(string reviewedUserEmail, CancellationToken ct)
+    public async Task<ActionResult<Result<double>>> GetAverageRating(string reviewedUserEmail, CancellationToken ct)
     {
         var query = new GetAverageRatingQuery { ReviewedUserEmail = reviewedUserEmail };
         var result = await Sender.Send(query, ct);
@@ -33,7 +34,7 @@ public class ReviewController(ISender sender)
     }
     
     [HttpGet("by-user")]
-    public async Task<IActionResult> GetByGetReviewer(CancellationToken ct)
+    public async Task<ActionResult<Result<List<ReviewVM>>>> GetByGetReviewer(CancellationToken ct)
     {
         var query = new GetByReviewerQuery();
         var result = await Sender.Send(query, ct);
@@ -41,6 +42,6 @@ public class ReviewController(ISender sender)
     }
     
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<IActionResult> GetAll(CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound());
+    public override Task<ActionResult<Result<List<ReviewVM>>>> GetAll(CancellationToken ct)
+        => Task.FromResult<ActionResult<Result<List<ReviewVM>>>>(NotFound());
 }

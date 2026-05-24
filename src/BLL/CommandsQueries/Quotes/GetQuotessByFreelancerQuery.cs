@@ -7,22 +7,22 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Quotes;
 
-public record GetQuotesByFreelancerQuery : IRequest<ServiceResponse>;
+public record GetQuotesByFreelancerQuery : IRequest<Result<List<QuoteVM>?>>;
 
 public class GetQuotesByFreelancerQueryQueryHandler(
     IQuoteQueries quoteQueries,
     IUserProvider userProvider,
     IMapper mapper)
-    : IRequestHandler<GetQuotesByFreelancerQuery, ServiceResponse>
+    : IRequestHandler<GetQuotesByFreelancerQuery, Result<List<QuoteVM>?>>
 {
-    public async Task<ServiceResponse> Handle(GetQuotesByFreelancerQuery request,
+    public async Task<Result<List<QuoteVM>?>> Handle(GetQuotesByFreelancerQuery request,
         CancellationToken cancellationToken)
     {
         var userId = await userProvider.GetUserId(cancellationToken);
         
         var quotesByFreelancer = await quoteQueries.GetByFreelancerIdAsync(userId, cancellationToken);
         
-        return ServiceResponse.Ok("Quotes by freelancer receive successfully",
+        return Result<List<QuoteVM>?>.Ok("Quotes by freelancer receive successfully",
             mapper.Map<List<QuoteVM>>(quotesByFreelancer));
     }
 }

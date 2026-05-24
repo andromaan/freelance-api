@@ -4,11 +4,12 @@ namespace BLL.Common.Handlers;
 
 /// <summary>
 /// Unified handler for Update operations that combines validation and processing logic.
-/// Returns ServiceResponse on validation/logic failure, or the processed entity on success.
+/// Returns Result on validation/logic failure, or the processed entity on success.
 /// </summary>
-public interface IUpdateHandler<TEntity, TUpdateViewModel>
+public interface IUpdateHandler<TEntity, TUpdateViewModel, TViewModel>
     where TEntity : class
     where TUpdateViewModel : class
+    where TViewModel : class
 {
     /// <summary>
     /// Handles validation and processing for entity update.
@@ -17,11 +18,11 @@ public interface IUpdateHandler<TEntity, TUpdateViewModel>
     /// <param name="updateModel">The update view model</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>
-    /// Result&lt;TEntity, ServiceResponse&gt; where:
+    /// Result&lt;TEntity, Result&gt; where:
     /// - Success case contains the processed entity
-    /// - Failure case contains ServiceResponse with error details
+    /// - Failure case contains Result with error details
     /// </returns>
-    Task<ServiceResponse?> HandleAsync(
+    Task<Result<TViewModel?>> HandleAsync(
         TEntity existingEntity,
         TUpdateViewModel updateModel,
         CancellationToken cancellationToken);

@@ -6,22 +6,22 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Messages;
 
-public record GetMessagesByUserQuery : IRequest<ServiceResponse>;
+public record GetMessagesByUserQuery : IRequest<Result<List<MessageVM>?>>;
 
 public class QueryHandler(IMessageQueries messageQueries, IMapper mapper)
-    : IRequestHandler<GetMessagesByUserQuery, ServiceResponse>
+    : IRequestHandler<GetMessagesByUserQuery, Result<List<MessageVM>?>>
 {
-    public async Task<ServiceResponse> Handle(GetMessagesByUserQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<MessageVM>?>> Handle(GetMessagesByUserQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var messages = await messageQueries.GetByUserAsync(cancellationToken);
 
-            return ServiceResponse.Ok("Messages retrieved", mapper.Map<List<MessageVM>>(messages));
+            return Result<List<MessageVM>?>.Ok("Messages retrieved", mapper.Map<List<MessageVM>>(messages));
         }
         catch (Exception exception)
         {
-            return ServiceResponse.InternalError(exception.Message);
+            return Result<List<MessageVM>?>.InternalError(exception.Message);
         }
     }
 }

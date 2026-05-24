@@ -20,9 +20,9 @@ public class UpdateContractMilestoneStatusFreelancerHandler(
     IContractMilestoneQueries contractMilestoneQueries,
     IContractRepository contractRepository
 )
-    : IUpdateHandler<ContractMilestone, UpdContractMilestoneStatusFreelancerVM>
+    : IUpdateHandler<ContractMilestone, UpdContractMilestoneStatusFreelancerVM, ContractMilestoneVM>
 {
-    public async Task<ServiceResponse?> HandleAsync(
+    public async Task<Result<ContractMilestoneVM?>> HandleAsync(
         ContractMilestone existingEntity,
         UpdContractMilestoneStatusFreelancerVM updateModel,
         CancellationToken cancellationToken)
@@ -34,7 +34,7 @@ public class UpdateContractMilestoneStatusFreelancerHandler(
 
         if (contract!.FreelancerId != freelancer!.Id)
         {
-            return ServiceResponse.Forbidden("You do not have permission to edit this entity");
+            return Result<ContractMilestoneVM?>.Forbidden("You do not have permission to edit this entity");
         }
 
         // Processing: Update contract status if first milestone is in progress
@@ -46,10 +46,10 @@ public class UpdateContractMilestoneStatusFreelancerHandler(
 
         existingEntity.Status = (ContractMilestoneStatus)updateModel.Status;
 
-        return ServiceResponse.Ok(); // Валідація пройшла успішно
+        return Result<ContractMilestoneVM?>.Ok(); // Валідація пройшла успішно
     }
 
-    private async Task<ServiceResponse?> UpdateContractStatusIfNeeded(ContractMilestone existingEntity,
+    private async Task<Result<ContractMilestoneVM?>?> UpdateContractStatusIfNeeded(ContractMilestone existingEntity,
         Contract contract, UpdContractMilestoneStatusFreelancerVM updateModel, CancellationToken cancellationToken)
     {
         var contractMilestonesByContract =
@@ -67,7 +67,7 @@ public class UpdateContractMilestoneStatusFreelancerHandler(
             }
             catch (Exception e)
             {
-                return ServiceResponse.InternalError(e.Message, e.InnerException);
+                return Result<ContractMilestoneVM?>.InternalError(e.Message);
             }
         }
         

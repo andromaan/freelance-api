@@ -6,22 +6,22 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Contracts;
 
-public record GetContractByUserQuery : IRequest<ServiceResponse>;
+public record GetContractByUserQuery : IRequest<Result<List<ContractVM>>>;
 
 public class QueryHandler(IContractQueries contractQueries, IMapper mapper)
-    : IRequestHandler<GetContractByUserQuery, ServiceResponse>
+    : IRequestHandler<GetContractByUserQuery, Result<List<ContractVM>>>
 {
-    public async Task<ServiceResponse> Handle(GetContractByUserQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<ContractVM>>> Handle(GetContractByUserQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var contracts = await contractQueries.GetByUser(cancellationToken);
 
-            return ServiceResponse.Ok("Contracts retrieved", mapper.Map<List<ContractVM>>(contracts));
+            return Result<List<ContractVM>>.Ok("Contracts retrieved", mapper.Map<List<ContractVM>>(contracts));
         }
         catch (Exception exception)
         {
-            return ServiceResponse.InternalError(exception.Message);
+            return Result<List<ContractVM>>.InternalError(exception.Message);
         }
     }
 }

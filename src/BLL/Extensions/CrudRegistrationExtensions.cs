@@ -5,6 +5,7 @@ using BLL.CommandsQueries.GenericCRUD.GetById;
 using BLL.CommandsQueries.GenericCRUD.Update;
 using BLL.Common.Interfaces.Repositories;
 using BLL.Services;
+using BLL.ViewModels;
 using Domain.Common.Abstractions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,89 +21,110 @@ public static class CrudRegistrationExtensions
         where TEntity : Entity<TKey>
         where TQueries : IQueries<TEntity, TKey>
     {
+        var viewModelType = reg.ViewModelType;
+        var entityType = reg.EntityType;
+        var keyType = reg.KeyType;
+        var queriesType = reg.QueriesInterfaceType;
+
+        var responseListType = typeof(Result<>).MakeGenericType(
+            typeof(List<>).MakeGenericType(viewModelType));
+        var responsePaginatedType = typeof(Result<>).MakeGenericType(
+            typeof(PaginatedItemsVM<>).MakeGenericType(viewModelType));
+        var responseSingleType = typeof(Result<>).MakeGenericType(viewModelType);
+
         var handlers = new List<HandlerDescriptor>
         {
             new HandlerDescriptor(
                 typeof(GetAllPaginated.Query<>),
                 typeof(GetAllPaginated.QueryHandler<,,,>),
-                [reg.ViewModelType],
+                responsePaginatedType,
+                [viewModelType],
                 [
-                    reg.EntityType,
-                    reg.KeyType,
-                    reg.ViewModelType,
-                    reg.QueriesInterfaceType
+                    entityType,
+                    keyType,
+                    viewModelType,
+                    queriesType
                 ]),
 
             new HandlerDescriptor(
                 typeof(GetAll.Query<>),
                 typeof(GetAll.QueryHandler<,,,>),
-                [reg.ViewModelType],
+                responseListType,
+                [viewModelType],
                 [
-                    reg.EntityType,
-                    reg.KeyType,
-                    reg.ViewModelType,
-                    reg.QueriesInterfaceType
+                    entityType,
+                    keyType,
+                    viewModelType,
+                    queriesType
                 ]),
 
             new HandlerDescriptor(
                 typeof(GetById.Query<,>),
                 typeof(GetById.QueryHandler<,,,>),
-                [reg.KeyType, reg.ViewModelType],
+                responseSingleType,
+                [keyType, viewModelType],
                 [
-                    reg.EntityType,
-                    reg.KeyType,
-                    reg.ViewModelType,
-                    reg.QueriesInterfaceType
+                    entityType,
+                    keyType,
+                    viewModelType,
+                    queriesType
                 ]),
 
             new HandlerDescriptor(
                 typeof(Delete.Command<,>),
                 typeof(Delete.CommandHandler<,,>),
-                [reg.ViewModelType, reg.KeyType],
-                [reg.ViewModelType, reg.EntityType, reg.KeyType])
+                responseSingleType,
+                [viewModelType, keyType],
+                [viewModelType, entityType, keyType])
         };
 
         if (reg.CreateViewModelType != null)
         {
             handlers.Add(new HandlerDescriptor(
-                typeof(Create.Command<>),
+                typeof(Create.Command<,>),
                 typeof(Create.CommandHandler<,,,,>),
-                [reg.CreateViewModelType],
+                responseSingleType,
+                [reg.CreateViewModelType, viewModelType],
                 [
                     reg.CreateViewModelType,
-                    reg.ViewModelType,
-                    reg.EntityType,
-                    reg.KeyType,
-                    reg.QueriesInterfaceType
+                    viewModelType,
+                    entityType,
+                    keyType,
+                    queriesType
                 ]));
         }
 
         if (reg.UpdateViewModelType != null)
         {
             handlers.Add(new HandlerDescriptor(
-                typeof(Update.Command<,>),
+                typeof(Update.Command<,,>),
                 typeof(Update.CommandHandler<,,,,>),
-                [reg.UpdateViewModelType, reg.KeyType],
+                responseSingleType,
+                [reg.UpdateViewModelType, keyType, viewModelType],
                 [
                     reg.UpdateViewModelType,
-                    reg.ViewModelType,
-                    reg.EntityType,
-                    reg.KeyType,
-                    reg.QueriesInterfaceType
+                    viewModelType,
+                    entityType,
+                    keyType,
+                    queriesType
                 ]));
         }
-        
+
         if (reg.FilteringViewModelType != null)
         {
+            var filteringResponseType = typeof(Result<>).MakeGenericType(
+                typeof(PaginatedItemsVM<>).MakeGenericType(viewModelType));
+
             handlers.Add(new HandlerDescriptor(
-                typeof(GetAllFilteredPaginated.Query<>),
+                typeof(GetAllFilteredPaginated.Query<,>),
                 typeof(GetAllFilteredPaginated.QueryHandler<,,,,>),
-                [reg.FilteringViewModelType],
+                filteringResponseType,
+                [reg.FilteringViewModelType, viewModelType],
                 [
-                    reg.EntityType,
-                    reg.KeyType,
-                    reg.ViewModelType,
-                    reg.QueriesInterfaceType,
+                    entityType,
+                    keyType,
+                    viewModelType,
+                    queriesType,
                     reg.FilteringViewModelType
                 ]));
         }
@@ -118,15 +140,16 @@ public static class CrudRegistrationExtensions
             foreach (var createVm in specificCreateVMs)
             {
                 var createHandler = new HandlerDescriptor(
-                    typeof(Create.Command<>),
+                    typeof(Create.Command<,>),
                     typeof(Create.CommandHandler<,,,,>),
-                    [createVm],
+                    responseSingleType,
+                    [createVm, viewModelType],
                     [
                         createVm,
-                        reg.ViewModelType,
-                        reg.EntityType,
-                        reg.KeyType,
-                        reg.QueriesInterfaceType
+                        viewModelType,
+                        entityType,
+                        keyType,
+                        queriesType
                     ]);
                 RegisterHandler(services, createHandler);
             }
@@ -138,15 +161,16 @@ public static class CrudRegistrationExtensions
             foreach (var updateVm in specificUpdateVMs)
             {
                 var updateHandler = new HandlerDescriptor(
-                    typeof(Update.Command<,>),
+                    typeof(Update.Command<,,>),
                     typeof(Update.CommandHandler<,,,,>),
-                    [updateVm, reg.KeyType],
+                    responseSingleType,
+                    [updateVm, keyType, viewModelType],
                     [
                         updateVm,
-                        reg.ViewModelType,
-                        reg.EntityType,
-                        reg.KeyType,
-                        reg.QueriesInterfaceType
+                        viewModelType,
+                        entityType,
+                        keyType,
+                        queriesType
                     ]);
                 RegisterHandler(services, updateHandler);
             }
@@ -157,7 +181,7 @@ public static class CrudRegistrationExtensions
     {
         var requestType = descriptor.RequestType.MakeGenericType(descriptor.RequestTypeArgs);
         var handlerType = descriptor.HandlerType.MakeGenericType(descriptor.HandlerTypeArgs);
-        var serviceType = typeof(IRequestHandler<,>).MakeGenericType(requestType, typeof(ServiceResponse));
+        var serviceType = typeof(IRequestHandler<,>).MakeGenericType(requestType, descriptor.ResponseType);
 
         services.AddTransient(serviceType, handlerType);
     }
@@ -165,6 +189,7 @@ public static class CrudRegistrationExtensions
     private record HandlerDescriptor(
         Type RequestType,
         Type HandlerType,
+        Type ResponseType,
         Type[] RequestTypeArgs,
         Type[] HandlerTypeArgs);
 }

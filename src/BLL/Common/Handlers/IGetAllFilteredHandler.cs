@@ -1,12 +1,14 @@
 using BLL.Services;
+using BLL.ViewModels;
 
 namespace BLL.Common.Handlers;
 
-public interface IGetAllFilteredHandler<TEntity, in TFilterViewModel>
+public interface IGetAllFilteredHandler<TEntity, in TFilterViewModel, TViewModel>
     where TEntity : class
     where TFilterViewModel : class
+    where TViewModel : class
 {
-    Task<(ServiceResponse response, List<TEntity>? filteredEntities)> HandleAsync(
+    Task<(Result<PaginatedItemsVM<TViewModel>?> response, List<TEntity>? filteredEntities)> HandleAsync(
         List<TEntity> entities,
         TFilterViewModel filter,
         CancellationToken cancellationToken);

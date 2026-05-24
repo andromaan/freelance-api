@@ -8,7 +8,7 @@ namespace API.Controllers.Common;
 public class DefaultController : ControllerBase
 {
     [HttpGet]
-    public IActionResult Index()
+    public ActionResult Index()
     {
         return Redirect("/swagger/index.html");
     }

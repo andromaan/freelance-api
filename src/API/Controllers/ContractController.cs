@@ -2,6 +2,7 @@ using API.Controllers.Common;
 using BLL;
 using BLL.CommandsQueries.Contracts;
 using BLL.CommandsQueries.GenericCRUD.Update;
+using BLL.Services;
 using BLL.ViewModels.Contract;
 using Domain.Models.Contracts;
 using MediatR;
@@ -18,7 +19,7 @@ public class ContractController(ISender sender) : BaseController
 {
     [Authorize(Roles = Settings.Roles.EmployerRole)]
     [HttpPost("{quoteId:guid}")]
-    public async Task<IActionResult> CreateContract([FromRoute] Guid quoteId, CancellationToken ct)
+    public async Task<ActionResult<Result<ContractVM>>> CreateContract([FromRoute] Guid quoteId, CancellationToken ct)
     {
         var command = new CreateContractCommand { QuoteId = quoteId };
         var result = await sender.Send(command, ct);
@@ -26,7 +27,7 @@ public class ContractController(ISender sender) : BaseController
     }
 
     [HttpGet("status-enums")]
-    public IActionResult GetPlatformsAsync()
+    public ActionResult GetPlatformsAsync()
     {
         var platforms = Enum.GetValues<ContractStatus>()
             .Select(x => new { Name = x.ToString(), Value = (int)x })
@@ -37,25 +38,25 @@ public class ContractController(ISender sender) : BaseController
 
     [Authorize(Roles = Settings.Roles.EmployerRole)]
     [HttpPut]
-    public async Task<IActionResult> UpdateContract(Guid contractId, UpdateContractVM vm, CancellationToken ct)
+    public async Task<ActionResult<Result<ContractVM>>> UpdateContract(Guid contractId, UpdateContractVM vm, CancellationToken ct)
     {
-        var command = new Update.Command<UpdateContractVM, Guid> { Id = contractId, Model = vm };
+        var command = new Update.Command<UpdateContractVM, Guid, ContractVM> { Id = contractId, Model = vm };
         var result = await sender.Send(command, ct);
         return GetResult(result);
     }
 
     [Authorize(Roles = Settings.Roles.EmployerRole)]
     [HttpPut("update-status/{contractId:guid}")]
-    public async Task<IActionResult> UpdateContractStatus(Guid contractId, UpdateContractStatusVM vm,
+    public async Task<ActionResult<Result<ContractVM>>> UpdateContractStatus(Guid contractId, UpdateContractStatusVM vm,
         CancellationToken ct)
     {
-        var command = new Update.Command<UpdateContractStatusVM, Guid> { Id = contractId, Model = vm };
+        var command = new Update.Command<UpdateContractStatusVM, Guid, ContractVM> { Id = contractId, Model = vm };
         var result = await sender.Send(command, ct);
         return GetResult(result);
     }
 
     [HttpGet("by-user")]
-    public async Task<IActionResult> GetProjectsByEmployer(CancellationToken ct)
+    public async Task<ActionResult<Result<List<ContractVM>>>> GetProjectsByEmployer(CancellationToken ct)
     {
         var query = new GetContractByUserQuery();
         var result = await sender.Send(query, ct);
@@ -63,7 +64,7 @@ public class ContractController(ISender sender) : BaseController
     }
 
     [HttpGet("can-contract-be-created/{quoteId:guid}")]
-    public async Task<IActionResult> CanContractBeCreated(Guid quoteId, CancellationToken ct)
+    public async Task<ActionResult<Result<bool>>> CanContractBeCreated(Guid quoteId, CancellationToken ct)
     {
         var query = new CanContractBeCreatedQuery { QuoteId = quoteId };
         var result = await sender.Send(query, ct);
@@ -71,7 +72,7 @@ public class ContractController(ISender sender) : BaseController
     }
     
     [HttpGet("is-exists-by-quote/{quoteId:guid}")]
-    public async Task<IActionResult> IsExistsByQuote(Guid quoteId, CancellationToken ct)
+    public async Task<ActionResult<Result<bool>>> IsExistsByQuote(Guid quoteId, CancellationToken ct)
     {
         var query = new IsExistsByQuoteQuery { QuoteId = quoteId };
         var result = await sender.Send(query, ct);
@@ -79,7 +80,7 @@ public class ContractController(ISender sender) : BaseController
     }
 
     [HttpGet("completed-by-freelancer-id/{freelancerId:guid}")]
-    public async Task<IActionResult> GetProjectsByEmployer(Guid freelancerId, CancellationToken ct)
+    public async Task<ActionResult<Result<List<ContractVM>>>> GetProjectsByFreelancer(Guid freelancerId, CancellationToken ct)
     {
         var query = new GetContractByFreelancerIdQuery(freelancerId);
         var result = await sender.Send(query, ct);

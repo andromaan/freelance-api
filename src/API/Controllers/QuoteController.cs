@@ -1,6 +1,7 @@
 using API.Controllers.Common;
 using BLL;
 using BLL.CommandsQueries.Quotes;
+using BLL.Services;
 using BLL.ViewModels;
 using BLL.ViewModels.Quote;
 using MediatR;
@@ -17,7 +18,7 @@ public class QuoteController(ISender sender)
     : GenericCrudController<Guid, QuoteVM, CreateQuoteVM, UpdateQuoteVM>(sender)
 {
     [HttpGet("by-project/{projectId}")]
-    public async Task<IActionResult> GetByProjectId(Guid projectId, CancellationToken ct)
+    public async Task<ActionResult<Result<List<QuoteVM>>>> GetByProjectId(Guid projectId, CancellationToken ct)
     {
         var query = new GetQuotesByProjectIdQuery { ProjectId = projectId };
         var result = await Sender.Send(query, ct);
@@ -26,7 +27,7 @@ public class QuoteController(ISender sender)
     
     [Authorize(Roles = Settings.Roles.FreelancerRole)]
     [HttpGet("by-freelancer")]
-    public async Task<IActionResult> GetByFreelancer(CancellationToken ct)
+    public async Task<ActionResult<Result<List<QuoteVM>>>> GetByFreelancer(CancellationToken ct)
     {
         var query = new GetQuotesByFreelancerQuery();
         var result = await Sender.Send(query, ct);
@@ -34,10 +35,10 @@ public class QuoteController(ISender sender)
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<IActionResult> GetAll(CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound());
+    public override Task<ActionResult<Result<List<QuoteVM>>>> GetAll(CancellationToken ct)
+        => Task.FromResult<ActionResult<Result<List<QuoteVM>>>>(NotFound());
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<IActionResult> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound());
+    public override Task<ActionResult<Result<PaginatedItemsVM<QuoteVM>>>> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+        => Task.FromResult<ActionResult<Result<PaginatedItemsVM<QuoteVM>>>>(NotFound());
 }

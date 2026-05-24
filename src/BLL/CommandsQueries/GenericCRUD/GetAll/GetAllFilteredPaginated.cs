@@ -10,21 +10,22 @@ namespace BLL.CommandsQueries.GenericCRUD.GetAll;
 
 public class GetAllFilteredPaginated
 {
-    public record Query<TFilteringModel>(PagedVM PagedVm, TFilteringModel FilteringVm)
-        : IRequest<ServiceResponse>
-        where TFilteringModel : class;
+    public record Query<TFilteringModel, TViewModel>(PagedVM PagedVm, TFilteringModel FilteringVm)
+        : IRequest<Result<PaginatedItemsVM<TViewModel>?>>
+        where TFilteringModel : class
+        where TViewModel : class;
 
     public class QueryHandler<TEntity, TKey, TViewModel, TQueries, TFilteringModel>(
         TQueries queries,
         IMapper mapper,
-        IGetAllFilteredHandler<TEntity, TFilteringModel> handler)
-        : IRequestHandler<Query<TFilteringModel>, ServiceResponse>
+        IGetAllFilteredHandler<TEntity, TFilteringModel, TViewModel> handler)
+        : IRequestHandler<Query<TFilteringModel, TViewModel>, Result<PaginatedItemsVM<TViewModel>?>>
         where TEntity : Entity<TKey>
         where TViewModel : class
         where TFilteringModel : class
         where TQueries : IQueries<TEntity, TKey>
     {
-        public async Task<ServiceResponse> Handle(Query<TFilteringModel> request,
+        public async Task<Result<PaginatedItemsVM<TViewModel>?>> Handle(Query<TFilteringModel, TViewModel> request,
             CancellationToken cancellationToken)
         {
             try
@@ -57,11 +58,11 @@ public class GetAllFilteredPaginated
                     PageCount = (int)Math.Ceiling((double)totalCount / request.PagedVm.PageSize),
                 };
 
-                return ServiceResponse.Ok($"{typeof(TEntity).Name}s retrieved", pagedResponse);
+                return Result<PaginatedItemsVM<TViewModel>?>.Ok($"{typeof(TEntity).Name}s retrieved", pagedResponse);
             }
             catch (Exception exception)
             {
-                return ServiceResponse.InternalError(exception.Message);
+                return Result<PaginatedItemsVM<TViewModel>?>.InternalError(exception.Message);
             }
         }
     }

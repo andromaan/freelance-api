@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace BLL.CommandsQueries.Freelancers.FluentValidations;
 
-public class UpdateFreelancerCommandValidator : AbstractValidator<UpdateByUser.Command<UpdateFreelancerVM>>
+public class UpdateFreelancerCommandValidator : AbstractValidator<UpdateByUser.Command<UpdateFreelancerVM, FreelancerVM>>
 {
     public UpdateFreelancerCommandValidator()
     {

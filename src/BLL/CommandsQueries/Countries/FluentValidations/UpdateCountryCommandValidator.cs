@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace BLL.CommandsQueries.Countries.FluentValidations;
 
-public class UpdateCountryCommandValidator : AbstractValidator<Update.Command<UpdateCountryVM, int>>
+public class UpdateCountryCommandValidator : AbstractValidator<Update.Command<UpdateCountryVM, int, CountryVM>>
 {
     public UpdateCountryCommandValidator()
     {

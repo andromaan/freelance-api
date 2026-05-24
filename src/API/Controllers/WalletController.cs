@@ -1,6 +1,7 @@
 using API.Controllers.Common;
 using BLL;
 using BLL.CommandsQueries.Wallets;
+using BLL.Services;
 using BLL.ViewModels.Wallet;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,7 +16,7 @@ namespace API.Controllers;
 public class WalletController(ISender sender) : BaseController
 {
     [HttpGet("balance")]
-    public async Task<IActionResult> GetBalance(CancellationToken ct)
+    public async Task<ActionResult<Result<UserWalletVM>>> GetBalance(CancellationToken ct)
     {
         var result = await sender.Send(new GetWalletBalanceQuery(), ct);
         return GetResult(result);
@@ -28,7 +29,7 @@ public class WalletController(ISender sender) : BaseController
     /// </summary>
     [Authorize(Policy = Settings.Roles.AdminOrEmployer)]
     [HttpPost("create-payment-intent")]
-    public async Task<IActionResult> CreatePaymentIntent(
+    public async Task<ActionResult<Result<object>>> CreatePaymentIntent(
         [FromBody] CreatePaymentIntentVM vm,
         CancellationToken ct)
     {
@@ -43,7 +44,7 @@ public class WalletController(ISender sender) : BaseController
     /// </summary>
     [Authorize(Policy = Settings.Roles.AdminOrEmployer)]
     [HttpPost("confirm-deposit")]
-    public async Task<IActionResult> ConfirmDeposit(
+    public async Task<ActionResult<Result<object>>> ConfirmDeposit(
         [FromBody] ConfirmDepositVM vm,
         CancellationToken ct)
     {

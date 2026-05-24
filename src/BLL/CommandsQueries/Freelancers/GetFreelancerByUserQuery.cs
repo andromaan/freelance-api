@@ -7,15 +7,15 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Freelancers;
 
-public record GetFreelancerByUserQuery : IRequest<ServiceResponse>;
+public record GetFreelancerByUserQuery : IRequest<Result<FreelancerVM?>>;
 
 public class QueryHandler(
     IFreelancerQueries queriesFreelancer,
     IUserProvider userProvider,
     IMapper mapper)
-    : IRequestHandler<GetFreelancerByUserQuery, ServiceResponse>
+    : IRequestHandler<GetFreelancerByUserQuery, Result<FreelancerVM?>>
 {
-    public async Task<ServiceResponse> Handle(GetFreelancerByUserQuery request, CancellationToken cancellationToken)
+    public async Task<Result<FreelancerVM?>> Handle(GetFreelancerByUserQuery request, CancellationToken cancellationToken)
     {
         try
         {
@@ -24,15 +24,15 @@ public class QueryHandler(
             var freelancer = await queriesFreelancer.GetByUserIdAsync(userId, cancellationToken, includes: true);
             if (freelancer == null)
             {
-                return ServiceResponse.NotFound("Freelancer not found");
+                return Result<FreelancerVM?>.NotFound("Freelancer not found");
             }
 
-            return ServiceResponse.Ok("Freelancer retrieved",
+            return Result<FreelancerVM?>.Ok("Freelancer retrieved",
                 mapper.Map<FreelancerVM>(freelancer));
         }
         catch (Exception exception)
         {
-            return ServiceResponse.InternalError(exception.Message);
+            return Result<FreelancerVM?>.InternalError(exception.Message);
         }
     }
 }

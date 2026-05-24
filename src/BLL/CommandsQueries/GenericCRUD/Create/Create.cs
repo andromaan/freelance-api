@@ -9,7 +9,9 @@ namespace BLL.CommandsQueries.GenericCRUD.Create;
 
 public class Create
 {
-    public record Command<TCreateViewModel> : IRequest<ServiceResponse> where TCreateViewModel : class
+    public record Command<TCreateViewModel, TViewModel> : IRequest<Result<TViewModel?>>
+        where TCreateViewModel : class
+        where TViewModel : class
     {
         public required TCreateViewModel Model { get; init; }
     }
@@ -18,14 +20,14 @@ public class Create
         IRepository<TEntity, TKey> repository,
         IMapper mapper,
         TQueries queries,
-        IEnumerable<ICreateHandler<TEntity, TCreateViewModel>> handlers)
-        : IRequestHandler<Command<TCreateViewModel>, ServiceResponse>
+        IEnumerable<ICreateHandler<TEntity, TCreateViewModel, TViewModel>> handlers)
+        : IRequestHandler<Command<TCreateViewModel, TViewModel>, Result<TViewModel?>>
         where TEntity : Entity<TKey>
         where TCreateViewModel : class
         where TViewModel : class
         where TQueries : IQueries<TEntity, TKey>
     {
-        public async Task<ServiceResponse> Handle(Command<TCreateViewModel> request,
+        public async Task<Result<TViewModel?>> Handle(Command<TCreateViewModel, TViewModel> request,
             CancellationToken cancellationToken)
         {
             // 1. Map to entity
@@ -36,7 +38,7 @@ public class Create
             {
                 if (!await uniqueQuery.IsUniqueAsync(mappedEntity, cancellationToken))
                 {
-                    return ServiceResponse.BadRequest(
+                    return Result<TViewModel?>.BadRequest(
                         $"{typeof(TEntity).Name} with the same unique fields already exists");
                 }
             }
@@ -60,12 +62,12 @@ public class Create
 
                 // 4. Save to database
                 var createdEntity = await repository.CreateAsync(mappedEntity!, cancellationToken);
-                return ServiceResponse.Ok($"{typeof(TEntity).Name} created",
+                return Result<TViewModel?>.Ok($"{typeof(TEntity).Name} created",
                     mapper.Map<TViewModel>(createdEntity));
             }
             catch (Exception exception)
             {
-                return ServiceResponse.InternalError(exception.Message, data: exception.InnerException?.Message);
+                return Result<TViewModel?>.InternalError(exception.Message);
             }
         }
     }

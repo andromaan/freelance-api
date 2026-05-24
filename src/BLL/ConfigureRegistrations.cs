@@ -64,16 +64,16 @@ public static class ConfigureRegistrations
         services.Scan(scan => scan
             .FromAssemblyOf<BLLClassForScanning>()
             // New unified handlers
-            .AddClasses(classes => classes.AssignableTo(typeof(ICreateHandler<,>)))
+            .AddClasses(classes => classes.AssignableTo(typeof(ICreateHandler<,,>)))
             .AsImplementedInterfaces()
             .WithScopedLifetime()
-            .AddClasses(classes => classes.AssignableTo(typeof(IUpdateHandler<,>)))
+            .AddClasses(classes => classes.AssignableTo(typeof(IUpdateHandler<,,>)))
             .AsImplementedInterfaces()
             .WithScopedLifetime()
-            .AddClasses(classes => classes.AssignableTo(typeof(IDeleteHandler<>)))
+            .AddClasses(classes => classes.AssignableTo(typeof(IDeleteHandler<,>)))
             .AsImplementedInterfaces()
             .WithScopedLifetime()
-            .AddClasses(classes => classes.AssignableTo(typeof(IGetAllFilteredHandler<,>)))
+            .AddClasses(classes => classes.AssignableTo(typeof(IGetAllFilteredHandler<,,>)))
             .AsImplementedInterfaces()
             .WithScopedLifetime()
         );
