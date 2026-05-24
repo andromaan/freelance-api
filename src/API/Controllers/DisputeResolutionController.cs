@@ -20,7 +20,7 @@ public class DisputeResolutionController(ISender sender) : BaseController
 {
     [HttpGet]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<ActionResult<ServiceResponse<List<DisputeResolutionVM>>>> GetAll(CancellationToken ct)
+    public async Task<ActionResult<Result<List<DisputeResolutionVM>>>> GetAll(CancellationToken ct)
     {
         var query = new GetAll.Query<DisputeResolutionVM>();
         var result = await sender.Send(query, ct);
@@ -38,7 +38,7 @@ public class DisputeResolutionController(ISender sender) : BaseController
 
     [HttpGet("{id}")]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<ActionResult<ServiceResponse<DisputeResolutionVM>>> GetById(Guid id, CancellationToken ct)
+    public async Task<ActionResult<Result<DisputeResolutionVM>>> GetById(Guid id, CancellationToken ct)
     {
         var query = new GetById.Query<Guid, DisputeResolutionVM> { Id = id };
         var result = await sender.Send(query, ct);
@@ -47,7 +47,7 @@ public class DisputeResolutionController(ISender sender) : BaseController
 
     [HttpPost]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<ActionResult<ServiceResponse<DisputeResolutionVM>>> Create([FromBody] CreateDisputeResolutionVM vm, CancellationToken ct)
+    public async Task<ActionResult<Result<DisputeResolutionVM>>> Create([FromBody] CreateDisputeResolutionVM vm, CancellationToken ct)
     {
         var command = new Create.Command<CreateDisputeResolutionVM, DisputeResolutionVM> { Model = vm };
         var result = await sender.Send(command, ct);
@@ -56,7 +56,7 @@ public class DisputeResolutionController(ISender sender) : BaseController
 
     [HttpDelete("{id}")]
     [Authorize(Policy = Settings.Roles.AdminOrModerator)]
-    public async Task<ActionResult<ServiceResponse<DisputeResolutionVM>>> Delete(Guid id, CancellationToken ct)
+    public async Task<ActionResult<Result<DisputeResolutionVM>>> Delete(Guid id, CancellationToken ct)
     {
         var command = new Delete.Command<DisputeResolutionVM, Guid> { Id = id };
         var result = await sender.Send(command, ct);

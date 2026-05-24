@@ -25,7 +25,7 @@ public class CreateBidHandler(
     IBidQueries bidQueries)
     : ICreateHandler<Bid, CreateBidVM, BidVM>
 {
-    public async Task<ServiceResponse<BidVM?>> HandleAsync(
+    public async Task<Result<BidVM?>> HandleAsync(
         Bid entity,
         CreateBidVM createModel,
         CancellationToken cancellationToken)
@@ -35,7 +35,7 @@ public class CreateBidHandler(
 
         if (existingProject is null)
         {
-            return ServiceResponse<BidVM?>.NotFound($"Project with Id {createModel.ProjectId} not found");
+            return Result<BidVM?>.NotFound($"Project with Id {createModel.ProjectId} not found");
         }
 
         // Processing: Set FreelancerId from current user
@@ -44,12 +44,12 @@ public class CreateBidHandler(
 
         if (existingFreelancer is null)
         {
-            return ServiceResponse<BidVM?>.NotFound("Freelancer not found for current user");
+            return Result<BidVM?>.NotFound("Freelancer not found for current user");
         }
 
         if (existingProject.Budget < createModel.Amount)
         {
-            return ServiceResponse<BidVM?>.BadRequest(
+            return Result<BidVM?>.BadRequest(
                 $"Bid amount {createModel.Amount} exceeds project budget {existingProject.Budget}");
         }
 
@@ -58,7 +58,7 @@ public class CreateBidHandler(
         var bidsByProject = await bidQueries.GetByProjectIdAsync(createModel.ProjectId, cancellationToken);
         if (bidsByProject.Any(b => b.FreelancerId == entity.FreelancerId))
         {
-            return ServiceResponse<BidVM?>.BadRequest("You have already placed a bid on this project");
+            return Result<BidVM?>.BadRequest("You have already placed a bid on this project");
         }
 
         // Notify: Find employer (owner of the project) and send notification
@@ -74,7 +74,7 @@ public class CreateBidHandler(
         }
 
         // Return success with processed entity
-        return ServiceResponse<BidVM?>.Ok();
+        return Result<BidVM?>.Ok();
     }
 }
 

@@ -15,7 +15,7 @@ public class CreateProjectMilestoneHandler(
     IProjectMilestoneQueries milestoneQueries
 ) : ICreateHandler<ProjectMilestone, CreateProjectMilestoneVM, ProjectMilestoneVM>
 {
-    public async Task<ServiceResponse<ProjectMilestoneVM?>> HandleAsync(ProjectMilestone? entity,
+    public async Task<Result<ProjectMilestoneVM?>> HandleAsync(ProjectMilestone? entity,
         CreateProjectMilestoneVM createModel, CancellationToken cancellationToken)
     {
         var userRole = userProvider.GetUserRole();
@@ -25,12 +25,12 @@ public class CreateProjectMilestoneHandler(
 
         if (existingProject is null)
         {
-            return ServiceResponse<ProjectMilestoneVM?>.NotFound($"Project with Id {createModel.ProjectId} not found");
+            return Result<ProjectMilestoneVM?>.NotFound($"Project with Id {createModel.ProjectId} not found");
         }
 
         if (existingProject.CreatedBy != userId && userRole != Settings.Roles.AdminRole)
         {
-            return ServiceResponse<ProjectMilestoneVM?>.Unauthorized("You are not authorized to create a milestone for this project");
+            return Result<ProjectMilestoneVM?>.Unauthorized("You are not authorized to create a milestone for this project");
         }
 
         var existingMilestones =
@@ -39,12 +39,12 @@ public class CreateProjectMilestoneHandler(
         var totalMilestoneAmount = existingMilestones.Sum(x => x.Amount) + createModel.Amount;
         if (totalMilestoneAmount > existingProject.Budget)
         {
-            return ServiceResponse<ProjectMilestoneVM?>.GetResponse(
+            return Result<ProjectMilestoneVM?>.GetResponse(
                 $"The total amount ({totalMilestoneAmount}) of milestones exceeds " +
                 $"the project's budged ({existingProject.Budget})",
                 false, null, HttpStatusCode.BadRequest);
         }
 
-        return ServiceResponse<ProjectMilestoneVM?>.Ok(); // Валідація пройшла успішно
+        return Result<ProjectMilestoneVM?>.Ok(); // Валідація пройшла успішно
     }
 }

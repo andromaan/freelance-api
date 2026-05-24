@@ -7,21 +7,21 @@ namespace BLL.CommandsQueries.Notifications;
 
 public class MarkNotificationAsRead
 {
-    public record Command(Guid NotificationId) : IRequest<ServiceResponse<string>>;
+    public record Command(Guid NotificationId) : IRequest<Result<string>>;
 
     public class CommandHandler(
         INotificationRepository repository,
-        IUserProvider userProvider) : IRequestHandler<Command, ServiceResponse<string>>
+        IUserProvider userProvider) : IRequestHandler<Command, Result<string>>
     {
-        public async Task<ServiceResponse<string>> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<Result<string>> Handle(Command request, CancellationToken cancellationToken)
         {
             var userId = await userProvider.GetUserId(cancellationToken);
 
             var notification = await repository.MarkAsReadAsync(request.NotificationId, userId, cancellationToken);
 
             return notification is null
-                ? ServiceResponse<string>.NotFound($"Notification {request.NotificationId} not found or it's system notification.")
-                : ServiceResponse<string>.Ok();
+                ? Result<string>.NotFound($"Notification {request.NotificationId} not found or it's system notification.")
+                : Result<string>.Ok();
         }
     }
 }

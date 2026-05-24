@@ -20,7 +20,7 @@ public abstract class GenericCrudController<TKey, TViewModel, TCreateViewModel, 
     protected readonly ISender Sender = sender;
 
     [HttpGet]
-    public virtual async Task<ActionResult<ServiceResponse<List<TViewModel>>>> GetAll(CancellationToken ct)
+    public virtual async Task<ActionResult<Result<List<TViewModel>>>> GetAll(CancellationToken ct)
     {
         var query = new GetAll.Query<TViewModel>();
         var result = await Sender.Send(query, ct);
@@ -28,7 +28,7 @@ public abstract class GenericCrudController<TKey, TViewModel, TCreateViewModel, 
     }
 
     [HttpGet("paginated")]
-    public virtual async Task<ActionResult<ServiceResponse<PaginatedItemsVM<TViewModel>>>> GetAllPaginated([FromQuery] PagedVM pagedVm, CancellationToken ct)
+    public virtual async Task<ActionResult<Result<PaginatedItemsVM<TViewModel>>>> GetAllPaginated([FromQuery] PagedVM pagedVm, CancellationToken ct)
     {
         var query = new GetAllPaginated.Query<TViewModel>(pagedVm);
         var result = await Sender.Send(query, ct);
@@ -36,7 +36,7 @@ public abstract class GenericCrudController<TKey, TViewModel, TCreateViewModel, 
     }
 
     [HttpGet("{id}")]
-    public virtual async Task<ActionResult<ServiceResponse<TViewModel>>> GetById(TKey id, CancellationToken ct)
+    public virtual async Task<ActionResult<Result<TViewModel>>> GetById(TKey id, CancellationToken ct)
     {
         var query = new GetById.Query<TKey, TViewModel> { Id = id };
         var result = await Sender.Send(query, ct);
@@ -44,7 +44,7 @@ public abstract class GenericCrudController<TKey, TViewModel, TCreateViewModel, 
     }
 
     [HttpPost]
-    public virtual async Task<ActionResult<ServiceResponse<TViewModel>>> Create([FromBody] TCreateViewModel vm, CancellationToken ct)
+    public virtual async Task<ActionResult<Result<TViewModel>>> Create([FromBody] TCreateViewModel vm, CancellationToken ct)
     {
         var command = new Create.Command<TCreateViewModel, TViewModel> { Model = vm };
         var result = await Sender.Send(command, ct);
@@ -52,7 +52,7 @@ public abstract class GenericCrudController<TKey, TViewModel, TCreateViewModel, 
     }
 
     [HttpPut("{id}")]
-    public virtual async Task<ActionResult<ServiceResponse<TViewModel>>> Update(TKey id, [FromBody] TUpdateViewModel vm, CancellationToken ct)
+    public virtual async Task<ActionResult<Result<TViewModel>>> Update(TKey id, [FromBody] TUpdateViewModel vm, CancellationToken ct)
     {
         var command = new Update.Command<TUpdateViewModel, TKey, TViewModel> { Id = id, Model = vm };
         var result = await Sender.Send(command, ct);

@@ -16,7 +16,7 @@ namespace API.Controllers;
 public class WalletController(ISender sender) : BaseController
 {
     [HttpGet("balance")]
-    public async Task<ActionResult<ServiceResponse<UserWalletVM>>> GetBalance(CancellationToken ct)
+    public async Task<ActionResult<Result<UserWalletVM>>> GetBalance(CancellationToken ct)
     {
         var result = await sender.Send(new GetWalletBalanceQuery(), ct);
         return GetResult(result);
@@ -29,7 +29,7 @@ public class WalletController(ISender sender) : BaseController
     /// </summary>
     [Authorize(Policy = Settings.Roles.AdminOrEmployer)]
     [HttpPost("create-payment-intent")]
-    public async Task<ActionResult<ServiceResponse<object>>> CreatePaymentIntent(
+    public async Task<ActionResult<Result<object>>> CreatePaymentIntent(
         [FromBody] CreatePaymentIntentVM vm,
         CancellationToken ct)
     {
@@ -44,7 +44,7 @@ public class WalletController(ISender sender) : BaseController
     /// </summary>
     [Authorize(Policy = Settings.Roles.AdminOrEmployer)]
     [HttpPost("confirm-deposit")]
-    public async Task<ActionResult<ServiceResponse<object>>> ConfirmDeposit(
+    public async Task<ActionResult<Result<object>>> ConfirmDeposit(
         [FromBody] ConfirmDepositVM vm,
         CancellationToken ct)
     {

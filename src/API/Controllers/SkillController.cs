@@ -18,14 +18,14 @@ public class SkillController(ISender sender)
     : GenericCrudController<int, SkillVM, CreateSkillVM, UpdateSkillVM>(sender)
 {
     [AllowAnonymous]
-    public override async Task<ActionResult<ServiceResponse<List<SkillVM>>>> GetAll(CancellationToken ct)
+    public override async Task<ActionResult<Result<List<SkillVM>>>> GetAll(CancellationToken ct)
         => await base.GetAll(ct);
 
     [AllowAnonymous]
-    public override async Task<ActionResult<ServiceResponse<SkillVM>>> GetById(int id, CancellationToken ct)
+    public override async Task<ActionResult<Result<SkillVM>>> GetById(int id, CancellationToken ct)
         => await base.GetById(id, ct);
 
     [AllowAnonymous]
-    public override async Task<ActionResult<ServiceResponse<PaginatedItemsVM<SkillVM>>>> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+    public override async Task<ActionResult<Result<PaginatedItemsVM<SkillVM>>>> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
         => await base.GetAllPaginated(pagedVm, ct);
 }

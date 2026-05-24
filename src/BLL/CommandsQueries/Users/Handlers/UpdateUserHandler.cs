@@ -8,14 +8,14 @@ namespace BLL.CommandsQueries.Users.Handlers;
 
 public class UpdateUserHandler(ICountryQueries countryQueries) : IUpdateHandler<User, UpdateUserVM, UserVM>
 {
-    public async Task<ServiceResponse<UserVM?>> HandleAsync(User existingEntity, UpdateUserVM updateModel,
+    public async Task<Result<UserVM?>> HandleAsync(User existingEntity, UpdateUserVM updateModel,
         CancellationToken cancellationToken)
     {
         if (await countryQueries.GetByIdAsync(updateModel.CountryId, cancellationToken) == null)
         {
-            return ServiceResponse<UserVM?>.NotFound($"Country with id {updateModel.CountryId} not found");
+            return Result<UserVM?>.NotFound($"Country with id {updateModel.CountryId} not found");
         }
         
-        return ServiceResponse<UserVM?>.Ok();
+        return Result<UserVM?>.Ok();
     }
 }

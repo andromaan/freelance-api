@@ -12,7 +12,7 @@ public class CreatePortfolioHandler(
     IFreelancerQueries freelancerQueries)
     : ICreateHandler<Portfolio, CreatePortfolioVM, PortfolioVM>
 {
-    public async Task<ServiceResponse<PortfolioVM?>> HandleAsync(Portfolio entity, CreatePortfolioVM createModel,
+    public async Task<Result<PortfolioVM?>> HandleAsync(Portfolio entity, CreatePortfolioVM createModel,
         CancellationToken cancellationToken)
     {
         var userId = await userProvider.GetUserId();
@@ -21,6 +21,6 @@ public class CreatePortfolioHandler(
         
         entity.FreelancerId = freelancer!.Id;
         
-        return ServiceResponse<PortfolioVM?>.Ok();
+        return Result<PortfolioVM?>.Ok();
     }
 }

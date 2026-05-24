@@ -10,17 +10,17 @@ namespace BLL.CommandsQueries.GenericCRUD.GetAll;
 public class GetAllPaginated
 {
     // ReSharper disable once UnusedTypeParameter
-    public record Query<TViewModel>(PagedVM PagedVm) : IRequest<ServiceResponse<PaginatedItemsVM<TViewModel>?>> where TViewModel : class;
+    public record Query<TViewModel>(PagedVM PagedVm) : IRequest<Result<PaginatedItemsVM<TViewModel>?>> where TViewModel : class;
 
     public class QueryHandler<TEntity, TKey, TViewModel, TQueries>(
         TQueries queries,
         IMapper mapper)
-        : IRequestHandler<Query<TViewModel>, ServiceResponse<PaginatedItemsVM<TViewModel>?>>
+        : IRequestHandler<Query<TViewModel>, Result<PaginatedItemsVM<TViewModel>?>>
         where TEntity : Entity<TKey>
         where TViewModel : class
         where TQueries : IQueries<TEntity, TKey>
     {
-        public async Task<ServiceResponse<PaginatedItemsVM<TViewModel>?>> Handle(Query<TViewModel> request, CancellationToken cancellationToken)
+        public async Task<Result<PaginatedItemsVM<TViewModel>?>> Handle(Query<TViewModel> request, CancellationToken cancellationToken)
         {
             try
             {
@@ -39,11 +39,11 @@ public class GetAllPaginated
                     PageCount = (int)Math.Ceiling((double)totalCount / request.PagedVm.PageSize),
                 };
 
-                return ServiceResponse<PaginatedItemsVM<TViewModel>?>.Ok($"{typeof(TEntity).Name}s retrieved", pagedResponse);
+                return Result<PaginatedItemsVM<TViewModel>?>.Ok($"{typeof(TEntity).Name}s retrieved", pagedResponse);
             }
             catch (Exception exception)
             {
-                return ServiceResponse<PaginatedItemsVM<TViewModel>?>.InternalError(exception.Message);
+                return Result<PaginatedItemsVM<TViewModel>?>.InternalError(exception.Message);
             }
         }
     }

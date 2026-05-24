@@ -5,20 +5,20 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Reviews;
 
-public record GetAverageRatingQuery : IRequest<ServiceResponse<double?>>
+public record GetAverageRatingQuery : IRequest<Result<double?>>
 {
     public string ReviewedUserEmail { get; init; } = string.Empty;
 }
 
 public class GetAverageRatingQueryQueryHandler(IReviewQueries reviewQueries, IUserQueries userQueries)
-    : IRequestHandler<GetAverageRatingQuery, ServiceResponse<double?>>
+    : IRequestHandler<GetAverageRatingQuery, Result<double?>>
 {
-    public async Task<ServiceResponse<double?>> Handle(GetAverageRatingQuery request, CancellationToken cancellationToken)
+    public async Task<Result<double?>> Handle(GetAverageRatingQuery request, CancellationToken cancellationToken)
     {
         var user = await userQueries.GetByEmailAsync(request.ReviewedUserEmail, cancellationToken);
         if (user is null)
         {
-            return ServiceResponse<double?>.NotFound($"User with email {request.ReviewedUserEmail} not found");
+            return Result<double?>.NotFound($"User with email {request.ReviewedUserEmail} not found");
         }
 
         try
@@ -27,11 +27,11 @@ public class GetAverageRatingQueryQueryHandler(IReviewQueries reviewQueries, IUs
 
             var averageRating = reviews.Any() ? reviews.Average(r => (double)r.Rating) : 0.0;
 
-            return ServiceResponse<double?>.Ok("Reviews retrieved", averageRating);
+            return Result<double?>.Ok("Reviews retrieved", averageRating);
         }
         catch (Exception exception)
         {
-            return ServiceResponse<double?>.InternalError(exception.Message);
+            return Result<double?>.InternalError(exception.Message);
         }
     }
 }

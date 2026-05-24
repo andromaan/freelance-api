@@ -20,7 +20,7 @@ using Stripe;
 
 namespace BLL.CommandsQueries.Auth;
 
-public record SignUpCommand(SignUpVM Vm) : IRequest<ServiceResponse<JwtVM?>>;
+public record SignUpCommand(SignUpVM Vm) : IRequest<Result<JwtVM?>>;
 
 public class SignUpCommandHandler(
     IUserRepository userRepository,
@@ -33,21 +33,21 @@ public class SignUpCommandHandler(
     IUserWalletRepository userWalletRepository,
     IRoleQueries roleQueries,
     IOptions<StripeModel> stripeModel,
-    CustomerService customerService) : IRequestHandler<SignUpCommand, ServiceResponse<JwtVM?>>
+    CustomerService customerService) : IRequestHandler<SignUpCommand, Result<JwtVM?>>
 {
     private readonly StripeModel _stripeModel = stripeModel.Value;
 
-    public async Task<ServiceResponse<JwtVM?>> Handle(SignUpCommand request, CancellationToken cancellationToken)
+    public async Task<Result<JwtVM?>> Handle(SignUpCommand request, CancellationToken cancellationToken)
     {
         var vm = request.Vm;
         if (!await userQueries.IsUniqueEmailAsync(vm.Email, cancellationToken))
         {
-            return ServiceResponse<JwtVM?>.BadRequest($"{vm.Email} already exists");
+            return Result<JwtVM?>.BadRequest($"{vm.Email} already exists");
         }
 
         if (vm is not { UserRole: Settings.Roles.EmployerRole or Settings.Roles.FreelancerRole })
         {
-            return ServiceResponse<JwtVM?>.BadRequest(
+            return Result<JwtVM?>.BadRequest(
                 $"Invalid user role, must be '{Settings.Roles.EmployerRole}' or '{Settings.Roles.FreelancerRole}'");
         }
 
@@ -57,7 +57,7 @@ public class SignUpCommandHandler(
         var roleEntity = await roleQueries.GetByNameAsync(userRole, cancellationToken);
         if (roleEntity is null)
         {
-            return ServiceResponse<JwtVM?>.InternalError("User role not found in database");
+            return Result<JwtVM?>.InternalError("User role not found in database");
         }
 
         var customer = await CreateStripeCustomerAsync(vm.Email, vm.DisplayName, cancellationToken);
@@ -111,12 +111,12 @@ public class SignUpCommandHandler(
         }
         catch (Exception e)
         {
-            return ServiceResponse<JwtVM?>.InternalError(e.Message);
+            return Result<JwtVM?>.InternalError(e.Message);
         }
 
         var tokens = await jwtTokenService.GenerateTokensAsync(user, cancellationToken);
 
-        return ServiceResponse<JwtVM?>.Ok($"User {vm.Email} successfully created", tokens);
+        return Result<JwtVM?>.Ok($"User {vm.Email} successfully created", tokens);
     }
 
     private async Task<Customer> CreateStripeCustomerAsync(string email, string? displayName,

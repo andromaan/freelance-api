@@ -22,7 +22,7 @@ public class UpdateContractMilestoneStatusFreelancerHandler(
 )
     : IUpdateHandler<ContractMilestone, UpdContractMilestoneStatusFreelancerVM, ContractMilestoneVM>
 {
-    public async Task<ServiceResponse<ContractMilestoneVM?>> HandleAsync(
+    public async Task<Result<ContractMilestoneVM?>> HandleAsync(
         ContractMilestone existingEntity,
         UpdContractMilestoneStatusFreelancerVM updateModel,
         CancellationToken cancellationToken)
@@ -34,7 +34,7 @@ public class UpdateContractMilestoneStatusFreelancerHandler(
 
         if (contract!.FreelancerId != freelancer!.Id)
         {
-            return ServiceResponse<ContractMilestoneVM?>.Forbidden("You do not have permission to edit this entity");
+            return Result<ContractMilestoneVM?>.Forbidden("You do not have permission to edit this entity");
         }
 
         // Processing: Update contract status if first milestone is in progress
@@ -46,10 +46,10 @@ public class UpdateContractMilestoneStatusFreelancerHandler(
 
         existingEntity.Status = (ContractMilestoneStatus)updateModel.Status;
 
-        return ServiceResponse<ContractMilestoneVM?>.Ok(); // Валідація пройшла успішно
+        return Result<ContractMilestoneVM?>.Ok(); // Валідація пройшла успішно
     }
 
-    private async Task<ServiceResponse<ContractMilestoneVM?>?> UpdateContractStatusIfNeeded(ContractMilestone existingEntity,
+    private async Task<Result<ContractMilestoneVM?>?> UpdateContractStatusIfNeeded(ContractMilestone existingEntity,
         Contract contract, UpdContractMilestoneStatusFreelancerVM updateModel, CancellationToken cancellationToken)
     {
         var contractMilestonesByContract =
@@ -67,7 +67,7 @@ public class UpdateContractMilestoneStatusFreelancerHandler(
             }
             catch (Exception e)
             {
-                return ServiceResponse<ContractMilestoneVM?>.InternalError(e.Message);
+                return Result<ContractMilestoneVM?>.InternalError(e.Message);
             }
         }
         

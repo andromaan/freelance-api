@@ -10,7 +10,7 @@ public class UpdateProjectCategoriesHandler(
     ICategoryQueries categoryQueries
     ) : IUpdateHandler<Project, UpdateProjectCategoriesVM, ProjectVM>
 {
-    public async Task<ServiceResponse<ProjectVM?>> HandleAsync(Project existingEntity, UpdateProjectCategoriesVM updateModel,
+    public async Task<Result<ProjectVM?>> HandleAsync(Project existingEntity, UpdateProjectCategoriesVM updateModel,
         CancellationToken cancellationToken)
     {
         var categoriesIds = updateModel.CategoryIds.Distinct();
@@ -22,12 +22,12 @@ public class UpdateProjectCategoriesHandler(
             var existingCategory = await categoryQueries.GetByIdAsync(categId, cancellationToken);
             if (existingCategory == null)
             {
-                return ServiceResponse<ProjectVM?>.NotFound($"Category with id {categId} not found");
+                return Result<ProjectVM?>.NotFound($"Category with id {categId} not found");
             }
 
             existingEntity.Categories.Add(existingCategory);
         }
         
-        return ServiceResponse<ProjectVM?>.Ok();
+        return Result<ProjectVM?>.Ok();
     }
 }

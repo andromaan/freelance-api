@@ -8,19 +8,19 @@ namespace BLL.CommandsQueries.Notifications;
 
 public class MarkAllNotificationsAsRead
 {
-    public record Command : IRequest<ServiceResponse<string>>;
+    public record Command : IRequest<Result<string>>;
 
     public class CommandHandler(
         INotificationRepository repository,
-        IUserProvider userProvider) : IRequestHandler<Command, ServiceResponse<string>>
+        IUserProvider userProvider) : IRequestHandler<Command, Result<string>>
     {
-        public async Task<ServiceResponse<string>> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<Result<string>> Handle(Command request, CancellationToken cancellationToken)
         {
             var userId = await userProvider.GetUserId(cancellationToken);
 
             var updatedCount = await repository.MarkAllAsReadAsync(userId, cancellationToken);
 
-            return ServiceResponse<string>.Ok($"{updatedCount} notification(s) marked as read.");
+            return Result<string>.Ok($"{updatedCount} notification(s) marked as read.");
         }
     }
 }

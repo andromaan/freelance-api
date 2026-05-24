@@ -2,7 +2,7 @@ using System.Net;
 
 namespace BLL.Services;
 
-public class ServiceResponse<T>
+public class Result<T>
 {
     public required string Message { get; set; }
     public bool Success { get; set; }
@@ -16,9 +16,9 @@ public class ServiceResponse<T>
         Data
     };
 
-    public static ServiceResponse<T> GetResponse(string message, bool success, T? data, HttpStatusCode statusCode)
+    public static Result<T> GetResponse(string message, bool success, T? data, HttpStatusCode statusCode)
     {
-        return new ServiceResponse<T>
+        return new Result<T>
         {
             Message = message,
             Success = success,
@@ -27,32 +27,32 @@ public class ServiceResponse<T>
         };
     }
 
-    public static ServiceResponse<T> Ok(string message = "Ok", T? data = default)
+    public static Result<T> Ok(string message = "Ok", T? data = default)
     {
         return GetResponse(message, true, data, HttpStatusCode.OK);
     }
 
-    public static ServiceResponse<T> BadRequest(string message, T? data = default)
+    public static Result<T> BadRequest(string message, T? data = default)
     {
         return GetResponse(message, false, data, HttpStatusCode.BadRequest);
     }
 
-    public static ServiceResponse<T> InternalError(string message, T? data = default)
+    public static Result<T> InternalError(string message, T? data = default)
     {
         return GetResponse(message, false, data, HttpStatusCode.InternalServerError);
     }
 
-    public static ServiceResponse<T> NotFound(string message, T? data = default)
+    public static Result<T> NotFound(string message, T? data = default)
     {
         return GetResponse(message, false, data, HttpStatusCode.NotFound);
     }
 
-    public static ServiceResponse<T> Forbidden(string message, T? data = default)
+    public static Result<T> Forbidden(string message, T? data = default)
     {
         return GetResponse(message, false, data, HttpStatusCode.Forbidden);
     }
 
-    public static ServiceResponse<T> Unauthorized(string message, T? data = default)
+    public static Result<T> Unauthorized(string message, T? data = default)
     {
         return GetResponse(message, false, data, HttpStatusCode.Unauthorized);
     }

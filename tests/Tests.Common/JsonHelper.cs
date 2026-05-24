@@ -13,7 +13,7 @@ public static class JsonHelper
 
     public static async Task<T> GetPayloadAsync<T>(HttpResponseMessage response)
     {
-        var serviceResponse = await response.Content.ReadFromJsonAsync<ServiceResponse<T>>(DefaultOptions)
+        var serviceResponse = await response.Content.ReadFromJsonAsync<Result<T>>(DefaultOptions)
                               ?? throw new InvalidOperationException("Response content is null or invalid.");
 
         var dataJson = JsonSerializer.Serialize(serviceResponse.Data, DefaultOptions);

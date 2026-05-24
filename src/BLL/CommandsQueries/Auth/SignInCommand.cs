@@ -8,14 +8,14 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Auth;
 
-public record SignInCommand(SignInVM Vm) : IRequest<ServiceResponse<JwtVM?>>;
+public record SignInCommand(SignInVM Vm) : IRequest<Result<JwtVM?>>;
 
 public class SignInCommandHandler(
     IUserQueries userQueries,
     IPasswordHasher passwordHasher,
-    IJwtTokenService jwtService) : IRequestHandler<SignInCommand, ServiceResponse<JwtVM?>>
+    IJwtTokenService jwtService) : IRequestHandler<SignInCommand, Result<JwtVM?>>
 {
-    public async Task<ServiceResponse<JwtVM?>> Handle(SignInCommand request, CancellationToken cancellationToken)
+    public async Task<Result<JwtVM?>> Handle(SignInCommand request, CancellationToken cancellationToken)
     {
         var vm = request.Vm;
         
@@ -23,18 +23,18 @@ public class SignInCommandHandler(
 
         if (user == null)
         {
-            return ServiceResponse<JwtVM?>.BadRequest($"Користувача з поштою {vm.Email} не знайдено");
+            return Result<JwtVM?>.BadRequest($"Користувача з поштою {vm.Email} не знайдено");
         }
 
         var result = passwordHasher.Verify(vm.Password, user.PasswordHash);
 
         if (!result)
         {
-            return ServiceResponse<JwtVM?>.BadRequest($"Пароль вказано невірно");
+            return Result<JwtVM?>.BadRequest($"Пароль вказано невірно");
         }
 
         var tokens = await jwtService.GenerateTokensAsync(user, cancellationToken);
 
-        return ServiceResponse<JwtVM?>.Ok("Успішний вхід", tokens);
+        return Result<JwtVM?>.Ok("Успішний вхід", tokens);
     }
 }

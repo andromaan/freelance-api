@@ -10,7 +10,7 @@ namespace BLL.CommandsQueries.GenericCRUD.Update;
 
 public class UpdateByUser
 {
-    public record Command<TUpdateViewModel, TViewModel> : IRequest<ServiceResponse<TViewModel?>>
+    public record Command<TUpdateViewModel, TViewModel> : IRequest<Result<TViewModel?>>
         where TUpdateViewModel : class
         where TViewModel : class
     {
@@ -23,13 +23,13 @@ public class UpdateByUser
         IMapper mapper,
         IUserProvider userProvider,
         IEnumerable<IUpdateHandler<TEntity, TUpdateViewModel, TViewModel>> handlers)
-        : IRequestHandler<Command<TUpdateViewModel, TViewModel>, ServiceResponse<TViewModel?>>
+        : IRequestHandler<Command<TUpdateViewModel, TViewModel>, Result<TViewModel?>>
         where TEntity : Entity<TKey>
         where TUpdateViewModel : class
         where TViewModel : class
         where TQueries : IQueries<TEntity, TKey>, IByUserQuery<TEntity, TKey>
     {
-        public async Task<ServiceResponse<TViewModel?>> Handle(
+        public async Task<Result<TViewModel?>> Handle(
             Command<TUpdateViewModel, TViewModel> request,
             CancellationToken cancellationToken)
         {
@@ -40,7 +40,7 @@ public class UpdateByUser
 
             if (existingEntity == null)
             {
-                return ServiceResponse<TViewModel?>.NotFound(
+                return Result<TViewModel?>.NotFound(
                     $"{typeof(TEntity).Name} not found by user id {userId}");
             }
 
@@ -68,13 +68,13 @@ public class UpdateByUser
             try
             {
                 await repository.UpdateAsync(existingEntity, cancellationToken);
-                return ServiceResponse<TViewModel?>.Ok(
+                return Result<TViewModel?>.Ok(
                     $"{typeof(TEntity).Name} updated",
                     mapper.Map<TViewModel>(existingEntity));
             }
             catch (Exception exception)
             {
-                return ServiceResponse<TViewModel?>.InternalError(exception.Message);
+                return Result<TViewModel?>.InternalError(exception.Message);
             }
         }
     }

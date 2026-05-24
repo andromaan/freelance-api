@@ -20,14 +20,14 @@ public class FreelancerPortfolioController(ISender sender)
 {
     [AllowAnonymous]
     [HttpGet("get-by-freelancer/{freelancerId:guid}")]
-    public virtual async Task<ActionResult<ServiceResponse<List<PortfolioVM>>>> GetByUser(Guid freelancerId, CancellationToken ct)
+    public virtual async Task<ActionResult<Result<List<PortfolioVM>>>> GetByUser(Guid freelancerId, CancellationToken ct)
         => GetResult(await Sender.Send(new GetPortfoliosByFreelancerIdQuery(freelancerId), ct));
     
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<ActionResult<ServiceResponse<List<PortfolioVM>>>> GetAll(CancellationToken ct)
-        => Task.FromResult<ActionResult<ServiceResponse<List<PortfolioVM>>>>(NotFound());
+    public override Task<ActionResult<Result<List<PortfolioVM>>>> GetAll(CancellationToken ct)
+        => Task.FromResult<ActionResult<Result<List<PortfolioVM>>>>(NotFound());
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<ActionResult<ServiceResponse<PaginatedItemsVM<PortfolioVM>>>> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
-        => Task.FromResult<ActionResult<ServiceResponse<PaginatedItemsVM<PortfolioVM>>>>(NotFound());
+    public override Task<ActionResult<Result<PaginatedItemsVM<PortfolioVM>>>> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+        => Task.FromResult<ActionResult<Result<PaginatedItemsVM<PortfolioVM>>>>(NotFound());
 }

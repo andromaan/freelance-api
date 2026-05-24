@@ -20,7 +20,7 @@ using Stripe;
 
 namespace BLL.CommandsQueries.Auth;
 
-public record GoogleExternalLoginCommand : IRequest<ServiceResponse<JwtVM?>>
+public record GoogleExternalLoginCommand : IRequest<Result<JwtVM?>>
 {
     public required ExternalLoginVM Model { get; init; }
 }
@@ -36,17 +36,17 @@ public class GoogleExternalLoginCommandHandler(
     IRoleQueries roleQueries,
     IOptions<StripeModel> stripeModel,
     CustomerService customerService)
-    : IRequestHandler<GoogleExternalLoginCommand, ServiceResponse<JwtVM?>>
+    : IRequestHandler<GoogleExternalLoginCommand, Result<JwtVM?>>
 {
     private readonly StripeModel _stripeModel = stripeModel.Value;
 
-    public async Task<ServiceResponse<JwtVM?>> Handle(GoogleExternalLoginCommand request,
+    public async Task<Result<JwtVM?>> Handle(GoogleExternalLoginCommand request,
         CancellationToken cancellationToken)
     {
         try
         {
             if (string.IsNullOrEmpty(request.Model.Token))
-                return ServiceResponse<JwtVM?>.BadRequest("Google token not sent");
+                return Result<JwtVM?>.BadRequest("Google token not sent");
 
             var payload = await jwtTokenService.VerifyGoogleToken(request.Model);
 
@@ -65,14 +65,14 @@ public class GoogleExternalLoginCommandHandler(
 
                     if (request.Model.UserRole is null)
                     {
-                        return ServiceResponse<JwtVM?>.BadRequest(
+                        return Result<JwtVM?>.BadRequest(
                             "User role must be provided for new users",
                             data: new JwtVM { AccessToken = "role_required", RefreshToken = "role_required" });
                     }
 
                     if (request.Model.UserRole is not (Settings.Roles.EmployerRole or Settings.Roles.FreelancerRole))
                     {
-                        return ServiceResponse<JwtVM?>.BadRequest(
+                        return Result<JwtVM?>.BadRequest(
                             $"Invalid user role, must be '{Settings.Roles.EmployerRole}' or '{Settings.Roles.FreelancerRole}'");
                     }
 
@@ -82,7 +82,7 @@ public class GoogleExternalLoginCommandHandler(
                     var roleEntity = await roleQueries.GetByNameAsync(userRole, cancellationToken);
                     if (roleEntity is null)
                     {
-                        return ServiceResponse<JwtVM?>.InternalError("User role not found in database");
+                        return Result<JwtVM?>.InternalError("User role not found in database");
                     }
 
                     var customer = await CreateStripeCustomerAsync(payload.Email, fullName.name ?? payload.Name,
@@ -105,7 +105,7 @@ public class GoogleExternalLoginCommandHandler(
 
                     if (createdUser is null)
                     {
-                        return ServiceResponse<JwtVM?>.InternalError("Failed to add user");
+                        return Result<JwtVM?>.InternalError("Failed to add user");
                     }
 
                     await ConfigureUserBaseOfRole(createdUser, cancellationToken);
@@ -118,14 +118,14 @@ public class GoogleExternalLoginCommandHandler(
             }
 
             if (user is null)
-                return ServiceResponse<JwtVM?>.BadRequest("Failed to add Google login");
+                return Result<JwtVM?>.BadRequest("Failed to add Google login");
 
             var tokens = await jwtTokenService.GenerateTokensAsync(user, cancellationToken);
-            return ServiceResponse<JwtVM?>.Ok("Users tokens", tokens);
+            return Result<JwtVM?>.Ok("Users tokens", tokens);
         }
         catch (Exception ex)
         {
-            return ServiceResponse<JwtVM?>.InternalError(ex.Message);
+            return Result<JwtVM?>.InternalError(ex.Message);
         }
     }
 

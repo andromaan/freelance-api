@@ -7,7 +7,7 @@ namespace BLL.CommandsQueries.Users.Handlers;
 
 public class DeleteUserByAdminHandler(IImageService imageService) : IDeleteHandler<User, string>
 {
-    public Task<ServiceResponse<string?>> HandleAsync(User entity, CancellationToken cancellationToken)
+    public Task<Result<string?>> HandleAsync(User entity, CancellationToken cancellationToken)
     {
         if (entity.AvatarImg != null)
         {
@@ -15,10 +15,10 @@ public class DeleteUserByAdminHandler(IImageService imageService) : IDeleteHandl
             if (!isAvatarDeleted)
             {
                 return Task.FromResult(
-                    ServiceResponse<string?>.InternalError("Failed to delete user avatar image."));
+                    Result<string?>.InternalError("Failed to delete user avatar image."));
             }
         }
 
-        return Task.FromResult(ServiceResponse<string?>.Ok());
+        return Task.FromResult(Result<string?>.Ok());
     }
 }

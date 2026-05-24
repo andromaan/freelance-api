@@ -10,15 +10,15 @@ namespace BLL.CommandsQueries.Wallets;
 /// <summary>
 /// Returns the current balance of the authenticated user's wallet.
 /// </summary>
-public record GetWalletBalanceQuery : IRequest<ServiceResponse<UserWalletVM?>>;
+public record GetWalletBalanceQuery : IRequest<Result<UserWalletVM?>>;
 
 public class GetWalletBalanceQueryHandler(
     IUserProvider userProvider,
     IUserWalletQueries userWalletQueries,
     IMapper mapper)
-    : IRequestHandler<GetWalletBalanceQuery, ServiceResponse<UserWalletVM?>>
+    : IRequestHandler<GetWalletBalanceQuery, Result<UserWalletVM?>>
 {
-    public async Task<ServiceResponse<UserWalletVM?>> Handle(
+    public async Task<Result<UserWalletVM?>> Handle(
         GetWalletBalanceQuery request,
         CancellationToken cancellationToken)
     {
@@ -28,13 +28,13 @@ public class GetWalletBalanceQueryHandler(
             var userWallet = await userWalletQueries.GetByUserIdAsync(userId, cancellationToken);
 
             if (userWallet is null)
-                return ServiceResponse<UserWalletVM?>.NotFound("Wallet not found for current user.");
+                return Result<UserWalletVM?>.NotFound("Wallet not found for current user.");
 
-            return ServiceResponse<UserWalletVM?>.Ok("Wallet balance retrieved.", mapper.Map<UserWalletVM>(userWallet));
+            return Result<UserWalletVM?>.Ok("Wallet balance retrieved.", mapper.Map<UserWalletVM>(userWallet));
         }
         catch (Exception ex)
         {
-            return ServiceResponse<UserWalletVM?>.InternalError(ex.Message);
+            return Result<UserWalletVM?>.InternalError(ex.Message);
         }
     }
 }

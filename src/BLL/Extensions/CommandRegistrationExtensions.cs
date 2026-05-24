@@ -18,7 +18,7 @@ public static class CommandRegistrationExtensions
         where TQueries : class, IQueries<TEntity, TKey>
     {
         services.AddTransient(
-            typeof(IRequestHandler<Update.Command<TUpdateViewModel, TKey, TViewModel>, ServiceResponse<TViewModel?>>),
+            typeof(IRequestHandler<Update.Command<TUpdateViewModel, TKey, TViewModel>, Result<TViewModel?>>),
             typeof(Update.CommandHandler<TUpdateViewModel, TViewModel, TEntity, TKey, TQueries>)
         );
 
@@ -29,7 +29,7 @@ public static class CommandRegistrationExtensions
                 var requestType = typeof(Update.Command<,,>).MakeGenericType(updateVm, typeof(TKey), typeof(TViewModel));
                 var handlerType = typeof(Update.CommandHandler<,,,,>)
                     .MakeGenericType(updateVm, typeof(TViewModel), typeof(TEntity), typeof(TKey), typeof(TQueries));
-                var responseType = typeof(ServiceResponse<>).MakeGenericType(typeof(TViewModel));
+                var responseType = typeof(Result<>).MakeGenericType(typeof(TViewModel));
                 var serviceType = typeof(IRequestHandler<,>).MakeGenericType(requestType, responseType);
 
                 services.AddTransient(serviceType, handlerType);
@@ -47,7 +47,7 @@ public static class CommandRegistrationExtensions
         where TQueries : class, IQueries<TEntity, TKey>, IByUserQuery<TEntity, TKey>
     {
         services.AddTransient(
-            typeof(IRequestHandler<UpdateByUser.Command<TUpdateViewModel, TViewModel>, ServiceResponse<TViewModel?>>),
+            typeof(IRequestHandler<UpdateByUser.Command<TUpdateViewModel, TViewModel>, Result<TViewModel?>>),
             typeof(UpdateByUser.CommandHandler<TUpdateViewModel, TViewModel, TEntity, TKey, TQueries>)
         );
 
@@ -58,7 +58,7 @@ public static class CommandRegistrationExtensions
                 var requestType = typeof(UpdateByUser.Command<,>).MakeGenericType(updateVm, typeof(TViewModel));
                 var handlerType = typeof(UpdateByUser.CommandHandler<,,,,>)
                     .MakeGenericType(updateVm, typeof(TViewModel), typeof(TEntity), typeof(TKey), typeof(TQueries));
-                var responseType = typeof(ServiceResponse<>).MakeGenericType(typeof(TViewModel));
+                var responseType = typeof(Result<>).MakeGenericType(typeof(TViewModel));
                 var serviceType = typeof(IRequestHandler<,>).MakeGenericType(requestType, responseType);
 
                 services.AddTransient(serviceType, handlerType);
@@ -76,7 +76,7 @@ public static class CommandRegistrationExtensions
         where TQueries : class, IQueries<TEntity, TKey>
     {
         services.AddTransient(
-            typeof(IRequestHandler<Create.Command<TCreateViewModel, TViewModel>, ServiceResponse<TViewModel?>>),
+            typeof(IRequestHandler<Create.Command<TCreateViewModel, TViewModel>, Result<TViewModel?>>),
             typeof(Create.CommandHandler<TCreateViewModel, TViewModel, TEntity, TKey, TQueries>)
         );
 
@@ -87,7 +87,7 @@ public static class CommandRegistrationExtensions
                 var requestType = typeof(Create.Command<,>).MakeGenericType(createVm, typeof(TViewModel));
                 var handlerType = typeof(Create.CommandHandler<,,,,>)
                     .MakeGenericType(createVm, typeof(TViewModel), typeof(TEntity), typeof(TKey), typeof(TQueries));
-                var responseType = typeof(ServiceResponse<>).MakeGenericType(typeof(TViewModel));
+                var responseType = typeof(Result<>).MakeGenericType(typeof(TViewModel));
                 var serviceType = typeof(IRequestHandler<,>).MakeGenericType(requestType, responseType);
 
                 services.AddTransient(serviceType, handlerType);

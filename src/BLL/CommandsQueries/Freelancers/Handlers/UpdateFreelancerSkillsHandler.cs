@@ -9,7 +9,7 @@ namespace BLL.CommandsQueries.Freelancers.Handlers;
 public class UpdateFreelancerSkillsHandler(ISkillQueries skillQueries)
     : IUpdateHandler<Freelancer, UpdateFreelancerSkillsVM, FreelancerVM>
 {
-    public async Task<ServiceResponse<FreelancerVM?>> HandleAsync(Freelancer existingEntity,
+    public async Task<Result<FreelancerVM?>> HandleAsync(Freelancer existingEntity,
         UpdateFreelancerSkillsVM updateModel,
         CancellationToken cancellationToken)
     {
@@ -20,12 +20,12 @@ public class UpdateFreelancerSkillsHandler(ISkillQueries skillQueries)
             var existingSkill = await skillQueries.GetByIdAsync(langId, cancellationToken);
             if (existingSkill == null)
             {
-                return ServiceResponse<FreelancerVM?>.NotFound($"Skill with id {langId} not found");
+                return Result<FreelancerVM?>.NotFound($"Skill with id {langId} not found");
             }
 
             existingEntity.Skills.Add(existingSkill);
         }
 
-        return ServiceResponse<FreelancerVM?>.Ok();
+        return Result<FreelancerVM?>.Ok();
     }
 }

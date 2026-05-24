@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace BLL.CommandsQueries.Users;
 
-public record UpdateUserAvatarCommand(IFormFile AvatarImg) : IRequest<ServiceResponse<UserVM?>>;
+public record UpdateUserAvatarCommand(IFormFile AvatarImg) : IRequest<Result<UserVM?>>;
 
 public class UpdateUserAvatarCommandHandler(
     IUserProvider userProvider,
@@ -17,13 +17,13 @@ public class UpdateUserAvatarCommandHandler(
     IUserQueries userQueries,
     IUserRepository userRepository,
     IMapper mapper)
-    : IRequestHandler<UpdateUserAvatarCommand, ServiceResponse<UserVM?>>
+    : IRequestHandler<UpdateUserAvatarCommand, Result<UserVM?>>
 {
-    public async Task<ServiceResponse<UserVM?>> Handle(UpdateUserAvatarCommand request, CancellationToken cancellationToken)
+    public async Task<Result<UserVM?>> Handle(UpdateUserAvatarCommand request, CancellationToken cancellationToken)
     {
         if (request.AvatarImg.Length == 0)
         {
-            return ServiceResponse<UserVM?>.BadRequest("No image uploaded");
+            return Result<UserVM?>.BadRequest("No image uploaded");
         }
         
         var userId = await userProvider.GetUserId();
@@ -36,7 +36,7 @@ public class UpdateUserAvatarCommandHandler(
         
         if (newImageName == null)
         {
-            return ServiceResponse<UserVM?>.BadRequest("No image uploaded");
+            return Result<UserVM?>.BadRequest("No image uploaded");
         }
 
         existingEntity.AvatarImg = $"{Settings.ImagesPathSettings.UserAvatarImagesPathForUrl}/{newImageName}";
@@ -44,13 +44,13 @@ public class UpdateUserAvatarCommandHandler(
         try
         {
             await userRepository.UpdateAsync(existingEntity, cancellationToken);
-            return ServiceResponse<UserVM?>.Ok(
+            return Result<UserVM?>.Ok(
                 $"User avatar updated successfully",
                 mapper.Map<UserVM>(existingEntity));
         }
         catch (Exception exception)
         {
-            return ServiceResponse<UserVM?>.InternalError(exception.Message);
+            return Result<UserVM?>.InternalError(exception.Message);
         }
     }
 }

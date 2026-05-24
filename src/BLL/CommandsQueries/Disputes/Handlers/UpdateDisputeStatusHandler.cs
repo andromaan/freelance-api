@@ -7,11 +7,11 @@ namespace BLL.CommandsQueries.Disputes.Handlers;
 
 public class UpdateDisputeStatusHandler : IUpdateHandler<Dispute, UpdateDisputeStatusForModeratorVM, DisputeVM>
 {
-    public Task<ServiceResponse<DisputeVM?>> HandleAsync(Dispute existingEntity, UpdateDisputeStatusForModeratorVM updateModel,
+    public Task<Result<DisputeVM?>> HandleAsync(Dispute existingEntity, UpdateDisputeStatusForModeratorVM updateModel,
         CancellationToken cancellationToken)
     {
         existingEntity.Status = (DisputeStatus)updateModel.Status;
 
-        return Task.FromResult(ServiceResponse<DisputeVM?>.Ok());
+        return Task.FromResult(Result<DisputeVM?>.Ok());
     }
 }

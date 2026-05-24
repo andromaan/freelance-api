@@ -15,7 +15,7 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Users;
 
-public record CreateUserByAdminCommand(CreateUserByAdminVM CreateModel) : IRequest<ServiceResponse<UserVM?>>;
+public record CreateUserByAdminCommand(CreateUserByAdminVM CreateModel) : IRequest<Result<UserVM?>>;
 
 public class CreateUserCommandHandler(
     IUserRepository userRepository,
@@ -25,9 +25,9 @@ public class CreateUserCommandHandler(
     IEmployerRepository employerRepository,
     IUserWalletRepository userWalletRepository,
     IMapper mapper,
-    IRoleQueries roleQueries) : IRequestHandler<CreateUserByAdminCommand, ServiceResponse<UserVM?>>
+    IRoleQueries roleQueries) : IRequestHandler<CreateUserByAdminCommand, Result<UserVM?>>
 {
-    public async Task<ServiceResponse<UserVM?>> Handle(CreateUserByAdminCommand request, CancellationToken cancellationToken)
+    public async Task<Result<UserVM?>> Handle(CreateUserByAdminCommand request, CancellationToken cancellationToken)
     {
         var entity = mapper.Map<User>(request.CreateModel);
         
@@ -37,13 +37,13 @@ public class CreateUserCommandHandler(
         
         if (role is null)
         {
-            return ServiceResponse<UserVM?>.BadRequest($"Role with Id {createModel.RoleId} not found.");
+            return Result<UserVM?>.BadRequest($"Role with Id {createModel.RoleId} not found.");
         }
 
         var userWithEmail = await userQueries.GetByEmailAsync(createModel.Email, cancellationToken);
         if (userWithEmail != null)
         {
-            return ServiceResponse<UserVM?>.BadRequest($"A user with the email {createModel.Email} already exists.");
+            return Result<UserVM?>.BadRequest($"A user with the email {createModel.Email} already exists.");
         }
 
         entity.PasswordHash = passwordHasher.HashPassword(createModel.Password);
@@ -54,12 +54,12 @@ public class CreateUserCommandHandler(
             
             await ConfigureUserBaseOfRole(entity, cancellationToken);
             
-            return ServiceResponse<UserVM?>.Ok($"User created",
+            return Result<UserVM?>.Ok($"User created",
                 mapper.Map<UserVM>(createdEntity));
         }
         catch (Exception exception)
         {
-            return ServiceResponse<UserVM?>.InternalError(exception.Message);
+            return Result<UserVM?>.InternalError(exception.Message);
         }
     }
     

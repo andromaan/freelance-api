@@ -10,7 +10,7 @@ namespace BLL.CommandsQueries.Projects.Handlers;
 public class GetAllFilteredProjectsHandler(ICategoryQueries categoryQueries)
     : IGetAllFilteredHandler<Project, FilterProjectVM, ProjectVM>
 {
-    public async Task<(ServiceResponse<PaginatedItemsVM<ProjectVM>?> response, List<Project>? filteredEntities)> HandleAsync(
+    public async Task<(Result<PaginatedItemsVM<ProjectVM>?> response, List<Project>? filteredEntities)> HandleAsync(
         List<Project> entities, FilterProjectVM filter,
         CancellationToken cancellationToken)
     {
@@ -53,13 +53,13 @@ public class GetAllFilteredProjectsHandler(ICategoryQueries categoryQueries)
                 var category = await categoryQueries.GetByIdAsync(filterCategoryId, cancellationToken);
                 if (category == null)
                 {
-                    return (ServiceResponse<PaginatedItemsVM<ProjectVM>?>.NotFound($"Category with id {filterCategoryId} not found"), null);
+                    return (Result<PaginatedItemsVM<ProjectVM>?>.NotFound($"Category with id {filterCategoryId} not found"), null);
                 }
 
                 filteredEntities = filteredEntities.Where(e => e.Categories.Any(c => c.Id == filterCategoryId)).ToList();
             }
         }
 
-        return (ServiceResponse<PaginatedItemsVM<ProjectVM>?>.Ok(), filteredEntities);
+        return (Result<PaginatedItemsVM<ProjectVM>?>.Ok(), filteredEntities);
     }
 }

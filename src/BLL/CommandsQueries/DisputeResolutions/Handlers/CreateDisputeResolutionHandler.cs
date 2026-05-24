@@ -17,7 +17,7 @@ public class CreateDisputeResolutionHandler(
     IContractRepository contractRepository
 ) : ICreateHandler<DisputeResolution, CreateDisputeResolutionVM, DisputeResolutionVM>
 {
-    public async Task<ServiceResponse<DisputeResolutionVM?>> HandleAsync(DisputeResolution entity, CreateDisputeResolutionVM createModel,
+    public async Task<Result<DisputeResolutionVM?>> HandleAsync(DisputeResolution entity, CreateDisputeResolutionVM createModel,
         CancellationToken cancellationToken)
     {
         // 1. Validate only moderators/admins can create resolutions
@@ -26,7 +26,7 @@ public class CreateDisputeResolutionHandler(
         
         if (!isAdminOrModerator)
         {
-            return ServiceResponse<DisputeResolutionVM?>.Unauthorized("Only moderators and administrators can resolve disputes");
+            return Result<DisputeResolutionVM?>.Unauthorized("Only moderators and administrators can resolve disputes");
         }
 
         // 2. Check if dispute exists
@@ -34,18 +34,18 @@ public class CreateDisputeResolutionHandler(
         
         if (existingDispute is null)
         {
-            return ServiceResponse<DisputeResolutionVM?>.NotFound($"Dispute with Id {createModel.DisputeId} not found");
+            return Result<DisputeResolutionVM?>.NotFound($"Dispute with Id {createModel.DisputeId} not found");
         }
 
         // 3. Check dispute status - can only resolve Open or UnderReview disputes
         if (existingDispute.Status == DisputeStatus.Resolved)
         {
-            return ServiceResponse<DisputeResolutionVM?>.BadRequest("This dispute has already been resolved");
+            return Result<DisputeResolutionVM?>.BadRequest("This dispute has already been resolved");
         }
         
         if (existingDispute.Status == DisputeStatus.Rejected)
         {
-            return ServiceResponse<DisputeResolutionVM?>.BadRequest("This dispute has already been rejected");
+            return Result<DisputeResolutionVM?>.BadRequest("This dispute has already been rejected");
         }
 
         // 4. Get the associated contract
@@ -53,7 +53,7 @@ public class CreateDisputeResolutionHandler(
         
         if (contract is null)
         {
-            return ServiceResponse<DisputeResolutionVM?>.NotFound($"Contract with Id {existingDispute.ContractId} not found");
+            return Result<DisputeResolutionVM?>.NotFound($"Contract with Id {existingDispute.ContractId} not found");
         }
 
         // 5. Update dispute status based on moderator's decision
@@ -86,9 +86,9 @@ public class CreateDisputeResolutionHandler(
         }
         catch (Exception e)
         {
-            return ServiceResponse<DisputeResolutionVM?>.InternalError(e.Message);
+            return Result<DisputeResolutionVM?>.InternalError(e.Message);
         }
 
-        return ServiceResponse<DisputeResolutionVM?>.Ok();
+        return Result<DisputeResolutionVM?>.Ok();
     }
 }

@@ -6,12 +6,12 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Contracts;
 
-public record GetContractByFreelancerIdQuery(Guid FreelancerId) : IRequest<ServiceResponse<List<ContractVM>>>;
+public record GetContractByFreelancerIdQuery(Guid FreelancerId) : IRequest<Result<List<ContractVM>>>;
 
 public class GetContractByFreelancerIdQueryQueryHandler(IContractQueries contractQueries, IMapper mapper)
-    : IRequestHandler<GetContractByFreelancerIdQuery, ServiceResponse<List<ContractVM>>>
+    : IRequestHandler<GetContractByFreelancerIdQuery, Result<List<ContractVM>>>
 {
-    public async Task<ServiceResponse<List<ContractVM>>> Handle(GetContractByFreelancerIdQuery request,
+    public async Task<Result<List<ContractVM>>> Handle(GetContractByFreelancerIdQuery request,
         CancellationToken cancellationToken)
     {
         try
@@ -19,12 +19,12 @@ public class GetContractByFreelancerIdQueryQueryHandler(IContractQueries contrac
             var contracts = 
                 await contractQueries.GetByFreelancerId(request.FreelancerId, cancellationToken);
 
-            return ServiceResponse<List<ContractVM>>.Ok("Contracts by freelancer retrieved", 
+            return Result<List<ContractVM>>.Ok("Contracts by freelancer retrieved", 
                 mapper.Map<List<ContractVM>>(contracts));
         }
         catch (Exception exception)
         {
-            return ServiceResponse<List<ContractVM>>.InternalError(exception.Message);
+            return Result<List<ContractVM>>.InternalError(exception.Message);
         }
     }
 }

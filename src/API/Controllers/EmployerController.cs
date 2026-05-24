@@ -18,10 +18,10 @@ namespace API.Controllers;
 public class EmployerController(ISender sender) : BaseController
 {
     [HttpGet]
-    public virtual async Task<ActionResult<ServiceResponse<EmployerVM>>> GetByUser(CancellationToken ct)
+    public virtual async Task<ActionResult<Result<EmployerVM>>> GetByUser(CancellationToken ct)
         => GetResult(await sender.Send(new GetEmployerByUserQuery(), ct));
 
     [HttpPut]
-    public virtual async Task<ActionResult<ServiceResponse<EmployerVM>>> Update(UpdateEmployerVM vm, CancellationToken ct)
+    public virtual async Task<ActionResult<Result<EmployerVM>>> Update(UpdateEmployerVM vm, CancellationToken ct)
         => GetResult(await sender.Send(new UpdateByUser.Command<UpdateEmployerVM, EmployerVM> { Model = vm }, ct));
 }

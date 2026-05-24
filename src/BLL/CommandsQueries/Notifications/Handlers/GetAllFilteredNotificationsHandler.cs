@@ -9,7 +9,7 @@ namespace BLL.CommandsQueries.Notifications.Handlers;
 public class GetAllFilteredNotificationsHandler
     : IGetAllFilteredHandler<Notification, FilterNotificationVM, NotificationVM>
 {
-    public Task<(ServiceResponse<PaginatedItemsVM<NotificationVM>?> response, List<Notification>? filteredEntities)>
+    public Task<(Result<PaginatedItemsVM<NotificationVM>?> response, List<Notification>? filteredEntities)>
         HandleAsync(
             List<Notification> entities, FilterNotificationVM filter,
             CancellationToken cancellationToken)
@@ -26,7 +26,7 @@ public class GetAllFilteredNotificationsHandler
             filteredEntities = filteredEntities.Where(e => e.Type == filter.NotificationType).ToList();
         }
 
-        return Task.FromResult<(ServiceResponse<PaginatedItemsVM<NotificationVM>?>, List<Notification>?)>((
-            ServiceResponse<PaginatedItemsVM<NotificationVM>?>.Ok(), filteredEntities));
+        return Task.FromResult<(Result<PaginatedItemsVM<NotificationVM>?>, List<Notification>?)>((
+            Result<PaginatedItemsVM<NotificationVM>?>.Ok(), filteredEntities));
     }
 }

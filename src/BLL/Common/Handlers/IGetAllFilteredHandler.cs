@@ -8,7 +8,7 @@ public interface IGetAllFilteredHandler<TEntity, in TFilterViewModel, TViewModel
     where TFilterViewModel : class
     where TViewModel : class
 {
-    Task<(ServiceResponse<PaginatedItemsVM<TViewModel>?> response, List<TEntity>? filteredEntities)> HandleAsync(
+    Task<(Result<PaginatedItemsVM<TViewModel>?> response, List<TEntity>? filteredEntities)> HandleAsync(
         List<TEntity> entities,
         TFilterViewModel filter,
         CancellationToken cancellationToken);

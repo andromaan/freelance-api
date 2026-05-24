@@ -26,11 +26,11 @@ public static class CrudRegistrationExtensions
         var keyType = reg.KeyType;
         var queriesType = reg.QueriesInterfaceType;
 
-        var responseListType = typeof(ServiceResponse<>).MakeGenericType(
+        var responseListType = typeof(Result<>).MakeGenericType(
             typeof(List<>).MakeGenericType(viewModelType));
-        var responsePaginatedType = typeof(ServiceResponse<>).MakeGenericType(
+        var responsePaginatedType = typeof(Result<>).MakeGenericType(
             typeof(PaginatedItemsVM<>).MakeGenericType(viewModelType));
-        var responseSingleType = typeof(ServiceResponse<>).MakeGenericType(viewModelType);
+        var responseSingleType = typeof(Result<>).MakeGenericType(viewModelType);
 
         var handlers = new List<HandlerDescriptor>
         {
@@ -112,7 +112,7 @@ public static class CrudRegistrationExtensions
 
         if (reg.FilteringViewModelType != null)
         {
-            var filteringResponseType = typeof(ServiceResponse<>).MakeGenericType(
+            var filteringResponseType = typeof(Result<>).MakeGenericType(
                 typeof(PaginatedItemsVM<>).MakeGenericType(viewModelType));
 
             handlers.Add(new HandlerDescriptor(

@@ -10,7 +10,7 @@ namespace BLL.CommandsQueries.GenericCRUD.Delete;
 public class Delete
 {
     // ReSharper disable once UnusedTypeParameter
-    public record Command<TViewModel, TKey> : IRequest<ServiceResponse<TViewModel?>> where TViewModel : class
+    public record Command<TViewModel, TKey> : IRequest<Result<TViewModel?>> where TViewModel : class
     {
         public required TKey Id { get; init; }
     }
@@ -20,18 +20,18 @@ public class Delete
         IQueries<TEntity, TKey> queries,
         IUserProvider userProvider,
         IEnumerable<IDeleteHandler<TEntity, TViewModel>> handlers)
-        : IRequestHandler<Command<TViewModel, TKey>, ServiceResponse<TViewModel?>>
+        : IRequestHandler<Command<TViewModel, TKey>, Result<TViewModel?>>
         where TEntity : Entity<TKey>
         where TViewModel : class
     {
-        public async Task<ServiceResponse<TViewModel?>> Handle(Command<TViewModel, TKey> request,
+        public async Task<Result<TViewModel?>> Handle(Command<TViewModel, TKey> request,
             CancellationToken cancellationToken)
         {
             var existingEntity = await queries.GetByIdAsync(request.Id, cancellationToken);
 
             if (existingEntity is null)
             {
-                return ServiceResponse<TViewModel?>.NotFound($"{typeof(TEntity).Name} with ID {request.Id} not found");
+                return Result<TViewModel?>.NotFound($"{typeof(TEntity).Name} with ID {request.Id} not found");
             }
 
             if (existingEntity is AuditableEntity<TKey> auditable)
@@ -42,7 +42,7 @@ public class Delete
                 if (auditable.CreatedBy != userId && userRole != Settings.Roles.AdminRole &&
                     userRole != Settings.Roles.ModeratorRole)
                 {
-                    return ServiceResponse<TViewModel?>.Forbidden("You do not have permission to delete this entity");
+                    return Result<TViewModel?>.Forbidden("You do not have permission to delete this entity");
                 }
             }
             
@@ -61,11 +61,11 @@ public class Delete
             try
             {
                 await repository.DeleteAsync(request.Id, cancellationToken);
-                return ServiceResponse<TViewModel?>.Ok($"{typeof(TEntity).Name} deleted");
+                return Result<TViewModel?>.Ok($"{typeof(TEntity).Name} deleted");
             }
             catch (Exception exception)
             {
-                return ServiceResponse<TViewModel?>.InternalError(exception.Message);
+                return Result<TViewModel?>.InternalError(exception.Message);
             }
         }
     }

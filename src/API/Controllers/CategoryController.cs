@@ -18,14 +18,14 @@ public class CategoryController(ISender sender)
     : GenericCrudController<int, CategoryVM, CreateCategoryVM, UpdateCategoryVM>(sender)
 {
     [AllowAnonymous]
-    public override async Task<ActionResult<ServiceResponse<List<CategoryVM>>>> GetAll(CancellationToken ct)
+    public override async Task<ActionResult<Result<List<CategoryVM>>>> GetAll(CancellationToken ct)
         => await base.GetAll(ct);
 
     [AllowAnonymous]
-    public override async Task<ActionResult<ServiceResponse<CategoryVM>>> GetById(int id, CancellationToken ct)
+    public override async Task<ActionResult<Result<CategoryVM>>> GetById(int id, CancellationToken ct)
         => await base.GetById(id, ct);
     
     [AllowAnonymous]
-    public override async Task<ActionResult<ServiceResponse<PaginatedItemsVM<CategoryVM>>>> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+    public override async Task<ActionResult<Result<PaginatedItemsVM<CategoryVM>>>> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
         => await base.GetAllPaginated(pagedVm, ct);
 }

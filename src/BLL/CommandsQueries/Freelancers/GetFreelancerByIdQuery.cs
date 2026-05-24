@@ -7,15 +7,15 @@ using MediatR;
 
 namespace BLL.CommandsQueries.Freelancers;
 
-public record GetFreelancerByIdQuery(Guid FreelancerId) : IRequest<ServiceResponse<FreelancerVM?>>;
+public record GetFreelancerByIdQuery(Guid FreelancerId) : IRequest<Result<FreelancerVM?>>;
 
 public class GetFreelancerByIdQueryQueryHandler(
     IFreelancerQueries queriesFreelancer,
     IUserProvider userProvider,
     IMapper mapper)
-    : IRequestHandler<GetFreelancerByIdQuery, ServiceResponse<FreelancerVM?>>
+    : IRequestHandler<GetFreelancerByIdQuery, Result<FreelancerVM?>>
 {
-    public async Task<ServiceResponse<FreelancerVM?>> Handle(GetFreelancerByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<FreelancerVM?>> Handle(GetFreelancerByIdQuery request, CancellationToken cancellationToken)
     {
         try
         {
@@ -24,15 +24,15 @@ public class GetFreelancerByIdQueryQueryHandler(
             var freelancer = await queriesFreelancer.GetByIdAsync(userId, cancellationToken);
             if (freelancer == null)
             {
-                return ServiceResponse<FreelancerVM?>.NotFound("Freelancer not found");
+                return Result<FreelancerVM?>.NotFound("Freelancer not found");
             }
 
-            return ServiceResponse<FreelancerVM?>.Ok("Freelancer retrieved",
+            return Result<FreelancerVM?>.Ok("Freelancer retrieved",
                 mapper.Map<FreelancerVM>(freelancer));
         }
         catch (Exception exception)
         {
-            return ServiceResponse<FreelancerVM?>.InternalError(exception.Message);
+            return Result<FreelancerVM?>.InternalError(exception.Message);
         }
     }
 }

@@ -18,7 +18,7 @@ public class MessageController(ISender sender)
     : GenericCrudController<Guid, MessageVM, CreateMessageVM, UpdateMessageVM>(sender)
 {
     [HttpPost("without-contract")]
-    public async Task<ActionResult<ServiceResponse<MessageVM>>> CreateWithoutContract(CreateMessageWithoutContractVM vm, CancellationToken ct)
+    public async Task<ActionResult<Result<MessageVM>>> CreateWithoutContract(CreateMessageWithoutContractVM vm, CancellationToken ct)
     {
         var command = new Create.Command<CreateMessageWithoutContractVM, MessageVM> { Model = vm };
         var result = await Sender.Send(command, ct);
@@ -26,7 +26,7 @@ public class MessageController(ISender sender)
     }
     
     [HttpGet("by-user")]
-    public async Task<ActionResult<ServiceResponse<List<MessageVM>>>> GetMessagesByUser(CancellationToken ct)
+    public async Task<ActionResult<Result<List<MessageVM>>>> GetMessagesByUser(CancellationToken ct)
     {
         var query = new GetMessagesByUserQuery();
         var result = await Sender.Send(query, ct);
@@ -34,7 +34,7 @@ public class MessageController(ISender sender)
     }
     
     [HttpGet("by-contract/{contractId}")]
-    public async Task<ActionResult<ServiceResponse<List<MessageVM>>>> GetMessagesByContract(Guid contractId, CancellationToken ct)
+    public async Task<ActionResult<Result<List<MessageVM>>>> GetMessagesByContract(Guid contractId, CancellationToken ct)
     {
         var query = new GetMessagesByContractQuery() { ContractId = contractId };
         var result = await Sender.Send(query, ct);
@@ -42,13 +42,13 @@ public class MessageController(ISender sender)
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<ActionResult<ServiceResponse<List<MessageVM>>>> GetAll(CancellationToken ct)
+    public override Task<ActionResult<Result<List<MessageVM>>>> GetAll(CancellationToken ct)
     {
         return base.GetAll(ct);
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public override Task<ActionResult<ServiceResponse<PaginatedItemsVM<MessageVM>>>> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
+    public override Task<ActionResult<Result<PaginatedItemsVM<MessageVM>>>> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
     {
         return base.GetAllPaginated(pagedVm, ct);
     }

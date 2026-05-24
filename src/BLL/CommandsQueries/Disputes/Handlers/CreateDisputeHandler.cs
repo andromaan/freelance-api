@@ -16,7 +16,7 @@ public class CreateDisputeHandler(
     IContractRepository contractRepository
 ) : ICreateHandler<Dispute, CreateDisputeVM, DisputeVM>
 {
-    public async Task<ServiceResponse<DisputeVM?>> HandleAsync(Dispute entity, CreateDisputeVM createModel,
+    public async Task<Result<DisputeVM?>> HandleAsync(Dispute entity, CreateDisputeVM createModel,
         CancellationToken cancellationToken)
     {
         var userRole = userProvider.GetUserRole();
@@ -26,7 +26,7 @@ public class CreateDisputeHandler(
 
         if (existingContract is null)
         {
-            return ServiceResponse<DisputeVM?>.NotFound($"Contract with Id {createModel.ContractId} not found");
+            return Result<DisputeVM?>.NotFound($"Contract with Id {createModel.ContractId} not found");
         }
 
         var freelancer = await freelancerQueries.GetByUserIdAsync(userId, cancellationToken);
@@ -36,27 +36,27 @@ public class CreateDisputeHandler(
         var isFreelancer = existingContract.FreelancerId == freelancer?.Id;
         if (!isCreator && !isAdminOrModerator && !isFreelancer)
         {
-            return ServiceResponse<DisputeVM?>.Unauthorized("You are not authorized to create a dispute for this contract");
+            return Result<DisputeVM?>.Unauthorized("You are not authorized to create a dispute for this contract");
         }
         
         if (existingContract is {Status: ContractStatus.Pending})
         {
-            return ServiceResponse<DisputeVM?>.BadRequest("Cannot create a dispute for a pending contract");
+            return Result<DisputeVM?>.BadRequest("Cannot create a dispute for a pending contract");
         }
         
         if (existingContract is {Status: ContractStatus.Disputed})
         {
-            return ServiceResponse<DisputeVM?>.BadRequest("Cannot create a dispute for a contract that is already disputed");
+            return Result<DisputeVM?>.BadRequest("Cannot create a dispute for a contract that is already disputed");
         }
         
         if (existingContract is {Status: ContractStatus.Completed})
         {
-            return ServiceResponse<DisputeVM?>.BadRequest("Cannot create a dispute for a completed contract");
+            return Result<DisputeVM?>.BadRequest("Cannot create a dispute for a completed contract");
         }
         
         if (existingContract is {Status: ContractStatus.Cancelled})
         {
-            return ServiceResponse<DisputeVM?>.BadRequest("Cannot create a dispute for a cancelled contract");
+            return Result<DisputeVM?>.BadRequest("Cannot create a dispute for a cancelled contract");
         }
 
         existingContract.Status = ContractStatus.Disputed;
@@ -67,9 +67,9 @@ public class CreateDisputeHandler(
         }
         catch (Exception e)
         {
-            return ServiceResponse<DisputeVM?>.InternalError(e.Message);
+            return Result<DisputeVM?>.InternalError(e.Message);
         }
 
-        return ServiceResponse<DisputeVM?>.Ok();
+        return Result<DisputeVM?>.Ok();
     }
 }

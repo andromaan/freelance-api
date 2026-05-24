@@ -17,7 +17,7 @@ namespace API.Controllers;
 public class NotificationController(ISender sender) : BaseController
 {
     [HttpGet("is-not-read")]
-    public async Task<ActionResult<ServiceResponse<List<NotificationVM>>>> GetAll(CancellationToken ct)
+    public async Task<ActionResult<Result<List<NotificationVM>>>> GetAll(CancellationToken ct)
     {
         var query = new GetAll.Query<NotificationVM>();
         var result = await sender.Send(query, ct);
@@ -25,7 +25,7 @@ public class NotificationController(ISender sender) : BaseController
     }
 
     [HttpGet("paginated")]
-    public async Task<ActionResult<ServiceResponse<PaginatedItemsVM<NotificationVM>>>> GetAllPaginated([FromQuery] PagedVM pagedVm, CancellationToken ct)
+    public async Task<ActionResult<Result<PaginatedItemsVM<NotificationVM>>>> GetAllPaginated([FromQuery] PagedVM pagedVm, CancellationToken ct)
     {
         var query = new GetAllPaginated.Query<NotificationVM>(pagedVm);
         var result = await sender.Send(query, ct);
@@ -53,7 +53,7 @@ public class NotificationController(ISender sender) : BaseController
     }
     
     [HttpGet("filtered")]
-    public async Task<ActionResult<ServiceResponse<PaginatedItemsVM<NotificationVM>>>> GetAllFiltered([FromQuery] PagedVM pagedVm,
+    public async Task<ActionResult<Result<PaginatedItemsVM<NotificationVM>>>> GetAllFiltered([FromQuery] PagedVM pagedVm,
         [FromQuery] FilterNotificationVM filterVm, CancellationToken ct)
     {
         var query = new GetAllFilteredPaginated.Query<FilterNotificationVM, NotificationVM>(pagedVm, filterVm);
@@ -62,7 +62,7 @@ public class NotificationController(ISender sender) : BaseController
     }
 
     [HttpPatch("{id:guid}/toggle-read")]
-    public async Task<ActionResult<ServiceResponse<NotificationVM>>> ToggleRead(Guid id, CancellationToken ct)
+    public async Task<ActionResult<Result<NotificationVM>>> ToggleRead(Guid id, CancellationToken ct)
     {
         var command = new MarkNotificationAsRead.Command(id);
         var result = await sender.Send(command, ct);
@@ -70,7 +70,7 @@ public class NotificationController(ISender sender) : BaseController
     }
 
     [HttpPatch("read-all")]
-    public async Task<ActionResult<ServiceResponse<List<NotificationVM>>>> MarkAllRead(CancellationToken ct)
+    public async Task<ActionResult<Result<List<NotificationVM>>>> MarkAllRead(CancellationToken ct)
     {
         var command = new MarkAllNotificationsAsRead.Command();
         var result = await sender.Send(command, ct);
