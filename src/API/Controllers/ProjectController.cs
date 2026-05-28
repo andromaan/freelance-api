@@ -40,6 +40,15 @@ public class ProjectController(ISender sender)
         var result = await Sender.Send(query, ct);
         return GetResult(result);
     }
+    
+    [AllowAnonymous]
+    [HttpGet("by-contract/{contractId:guid}")]
+    public async Task<ActionResult<Result<ProjectVM>>> GetProjectByContract(Guid contractId, CancellationToken ct)
+    {
+        var query = new GetProjectByContractQuery { ContractId = contractId };
+        var result = await Sender.Send(query, ct);
+        return GetResult(result);
+    }
 
     [AllowAnonymous]
     public override Task<ActionResult<Result<List<ProjectVM>>>> GetAll(CancellationToken ct)
