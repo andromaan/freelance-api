@@ -11,7 +11,6 @@ public record GetFreelancerByIdQuery(Guid FreelancerId) : IRequest<Result<Freela
 
 public class GetFreelancerByIdQueryQueryHandler(
     IFreelancerQueries queriesFreelancer,
-    IUserProvider userProvider,
     IMapper mapper)
     : IRequestHandler<GetFreelancerByIdQuery, Result<FreelancerVM?>>
 {

@@ -3,6 +3,7 @@ using BLL;
 using BLL.CommandsQueries.Freelancers;
 using BLL.CommandsQueries.GenericCRUD.Update;
 using BLL.Services;
+using BLL.ViewModels;
 using BLL.ViewModels.Freelancer;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -38,4 +39,13 @@ public class FreelancerController(ISender sender) : BaseController
     [HttpPut("skills")]
     public virtual async Task<ActionResult<Result<FreelancerVM>>> UpdateSkills(UpdateFreelancerSkillsVM vm, CancellationToken ct)
         => GetResult(await sender.Send(new UpdateByUser.Command<UpdateFreelancerSkillsVM, FreelancerVM> { Model = vm }, ct));
+
+    [AllowAnonymous]
+    [HttpGet("search")]
+    public async Task<ActionResult<Result<PaginatedItemsVM<SearchFreelancerVM>>>> GetAllPaginatedFiltered([FromQuery] PagedVM pagedVm, [FromQuery] FilterFreelancerVM filterVm, CancellationToken ct)
+    {
+        var query = new BLL.CommandsQueries.Freelancers.GetFiltered.GetFilteredFreelancers.Query(pagedVm, filterVm);
+        var result = await sender.Send(query, ct);
+        return GetResult(result);
+    }
 }

@@ -83,7 +83,7 @@ public class UserController(ISender sender)
     
     [HttpPut]
     public virtual async Task<ActionResult<Result<UserVM>>> Update(UpdateUserVM vm, CancellationToken ct)
-        => GetResult(await sender.Send(new UpdateByUser.Command<UpdateUserVM, UserVM> { Model = vm }, ct));
+        => GetResult(await Sender.Send(new UpdateByUser.Command<UpdateUserVM, UserVM> { Model = vm }, ct));
 
     [Authorize(Roles = Settings.Roles.AdminRole)]
     public override async Task<ActionResult<Result<UserVM>>> Create(CreateUserByAdminVM byAdminVm, CancellationToken ct)

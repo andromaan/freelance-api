@@ -11,7 +11,7 @@ public class ApplicationDbContextInitializer(AppDbContext context, IHostEnvironm
     {
         await context.Database.MigrateAsync();
         
-        if (environment.IsDevelopment())
+        if (environment.IsDevelopment() ||  environment.IsProduction())
         {
             await BogusDataSeeder.SeedTestDataAsync(context);
         }
