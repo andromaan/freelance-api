@@ -5,6 +5,7 @@ namespace BLL.ViewModels.Freelancer;
 
 public class FreelancerVM
 {
+    public Guid Id { get; set; }
     public string? Bio { get; set; }
     public string? Location { get; set; }
     public List<SkillVM> Skills { get; set; } = [];

@@ -17,6 +17,7 @@ namespace API.Controllers;
 public class ReviewController(ISender sender)
     : GenericCrudController<Guid, ReviewVM, CreateReviewVM, UpdateReviewVM>(sender)
 {
+    [AllowAnonymous]
     [HttpGet("by-reviewed-user/{reviewedUserEmail}")]
     public async Task<ActionResult<Result<List<ReviewVM>>>> GetByGetReviewedUser(string reviewedUserEmail, CancellationToken ct)
     {
@@ -25,6 +26,7 @@ public class ReviewController(ISender sender)
         return GetResult(result);
     }
 
+    [AllowAnonymous]
     [HttpGet("average-rating/{reviewedUserEmail}")]
     public async Task<ActionResult<Result<double>>> GetAverageRating(string reviewedUserEmail, CancellationToken ct)
     {

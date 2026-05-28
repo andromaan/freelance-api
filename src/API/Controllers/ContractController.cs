@@ -87,10 +87,11 @@ public class ContractController(ISender sender) : BaseController
         return GetResult(result);
     }
 
+    [AllowAnonymous]
     [HttpGet("completed-by-freelancer-id/{freelancerId:guid}")]
-    public async Task<ActionResult<Result<List<ContractVM>>>> GetContractsByFreelancer(Guid freelancerId, CancellationToken ct)
+    public async Task<ActionResult<Result<List<ContractVM>>>> GetCompletedContractsByFreelancer(Guid freelancerId, CancellationToken ct)
     {
-        var query = new GetContractByFreelancerIdQuery(freelancerId);
+        var query = new GetCompletedContractByFreelancerIdQuery(freelancerId);
         var result = await sender.Send(query, ct);
         return GetResult(result);
     }

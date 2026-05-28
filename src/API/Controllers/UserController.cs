@@ -1,6 +1,7 @@
 using API.Controllers.Common;
 using BLL;
 using BLL.CommandsQueries.GenericCRUD.GetAll;
+using BLL.CommandsQueries.GenericCRUD.Update;
 using BLL.Services;
 using BLL.CommandsQueries.UserLanguages;
 using BLL.CommandsQueries.Users;
@@ -79,6 +80,10 @@ public class UserController(ISender sender)
         var result = await Sender.Send(command, ct);
         return GetResult(result);
     }
+    
+    [HttpPut]
+    public virtual async Task<ActionResult<Result<UserVM>>> Update(UpdateUserVM vm, CancellationToken ct)
+        => GetResult(await sender.Send(new UpdateByUser.Command<UpdateUserVM, UserVM> { Model = vm }, ct));
 
     [Authorize(Roles = Settings.Roles.AdminRole)]
     public override async Task<ActionResult<Result<UserVM>>> Create(CreateUserByAdminVM byAdminVm, CancellationToken ct)

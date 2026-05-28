@@ -21,10 +21,12 @@ public class FreelancerController(ISender sender) : BaseController
     public virtual async Task<ActionResult<Result<FreelancerVM>>> GetByUser(CancellationToken ct)
         => GetResult(await sender.Send(new GetFreelancerByUserQuery(), ct));
     
+    [AllowAnonymous]
     [HttpGet("{id:guid}")]
-    public virtual async Task<ActionResult<Result<FreelancerVM>>> GetByUser(Guid id, CancellationToken ct)
+    public virtual async Task<ActionResult<Result<FreelancerVM>>> GetByFreelancerId(Guid id, CancellationToken ct)
         => GetResult(await sender.Send(new GetFreelancerByIdQuery(id), ct));
     
+    [AllowAnonymous]
     [HttpGet("{email}")]
     public virtual async Task<ActionResult<Result<FreelancerVM>>> GetByUserEmail(string email, CancellationToken ct)
         => GetResult(await sender.Send(new GetFreelancerByEmailQuery(email), ct));

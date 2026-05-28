@@ -26,7 +26,7 @@ public class GetFreelancerByEmailQueryHandler(
                 return Result<FreelancerVM?>.NotFound("User not found with the provided email");
             }
 
-            var freelancer = await queriesFreelancer.GetByUserIdAsync(user.Id, cancellationToken);
+            var freelancer = await queriesFreelancer.GetByUserIdAsync(user.Id, cancellationToken, includes: true);
             if (freelancer == null)
             {
                 return Result<FreelancerVM?>.NotFound("Freelancer not found");
