@@ -11,4 +11,5 @@ public class ProjectVM
     public string Status { get; set; } = string.Empty;
     public DateTime Deadline { get; set; }
     public List<CategoryVM> Categories { get; set; } = new();
+    public Guid CreatedBy { get; set; }
 }

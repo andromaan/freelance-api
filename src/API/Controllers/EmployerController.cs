@@ -24,4 +24,14 @@ public class EmployerController(ISender sender) : BaseController
     [HttpPut]
     public virtual async Task<ActionResult<Result<EmployerVM>>> Update(UpdateEmployerVM vm, CancellationToken ct)
         => GetResult(await sender.Send(new UpdateByUser.Command<UpdateEmployerVM, EmployerVM> { Model = vm }, ct));
+    
+    [AllowAnonymous]
+    [HttpGet("{id:guid}")]
+    public virtual async Task<ActionResult<Result<EmployerVM>>> GetByEmployerId(Guid id, CancellationToken ct)
+        => GetResult(await sender.Send(new GetEmployerByIdQuery(id), ct));
+    
+    [AllowAnonymous]
+    [HttpGet("{email}")]
+    public virtual async Task<ActionResult<Result<EmployerVM>>> GetByUserEmail(string email, CancellationToken ct)
+        => GetResult(await sender.Send(new GetEmployerByEmailQuery(email), ct));
 }
