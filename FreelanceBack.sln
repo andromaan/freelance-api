@@ -21,7 +21,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{24462C6D-56FB-4415-BE1A-931669CEC290}"
 	ProjectSection(SolutionItems) = preProject
 		.dockerignore = .dockerignore
-		.env.example = .env.example
 		docker-compose.yml = docker-compose.yml
 		Dockerfile = Dockerfile
 		.env = .env

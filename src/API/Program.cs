@@ -37,7 +37,8 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseCors(options => options
-    .WithOrigins("http://localhost:3000", "https://localhost:3000", "https://freelance-marketplace.pp.ua")
+    .WithOrigins("http://localhost:3000", "http://localhost:80",
+        "https://localhost:3000", "https://freelance-marketplace.pp.ua")
     // .SetIsOriginAllowed(_ => true)
     .AllowAnyMethod()
     .AllowAnyHeader()
