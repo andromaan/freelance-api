@@ -7,14 +7,9 @@ public class Result<T>
     public required string Message { get; set; }
     public bool Success { get; set; }
     public T? Data { get; set; }
-    public HttpStatusCode StatusCode { get; set; }
-
-    public object ToResponse() => new
-    {
-        Message,
-        Success,
-        Data
-    };
+    private HttpStatusCode StatusCode { get; set; }
+    
+    public HttpStatusCode GetStatusCode() => StatusCode;
 
     public static Result<T> GetResponse(string message, bool success, T? data, HttpStatusCode statusCode)
     {
