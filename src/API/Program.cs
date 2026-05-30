@@ -59,15 +59,6 @@ var imagesPath = Path.Combine(builder.Environment.ContentRootPath, Settings.Imag
 if (!Directory.Exists(imagesPath))
 {
     Directory.CreateDirectory(imagesPath);
-
-    foreach (var file in Settings.ImagesPathSettings.ListOfDirectoriesNames)
-    {
-        var containersPath = Path.Combine(imagesPath, file);
-        if (!Directory.Exists(containersPath))
-        {
-            Directory.CreateDirectory(containersPath);
-        }
-    }
 }
 
 app.UseStaticFiles(new StaticFileOptions

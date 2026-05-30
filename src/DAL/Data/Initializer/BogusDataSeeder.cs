@@ -48,7 +48,7 @@ public static class BogusDataSeeder
         var moderatorRole  = roles.First(r => r.Name == Settings.Roles.ModeratorRole);
 
         // Генерація Модераторів
-        var moderatorUsers = await GenerateModeratorsAsync(context, faker, defaultPasswordHash, moderatorRole, countries, adminId);
+        var moderatorUsers = await GenerateModeratorsAsync(context, defaultPasswordHash, moderatorRole, countries, adminId);
 
         // 2. Користувачі
         var freelancersUsers = await GenerateFreelancersAsync(context, faker, defaultPasswordHash, freelancerRole,
@@ -65,13 +65,13 @@ public static class BogusDataSeeder
         var contracts = await GenerateContractsAsync(context, faker, projects, freelancersUsers, employerUsers);
 
         // 5. Повідомлення
-        await GenerateMessagesAsync(context, faker, contracts, freelancersUsers, employerUsers);
+        await GenerateMessagesAsync(context, faker, contracts);
 
         // 6. Відгуки
         await GenerateReviewsAsync(context, faker, contracts, freelancerRole.Id, employerRole.Id);
 
         // 7. Платежі і Транзакції
-        await GeneratePaymentsAndTransactionsAsync(context, faker, contracts, freelancersUsers, employerUsers);
+        await GeneratePaymentsAndTransactionsAsync(context, faker, contracts);
 
         // 8. Спори
         await GenerateDisputesAsync(context, faker, contracts, moderatorUsers);
@@ -145,7 +145,7 @@ public static class BogusDataSeeder
 
     // ── Користувачі ───────────────────────────────────────────────────────────
 
-    private static async Task<List<User>> GenerateModeratorsAsync(AppDbContext context, Faker faker,
+    private static async Task<List<User>> GenerateModeratorsAsync(AppDbContext context,
         string defaultPasswordHash, Role moderatorRole, List<Country> countries, Guid adminId)
     {
         var modFaker = new Faker<User>("en")
@@ -367,7 +367,7 @@ public static class BogusDataSeeder
             var shares = Enumerable.Range(0, count).Select(_ => faker.Random.Double(0.1)).ToList();
             var total = shares.Sum();
             var amounts = shares
-                .Select(s => Math.Round((decimal)(s / total) * project.Budget * faker.Random.Decimal(0.8m, 1.0m), 2))
+                .Select(s => Math.Round((decimal)(s / total) * project.Budget * faker.Random.Decimal(0.8m), 2))
                 .ToList();
 
             var start   = project.CreatedAt;
@@ -451,7 +451,7 @@ public static class BogusDataSeeder
             .RuleFor(c => c.StartDate,    f  => f.Date.Past().ToUniversalTime())
             .RuleFor(c => c.AgreedRate,   (f, c) =>
                 Math.Round(f.Random.Decimal(100, inProgressProjects.First(x => x.Id == c.ProjectId).Budget), 2))
-            .RuleFor(c => c.Status,       (f, c) => inProgressProjects.First(x => x.Id == c.ProjectId).Status == ProjectStatus.Completed ? ContractStatus.Completed : ContractStatus.Active)
+            .RuleFor(c => c.Status,       (_, c) => inProgressProjects.First(x => x.Id == c.ProjectId).Status == ProjectStatus.Completed ? ContractStatus.Completed : ContractStatus.Active)
             .RuleFor(c => c.CreatedBy,    f  => f.PickRandom(employerUsers).Id)
             .RuleFor(c => c.CreatedAt,    (_, c) => c.StartDate)
             .RuleFor(c => c.ModifiedBy,   (_, c) => c.CreatedBy)
@@ -478,7 +478,7 @@ public static class BogusDataSeeder
             var pMilestones = allProjectMilestones.Where(m => m.ProjectId == c.ProjectId).ToList();
             foreach(var pm in pMilestones)
             {
-                var status = ContractMilestoneStatus.Pending;
+                ContractMilestoneStatus status;
                 if (c.Status == ContractStatus.Completed)
                 {
                     status = ContractMilestoneStatus.Approved; // Or Approved
@@ -508,7 +508,7 @@ public static class BogusDataSeeder
         return contracts;
     }
 
-    private static async Task GenerateMessagesAsync(AppDbContext context, Faker faker, List<Contract> contracts, List<User> freelancers, List<User> employers)
+    private static async Task GenerateMessagesAsync(AppDbContext context, Faker faker, List<Contract> contracts)
     {
         var messages = new List<Message>();
         foreach(var contract in contracts)
@@ -579,7 +579,7 @@ public static class BogusDataSeeder
         await context.SaveChangesAsync();
     }
 
-    private static async Task GeneratePaymentsAndTransactionsAsync(AppDbContext context, Faker faker, List<Contract> contracts, List<User> freelancers, List<User> employers)
+    private static async Task GeneratePaymentsAndTransactionsAsync(AppDbContext context, Faker faker, List<Contract> contracts)
     {
         var completedContracts = contracts.Where(c => c.Status == ContractStatus.Completed).ToList();
         var contractMilestones = await context.ContractMilestones.ToListAsync();

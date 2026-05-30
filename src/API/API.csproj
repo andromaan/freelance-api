@@ -25,8 +25,4 @@
       <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="wwwroot\images\users\avatars\" />
-    </ItemGroup>
-
 </Project>

@@ -6,14 +6,13 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: freelance-db-docker
+      POSTGRES_DB: freelance-db
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   api:
-    # image: ghcr.io/andromaan/freelance-api:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -24,7 +23,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__Default: "Server=db;Port=5432;Database=freelance-db-docker;User Id=postgres;Password=postgres;"
+      ConnectionStrings__Default: "Server=db;Port=5432;Database=freelance-db;User Id=postgres;Password=postgres;"
       GoogleAuthSettings__ClientId: ${GOOGLE_CLIENT_ID}
       AuthSettings__key: ${JWT_KEY}
       AuthSettings__issuer: ${JWT_ISSUER}
@@ -35,8 +34,20 @@ services:
       - db
     volumes:
       - images_data:/app/wwwroot/images
+  
+  react:
+    container_name: freelance-react
+    image: ghcr.io/andromaan/freelance-react:latest
+    ports:
+      - "3000:80"
+    environment:
+      DISABLE_HTTPS: "true"
+      VITE_API_URL: ${VITE_API_URL}
+      VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
+      VITE_STRIPE_PUBLISHABLE_KEY: ${VITE_STRIPE_PUBLISHABLE_KEY}
+    depends_on:
+      - api
 
 volumes:
   postgres_data:
   images_data:
-

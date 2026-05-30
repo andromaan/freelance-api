@@ -22,8 +22,19 @@ public class ImageService(IWebHostEnvironment webHostEnvironment) : IImageServic
             }
 
             var root = webHostEnvironment.ContentRootPath;
+            
+            // 1. Make path for only folder
+            var directoryPath = Path.Combine(root, path);
+            
+            // 2. Check if folder exists, if not - create it
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+            
+            // 3. Now make full path to the file
             var imageName = $"{Guid.NewGuid()}.{types[1]}";
-            var filePath = Path.Combine(root, path, imageName);
+            var filePath = Path.Combine(directoryPath, imageName);
 
             using (var stream = File.OpenWrite(filePath))
             {

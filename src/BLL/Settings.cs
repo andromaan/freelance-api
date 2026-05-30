@@ -26,20 +26,13 @@ public static class Settings
     
     public static class ImagesPathSettings
     {
-
         public static string HtmlPagesPath = "templates";
         public static string UserImagesPath = "images/user";
 
         public const string ImagesPath = "wwwroot/images";
         public const string StaticFileRequestPath = "images";
 
-        public const string UserAvatarImagePathName = "users/avatars";
         public const string UserAvatarImagesPath = "wwwroot/images/users/avatars";
         public const string UserAvatarImagesPathForUrl = "images/users/avatars";
-
-        public static readonly List<string> ListOfDirectoriesNames = new()
-        {
-            UserAvatarImagePathName
-        };
     }
 }
