@@ -19,7 +19,6 @@ namespace API.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class UserController(ISender sender)
     : GenericCrudController<Guid, UserVM, CreateUserByAdminVM, UpdateUserByAdminVM>(sender)
 {
@@ -30,7 +29,8 @@ public class UserController(ISender sender)
         var result = await Sender.Send(command, ct);
         return GetResult(result);
     }
-    
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet("get-myself")]
     public async Task<ActionResult<Result<UserVM>>> GetMyself(CancellationToken ct)
     {
@@ -39,6 +39,7 @@ public class UserController(ISender sender)
         return GetResult(result);
     }
 
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpPatch("update-avatar")]
     public async Task<ActionResult<Result<UserVM>>> UpdateAvatar(IFormFile file, CancellationToken ct)
     {
@@ -46,7 +47,7 @@ public class UserController(ISender sender)
         var result = await Sender.Send(command, ct);
         return GetResult(result);
     }
-    
+
     [HttpGet("proficiency-levels")]
     public ActionResult GetProficiencyLevelsAsync()
     {
@@ -57,22 +58,27 @@ public class UserController(ISender sender)
         return Ok(platforms);
     }
 
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpPost("languages")]
-    public async Task<ActionResult<Result<UserLanguageVM>>> CreateLanguage(CreateUserLanguageVM vm, CancellationToken ct)
+    public async Task<ActionResult<Result<UserLanguageVM>>> CreateLanguage(CreateUserLanguageVM vm,
+        CancellationToken ct)
     {
         var command = new CreateUserLanguageCommand(vm);
         var result = await Sender.Send(command, ct);
         return GetResult(result);
     }
-    
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpPut("languages")]
-    public async Task<ActionResult<Result<UserLanguageVM>>> UpdateLanguage(UpdateUserLanguageVM vm, CancellationToken ct)
+    public async Task<ActionResult<Result<UserLanguageVM>>> UpdateLanguage(UpdateUserLanguageVM vm,
+        CancellationToken ct)
     {
         var command = new UpdateUserLanguageCommand(vm);
         var result = await Sender.Send(command, ct);
         return GetResult(result);
     }
-    
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpDelete("languages/{languageId}")]
     public async Task<ActionResult<Result<UserLanguageVM>>> DeleteLanguage(int languageId, CancellationToken ct)
     {
@@ -80,7 +86,8 @@ public class UserController(ISender sender)
         var result = await Sender.Send(command, ct);
         return GetResult(result);
     }
-    
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpPut]
     public virtual async Task<ActionResult<Result<UserVM>>> Update(UpdateUserVM vm, CancellationToken ct)
         => GetResult(await Sender.Send(new UpdateByUser.Command<UpdateUserVM, UserVM> { Model = vm }, ct));
@@ -94,7 +101,8 @@ public class UserController(ISender sender)
     }
 
     [Authorize(Roles = Settings.Roles.AdminRole)]
-    public override Task<ActionResult<Result<UserVM>>> Update(Guid id, UpdateUserByAdminVM byAdminVm, CancellationToken ct)
+    public override Task<ActionResult<Result<UserVM>>> Update(Guid id, UpdateUserByAdminVM byAdminVm,
+        CancellationToken ct)
         => base.Update(id, byAdminVm, ct);
 
     [Authorize(Roles = Settings.Roles.AdminRole)]
@@ -106,6 +114,7 @@ public class UserController(ISender sender)
         => base.GetAll(ct);
 
     [Authorize(Roles = Settings.Roles.AdminRole)]
-    public override Task<ActionResult<Result<PaginatedItemsVM<UserVM>>>> GetAllPaginated(PagedVM pagedVm, CancellationToken ct)
-    => base.GetAllPaginated(pagedVm, ct);
+    public override Task<ActionResult<Result<PaginatedItemsVM<UserVM>>>> GetAllPaginated(PagedVM pagedVm,
+        CancellationToken ct)
+        => base.GetAllPaginated(pagedVm, ct);
 }
