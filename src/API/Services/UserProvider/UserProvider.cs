@@ -10,11 +10,13 @@ public class UserProvider(IHttpContextAccessor context, AppDbContext appDbContex
 
     public async Task<Guid> GetUserId(CancellationToken cancellationToken = default)
     {
-        var userIdStr = _context.HttpContext!.User.FindFirst("id")?.Value;
+        if (_context.HttpContext == null) return Guid.Empty;
+
+        var userIdStr = _context.HttpContext.User.FindFirst("id")?.Value;
 
         if (userIdStr == null)
         {
-            throw new InvalidOperationException("User ID claim not found. Most likely the user is not authenticated.");
+            return Guid.Empty; // SignalR or unauthenticated
         }
 
         var userIdGuid = Guid.Parse(userIdStr);

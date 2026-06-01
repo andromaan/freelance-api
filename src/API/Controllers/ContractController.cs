@@ -64,7 +64,7 @@ public class ContractController(ISender sender) : BaseController
     }
 
     [HttpGet("by-user")]
-    public async Task<ActionResult<Result<List<ContractVM>>>> GetContractsByEmployer(CancellationToken ct)
+    public async Task<ActionResult<Result<List<ContractVM>>>> GetContractsByUser(CancellationToken ct)
     {
         var query = new GetContractByUserQuery();
         var result = await sender.Send(query, ct);
