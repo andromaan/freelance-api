@@ -8,4 +8,5 @@ public class ChatDetailsVM
     public string InterlocutorName { get; set; } = string.Empty;
     public string? InterlocutorAvatar { get; set; }
     public string ContractStatus { get; set; } = string.Empty;
+    public bool IsInterlocutorOnline { get; set; }
 }

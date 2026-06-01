@@ -55,6 +55,7 @@ public static class ConfigureBusinessLogic
 
         // SignalR: використовуємо кастомний провайдер userId (читає claim "id")
         builder.Services.AddSingleton<IUserIdProvider, NotificationUserIdProvider>();
+        builder.Services.AddSingleton<ChatPresenceTracker>();
 
         // Stripe configuration: 
         services.AddStripeConfiguration(builder);

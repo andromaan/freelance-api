@@ -10,7 +10,8 @@ public record GetChatDetailsQuery(Guid ContractId) : IRequest<Result<ChatDetails
 
 public class GetChatDetailsQueryHandler(
     IContractQueries contractQueries,
-    IUserProvider userProvider) : IRequestHandler<GetChatDetailsQuery, Result<ChatDetailsVM>>
+    IUserProvider userProvider,
+    BLL.Hubs.ChatPresenceTracker presenceTracker) : IRequestHandler<GetChatDetailsQuery, Result<ChatDetailsVM>>
 {
     public async Task<Result<ChatDetailsVM>> Handle(GetChatDetailsQuery request, CancellationToken cancellationToken)
     {
@@ -37,7 +38,8 @@ public class GetChatDetailsQueryHandler(
             InterlocutorId = interlocutorId,
             InterlocutorName = isFreelancer ? "Employer" : "Freelancer",
             InterlocutorAvatar = isFreelancer ? null : contract.Freelancer?.AvatarLogo, // For real app, need User entity included
-            ContractStatus = contract.Status.ToString()
+            ContractStatus = contract.Status.ToString(),
+            IsInterlocutorOnline = await presenceTracker.IsUserOnline(interlocutorId)
         };
 
         return Result<ChatDetailsVM>.Ok("Chat details retrieved", vm);

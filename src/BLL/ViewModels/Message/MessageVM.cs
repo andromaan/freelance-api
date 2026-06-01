@@ -10,5 +10,5 @@ public class MessageVM
 
     public string Text { get; set; } = string.Empty;
     public DateTime SentAt { get; set; }
-    
+    public bool IsRead { get; set; }
 }
