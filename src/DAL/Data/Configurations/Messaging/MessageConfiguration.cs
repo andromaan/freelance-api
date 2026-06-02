@@ -15,6 +15,8 @@ public class MessageConfiguration : IEntityTypeConfiguration<Message>
 
         builder.Property(p => p.Text).IsRequired().HasMaxLength(2000);
         builder.Property(p => p.SentAt).IsRequired();
+        builder.Property(p => p.IsRead).HasDefaultValue(false);
+        builder.Property(p => p.IsEdited).HasDefaultValue(false);
 
         builder.HasOne(p => p.Contract)
             .WithMany()

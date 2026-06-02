@@ -7,7 +7,6 @@ public class Freelancer : AuditableEntity<Guid>
 {
     public string? Bio { get; set; }
     public string? Location { get; set; }
-    public string? AvatarLogo { get; set; }
     
     public ICollection<Skill> Skills { get; set; } = new List<Skill>();
     public ICollection<Portfolio> Portfolio { get; set; } = new List<Portfolio>();

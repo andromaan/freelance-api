@@ -1,5 +1,8 @@
 using BLL.Common.Interfaces;
 using BLL.Common.Interfaces.Repositories.Contracts;
+using BLL.Common.Interfaces.Repositories.Freelancers;
+using BLL.Common.Interfaces.Repositories.Projects;
+using BLL.Common.Interfaces.Repositories.Users;
 using BLL.Services;
 using BLL.ViewModels.Message;
 using MediatR;
@@ -11,7 +14,10 @@ public record GetChatDetailsQuery(Guid ContractId) : IRequest<Result<ChatDetails
 public class GetChatDetailsQueryHandler(
     IContractQueries contractQueries,
     IUserProvider userProvider,
-    BLL.Hubs.ChatPresenceTracker presenceTracker) : IRequestHandler<GetChatDetailsQuery, Result<ChatDetailsVM>>
+    IFreelancerQueries freelancerQueries,
+    IUserQueries userQueries,
+    IProjectQueries projectQueries,
+    Hubs.ChatPresenceTracker presenceTracker) : IRequestHandler<GetChatDetailsQuery, Result<ChatDetailsVM>>
 {
     public async Task<Result<ChatDetailsVM>> Handle(GetChatDetailsQuery request, CancellationToken cancellationToken)
     {
@@ -19,27 +25,33 @@ public class GetChatDetailsQueryHandler(
         if (contract == null)
             return Result<ChatDetailsVM>.NotFound("Contract not found");
 
-        var currentUserId = await userProvider.GetUserId();
+        var currentUserId = await userProvider.GetUserId(cancellationToken);
 
-        if (contract.FreelancerId != currentUserId && contract.CreatedBy != currentUserId)
+        var freelancer = await freelancerQueries.GetByIdAsync(contract.FreelancerId, cancellationToken);
+
+        if (contract.FreelancerId != freelancer!.Id && contract.CreatedBy != currentUserId)
             return Result<ChatDetailsVM>.Forbidden("You are not a participant of this contract");
 
-        var isFreelancer = currentUserId == contract.FreelancerId;
-        
+        var isFreelancer = currentUserId == freelancer.CreatedBy;
+
         // В залежності від того, хто запитує, співрозмовником є інша сторона
-        var interlocutorId = isFreelancer ? contract.CreatedBy : contract.FreelancerId;
+        var interlocutorId = isFreelancer ? contract.CreatedBy : freelancer.CreatedBy;
+        var interlocutorUser = await userQueries.GetByIdAsync(interlocutorId, cancellationToken);
         // Project navigation property should be loaded in GetByIdAsync ideally. 
         // If not, we will just use basic info.
-        
+
+        var project = await projectQueries.GetByIdAsync(contract.ProjectId, cancellationToken);
+
         var vm = new ChatDetailsVM
         {
             ContractId = contract.Id,
-            ProjectTitle = contract.Project?.Title ?? "Project",
+            ProjectTitle = project?.Title ?? "Project",
             InterlocutorId = interlocutorId,
-            InterlocutorName = isFreelancer ? "Employer" : "Freelancer",
-            InterlocutorAvatar = isFreelancer ? null : contract.Freelancer?.AvatarLogo, // For real app, need User entity included
+            InterlocutorName = interlocutorUser!.DisplayName ?? interlocutorUser.Email,
+            InterlocutorAvatar = interlocutorUser.AvatarImg,
             ContractStatus = contract.Status.ToString(),
-            IsInterlocutorOnline = await presenceTracker.IsUserOnline(interlocutorId)
+            IsInterlocutorOnline = await presenceTracker.IsUserOnline(interlocutorId),
+            InterlocutorRole = interlocutorUser.Role!.Name
         };
 
         return Result<ChatDetailsVM>.Ok("Chat details retrieved", vm);

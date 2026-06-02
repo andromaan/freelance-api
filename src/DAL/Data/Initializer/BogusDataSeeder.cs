@@ -207,7 +207,6 @@ public static class BogusDataSeeder
             Id         = u.Id,
             Bio        = faker.Lorem.Paragraphs(2),
             Location   = faker.Address.City(),
-            AvatarLogo = u.AvatarImg,
             Skills     = faker.PickRandom(skills, faker.Random.Int(3, 8)).Distinct().ToList(),
             CreatedBy  = u.Id,
             CreatedAt  = u.CreatedAt,

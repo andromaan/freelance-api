@@ -47,10 +47,17 @@ public class CreateContractCommandHandler(
         var projectMilestones
             = (await projectMilestoneQueries.GetByProjectIdAsync(quote.ProjectId, cancellationToken)).ToList();
 
+        if (projectMilestones.Count == 0)
+        {
+            return Result<ContractVM?>.BadRequest(
+                $"Contract cannot be created. Project with id {quote.ProjectId} has no milestones.");
+        }
+
         if (!await contractQueries.IsContractCanBeCreated(project!.Id, project.CreatedBy, quote.FreelancerId,
                 cancellationToken))
         {
-            return Result<ContractVM?>.InternalError("Contract cannot be created. Contract already exists for this quote.");
+            return Result<ContractVM?>.InternalError(
+                "Contract cannot be created. Contract already exists for this quote.");
         }
 
         var contract = new Contract

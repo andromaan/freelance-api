@@ -1,5 +1,4 @@
 using AutoMapper;
-using BLL.Common.Interfaces;
 using BLL.Common.Interfaces.Repositories.Messages;
 using BLL.Services;
 using BLL.ViewModels.Message;
@@ -26,6 +25,7 @@ public class EditMessageCommandHandler(
             return Result<MessageVM>.Forbidden("You can only edit your own messages");
 
         message.Text = request.NewText;
+        message.IsEdited = true;
         
         var updatedMessage = await messageRepository.UpdateAsync(message, cancellationToken);
 

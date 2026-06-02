@@ -10,5 +10,7 @@ public class MessageVM
 
     public string Text { get; set; } = string.Empty;
     public DateTime SentAt { get; set; }
+    public DateTime ModifiedAt { get; set; }
     public bool IsRead { get; set; }
+    public bool IsEdited { get; set; }
 }

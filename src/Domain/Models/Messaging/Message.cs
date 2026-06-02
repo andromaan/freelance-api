@@ -15,4 +15,5 @@ public class Message : AuditableEntity<Guid>
     public required string Text { get; set; }
     public DateTime SentAt { get; set; } = DateTime.UtcNow;
     public bool IsRead { get; set; } = false;
+    public bool IsEdited { get; set; } = false;
 }

@@ -9,4 +9,5 @@ public class ChatDetailsVM
     public string? InterlocutorAvatar { get; set; }
     public string ContractStatus { get; set; } = string.Empty;
     public bool IsInterlocutorOnline { get; set; }
+    public string InterlocutorRole { get; set; } =  string.Empty;
 }
