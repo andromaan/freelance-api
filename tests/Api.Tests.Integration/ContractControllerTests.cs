@@ -30,7 +30,7 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
     {
         // Arrange
         Context.Contracts.Remove(_contract);
-        
+
         var newQuote = QuoteData.CreateQuote(
             projectId: _project.Id,
             freelancerId: _freelancer.Id,
@@ -120,22 +120,22 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
         // Arrange
         var newStartDate = DateTime.UtcNow.AddDays(5);
         var newEndDate = DateTime.UtcNow.AddDays(35);
-        var request = new UpdateContractVM 
-        { 
+        var request = new UpdateContractVM
+        {
             StartDate = newStartDate,
             EndDate = newEndDate
         };
 
         // Act
         var response = await Client.PutAsJsonAsync($"Contract?contractId={_contract.Id}", request);
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var contractFromResponse = await JsonHelper.GetPayloadAsync<ContractVM>(response);
-        
+
         var contractFromDb = await Context.Contracts.FirstOrDefaultAsync(x => x.Id == contractFromResponse.Id);
-        
+
         contractFromDb.Should().NotBeNull();
         contractFromDb.StartDate.Should().BeCloseTo(newStartDate, TimeSpan.FromSeconds(1));
         contractFromDb.EndDate.Should().BeCloseTo(newEndDate, TimeSpan.FromSeconds(1));
@@ -147,7 +147,7 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
     {
         // Act
         var response = await Client.PostAsJsonAsync($"Contract/{Guid.NewGuid()}", new { });
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -157,15 +157,15 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldNotUpdateContractBecauseNotFound()
     {
         // Arrange
-        var request = new UpdateContractVM 
-        { 
+        var request = new UpdateContractVM
+        {
             StartDate = DateTime.UtcNow,
             EndDate = DateTime.UtcNow.AddDays(30)
         };
-        
+
         // Act
         var response = await Client.PutAsJsonAsync($"Contract?contractId={Guid.NewGuid()}", request);
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -175,15 +175,15 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldNotUpdateContractWithEndDateBeforeStartDate()
     {
         // Arrange
-        var request = new UpdateContractVM 
-        { 
+        var request = new UpdateContractVM
+        {
             StartDate = DateTime.UtcNow.AddDays(30),
             EndDate = DateTime.UtcNow, // End date before start date
         };
-        
+
         // Act
         var response = await Client.PutAsJsonAsync($"Contract?contractId={_contract.Id}", request);
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -195,7 +195,10 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
         // Arrange - Create project without milestones
         var projectWithDeadline = ProjectData.CreateProject(userId: _employerUser.Id);
         projectWithDeadline.Deadline = DateTime.UtcNow.AddDays(45);
-        
+
+        var projectMilestone = ProjectMilestoneData.CreateProjectMilestone(projectId: projectWithDeadline.Id,
+            userId: _employerUser.Id, amount: 1000m);
+
         var newQuote = QuoteData.CreateQuote(
             projectId: projectWithDeadline.Id,
             freelancerId: _freelancer.Id,
@@ -203,6 +206,7 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
         );
 
         await Context.AddAuditableAsync(projectWithDeadline);
+        await Context.AddAuditableAsync(projectMilestone);
         await Context.AddAuditableAsync(newQuote);
         await SaveChangesAsync();
 
@@ -216,7 +220,7 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
         var contractId = contractFromResponse.Id;
 
         var contractFromDb = await Context.Contracts.FirstOrDefaultAsync(x => x.Id == contractId);
-        
+
         contractFromDb.Should().NotBeNull();
         contractFromDb.EndDate.Should().BeCloseTo(projectWithDeadline.Deadline, TimeSpan.FromSeconds(1));
     }
@@ -227,7 +231,7 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
         // Arrange
         var newProject = ProjectData.CreateProject(userId: _employerUser.Id);
         newProject.Deadline = DateTime.UtcNow.AddDays(30);
-        
+
         var milestone1 = new ProjectMilestone
         {
             Id = Guid.NewGuid(),
@@ -246,7 +250,7 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
             Amount = 2000m,
             CreatedBy = _employerUser.Id
         };
-        
+
         var newQuote = QuoteData.CreateQuote(
             projectId: newProject.Id,
             freelancerId: _freelancer.Id,
@@ -267,7 +271,7 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
 
         var contractFromResponse = await JsonHelper.GetPayloadAsync<ContractVM>(response);
         var contractFromDb = await Context.Contracts.FirstOrDefaultAsync(x => x.Id == contractFromResponse.Id);
-        
+
         contractFromDb.Should().NotBeNull();
         // EndDate should be from the latest milestone, not the project deadline
         contractFromDb.EndDate.Should().BeCloseTo(milestone2.DueDate, TimeSpan.FromSeconds(1));
@@ -315,7 +319,10 @@ public class ContractControllerTests(IntegrationTestWebFactory factory)
     {
         // Arrange
         var project = ProjectData.CreateProject(userId: _employerUser.Id);
+        var projectMilestone = ProjectMilestoneData.CreateProjectMilestone(projectId: project.Id,
+            userId: _employerUser.Id, amount: 1000m);
         await Context.AddAuditableAsync(project);
+        await Context.AddAuditableAsync(projectMilestone);
         var freelancer = FreelancerData.CreateFreelancer(userId: _freelancerUser.Id);
         await Context.AddAuditableAsync(freelancer);
         var quote = QuoteData.CreateQuote(projectId: project.Id, freelancerId: freelancer.Id, amount: 1000m);
