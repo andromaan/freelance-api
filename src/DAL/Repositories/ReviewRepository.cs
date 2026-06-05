@@ -32,4 +32,11 @@ public class ReviewRepository(AppDbContext context, IUserProvider userProvider)
                 r => r.CreatedBy == reviewerId && r.ReviewedUserId == reviewedUserId && r.ContractId == contractId,
                 cancellationToken);
     }
+
+    public async Task<Review?> GetReviewByContractAndReviewer(Guid reviewerId, Guid contractId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Reviews.FirstOrDefaultAsync(r => r.CreatedBy == reviewerId && r.ContractId == contractId,
+            cancellationToken);
+    }
 }

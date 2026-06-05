@@ -19,7 +19,8 @@ public class ReviewController(ISender sender)
 {
     [AllowAnonymous]
     [HttpGet("by-reviewed-user/{reviewedUserEmail}")]
-    public async Task<ActionResult<Result<List<ReviewVM>>>> GetByGetReviewedUser(string reviewedUserEmail, CancellationToken ct)
+    public async Task<ActionResult<Result<List<ReviewVM>>>> GetByGetReviewedUser(string reviewedUserEmail,
+        CancellationToken ct)
     {
         var query = new GetByReviewedUserQuery { ReviewedUserEmail = reviewedUserEmail };
         var result = await Sender.Send(query, ct);
@@ -34,7 +35,7 @@ public class ReviewController(ISender sender)
         var result = await Sender.Send(query, ct);
         return GetResult(result);
     }
-    
+
     [HttpGet("by-user")]
     public async Task<ActionResult<Result<List<ReviewVM>>>> GetByGetReviewer(CancellationToken ct)
     {
@@ -42,7 +43,15 @@ public class ReviewController(ISender sender)
         var result = await Sender.Send(query, ct);
         return GetResult(result);
     }
-    
+
+    [HttpGet("is-reviewed/{contractId:guid}")]
+    public async Task<ActionResult<Result<ReviewVM>>> IsReviewed(Guid contractId, CancellationToken ct)
+    {
+        var query = new GetIsReviewedQuery { ContractId = contractId };
+        var result = await Sender.Send(query, ct);
+        return GetResult(result);
+    }
+
     [ApiExplorerSettings(IgnoreApi = true)]
     public override Task<ActionResult<Result<List<ReviewVM>>>> GetAll(CancellationToken ct)
         => Task.FromResult<ActionResult<Result<List<ReviewVM>>>>(NotFound());
