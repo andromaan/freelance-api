@@ -117,4 +117,13 @@ public class UserController(ISender sender)
     public override Task<ActionResult<Result<PaginatedItemsVM<UserVM>>>> GetAllPaginated(PagedVM pagedVm,
         CancellationToken ct)
         => base.GetAllPaginated(pagedVm, ct);
+
+    [Authorize(Roles = Settings.Roles.AdminRole)]
+    [HttpGet("search")]
+    public async Task<ActionResult<Result<PaginatedItemsVM<UserVM>>>> GetAllPaginatedFiltered([FromQuery] PagedVM pagedVm, [FromQuery] FilterUserVM filterVm, CancellationToken ct)
+    {
+        var query = new BLL.CommandsQueries.Users.GetFiltered.GetFilteredUsers.Query(pagedVm, filterVm);
+        var result = await Sender.Send(query, ct);
+        return GetResult(result);
+    }
 }

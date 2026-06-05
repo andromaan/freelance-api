@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using BLL.Common.Interfaces;
 using BLL.Common.Interfaces.Repositories.Users;
+using BLL.ViewModels.User;
 using DAL.Data;
 using Domain.Models.Users;
 using Microsoft.AspNetCore.Identity;
@@ -85,5 +86,45 @@ public class UserRepository(AppDbContext appDbContext, IUserProvider userProvide
     public async Task<User?> GetByUser(Guid userId, CancellationToken cancellationToken)
     {
         return await GetUserAsync(u => u.Id == userId, cancellationToken);
+    }
+
+    public async Task<(int TotalCount, List<User> Items)> SearchUsersAsync(FilterUserVM filter, int page, int pageSize, CancellationToken token)
+    {
+        var query = _appDbContext.Users
+            .Include(u => u.Role)
+            .Include(u => u.Languages)
+            .Include(u => u.Country)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            var searchStr = filter.Search.ToLower();
+            query = query.Where(u => (u.DisplayName != null && u.DisplayName.ToLower().Contains(searchStr)) || u.Email.ToLower().Contains(searchStr));
+        }
+
+        if (filter.RoleIds != null && filter.RoleIds.Any())
+        {
+            query = query.Where(u => filter.RoleIds.Contains(u.RoleId));
+        }
+
+        if (filter.CreatedFrom.HasValue)
+        {
+            query = query.Where(u => u.CreatedAt >= filter.CreatedFrom.Value);
+        }
+
+        if (filter.CreatedTo.HasValue)
+        {
+            query = query.Where(u => u.CreatedAt <= filter.CreatedTo.Value);
+        }
+
+        var totalCount = await query.CountAsync(token);
+
+        var items = await query
+            .OrderByDescending(u => u.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(token);
+
+        return (totalCount, items);
     }
 }
