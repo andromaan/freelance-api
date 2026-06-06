@@ -32,6 +32,12 @@ public class CreateProjectMilestoneHandler(
         {
             return Result<ProjectMilestoneVM?>.Unauthorized("You are not authorized to create a milestone for this project");
         }
+        
+        if (existingProject.Deadline <  createModel.DueDate)
+        {
+            return Result<ProjectMilestoneVM?>.BadRequest(
+                "Milestone deadline cannot be before the project due date");
+        }
 
         var existingMilestones =
             await milestoneQueries.GetByProjectIdAsync(createModel.ProjectId, cancellationToken);

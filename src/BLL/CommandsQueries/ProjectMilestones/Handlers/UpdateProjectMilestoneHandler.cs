@@ -18,12 +18,6 @@ public class UpdateProjectMilestoneHandler(
         ProjectMilestone existingEntity,
         UpdateProjectMilestoneVM updateModel, CancellationToken cancellationToken)
     {
-        // Перевірка чи змінився amount
-        if (existingEntity.Amount == updateModel.Amount)
-        {
-            return Result<ProjectMilestoneVM?>.Ok(); // Якщо amount не змінився, повертаємо null - це означає використовувати entity після маппінгу в Update.cs
-        }
-
         // Отримай проєкт
         var project = await projectQueries.GetByIdAsync(
             existingEntity.ProjectId, 
@@ -34,6 +28,12 @@ public class UpdateProjectMilestoneHandler(
         {
             return Result<ProjectMilestoneVM?>.NotFound(
                 $"Project with ID {existingEntity.ProjectId} not found");
+        }
+        
+        if (project.Deadline < updateModel.DueDate)
+        {
+            return Result<ProjectMilestoneVM?>.BadRequest(
+                "Milestone deadline cannot be before the project due date");
         }
 
         // Отримай всі milestone для проєкту
