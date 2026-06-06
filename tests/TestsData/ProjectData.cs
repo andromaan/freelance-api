@@ -13,7 +13,8 @@ public class ProjectData
             Description = "Test Project Description",
             Budget = budget ?? 5000m,
             Status = ProjectStatus.Open,
-            CreatedBy = userId ?? Guid.NewGuid()
+            CreatedBy = userId ?? Guid.NewGuid(),
+            Deadline = DateTime.UtcNow.AddMonths(1)
         };
     }
 }

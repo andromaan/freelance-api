@@ -22,7 +22,7 @@ public class ProjectMilestoneControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldCreateProjectMilestone()
     {
         // Arrange
-        var dueDate = DateTime.UtcNow.AddDays(30);
+        var dueDate = _project.Deadline.AddDays(-1);
         var request = new CreateProjectMilestoneVM 
         { 
             ProjectId = _project.Id,
@@ -52,7 +52,7 @@ public class ProjectMilestoneControllerTests(IntegrationTestWebFactory factory)
     public async Task ShouldUpdateProjectMilestone()
     {
         // Arrange
-        var newDueDate = DateTime.UtcNow.AddDays(45);
+        var newDueDate = _projectMilestone.DueDate.AddDays(-5);
         var request = new UpdateProjectMilestoneVM 
         { 
             Description = "Updated milestone",
@@ -213,7 +213,7 @@ public class ProjectMilestoneControllerTests(IntegrationTestWebFactory factory)
             ProjectId = project.Id,
             Description = "First milestone",
             Amount = 900m,
-            DueDate = DateTime.UtcNow.AddDays(10)
+            DueDate = _project.Deadline.AddDays(-10)
         };
         var response1 = await Client.PostAsJsonAsync("ProjectMilestone", firstMilestone);
         response1.IsSuccessStatusCode.Should().BeTrue();
