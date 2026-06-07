@@ -2,6 +2,7 @@ using AutoMapper;
 using BLL.Common.Interfaces;
 using BLL.Common.Interfaces.Repositories.Contracts;
 using BLL.Common.Interfaces.Repositories.Freelancers;
+using BLL.Common.Interfaces.Repositories.Roles;
 using BLL.Services;
 using BLL.ViewModels.Contract;
 using MediatR;
@@ -17,7 +18,8 @@ public class GetContractByIdQueryQueryHandler(
     IContractQueries contractQueries,
     IMapper mapper,
     IUserProvider userProvider,
-    IFreelancerQueries freelancerQueries)
+    IFreelancerQueries freelancerQueries,
+    IRoleQueries roleQueries)
     : IRequestHandler<GetContractByIdQuery, Result<ContractVM?>>
 {
     public async Task<Result<ContractVM?>> Handle(GetContractByIdQuery request,
@@ -33,10 +35,15 @@ public class GetContractByIdQueryQueryHandler(
             }
 
             // Перевірка прав доступу
-            var userId = await userProvider.GetUserId(cancellationToken);
-            var freelancer = await freelancerQueries.GetByUserIdAsync(userId, cancellationToken);
+            var user = await userProvider.GetUser(cancellationToken);
+            var freelancer = await freelancerQueries.GetByUserIdAsync(user!.Id, cancellationToken);
 
-            if (contract.FreelancerId != freelancer?.Id && contract.CreatedBy != userId)
+            var isNotFreelancer = contract.FreelancerId != freelancer?.Id;
+            var isNotEmployer = contract.CreatedBy != user.Id;
+
+
+            if (isNotFreelancer && isNotEmployer && user.Role!.Name != Settings.Roles.AdminRole &&
+                user.Role.Name != Settings.Roles.ModeratorRole)
             {
                 return Result<ContractVM?>.Forbidden("You do not have permission to edit this entity");
             }

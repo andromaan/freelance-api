@@ -1,5 +1,6 @@
 using BLL.Common.Interfaces;
 using DAL.Data;
+using Domain.Models.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Services.UserProvider;
@@ -28,6 +29,31 @@ public class UserProvider(IHttpContextAccessor context, AppDbContext appDbContex
         }
 
         return userIdGuid;
+    }
+    
+    public async Task<User?> GetUser(CancellationToken cancellationToken = default)
+    {
+        if (_context.HttpContext == null) return null;
+
+        var userIdStr = _context.HttpContext.User.FindFirst("id")?.Value;
+
+        if (userIdStr == null)
+        {
+            return null; // SignalR or unauthenticated
+        }
+
+        var userIdGuid = Guid.Parse(userIdStr);
+
+        var user = await appDbContext.Users.AsNoTracking()
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Id == userIdGuid, cancellationToken);
+        
+        if (user == null)
+        {
+            throw new InvalidOperationException("User does not exist.");
+        }
+
+        return user;
     }
 
     public string GetUserRole()
