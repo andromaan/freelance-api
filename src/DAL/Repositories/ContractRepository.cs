@@ -53,7 +53,7 @@ public class ContractRepository(AppDbContext appDbContext, IUserProvider userPro
     public async Task<bool> IsExistsByQuoteQuery(Guid projectId, Guid createdById, Guid freelancerId,
         CancellationToken cancellationToken)
     {
-        return !await _appDbContext.Contracts.AnyAsync(
+        return await _appDbContext.Contracts.AnyAsync(
             p => p.FreelancerId == freelancerId &&
                  p.CreatedBy == createdById &&
                  p.ProjectId == projectId,

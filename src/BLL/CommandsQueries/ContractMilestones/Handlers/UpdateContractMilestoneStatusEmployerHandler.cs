@@ -9,8 +9,11 @@ using BLL.Common.Interfaces.Repositories.Projects;
 using BLL.Common.Interfaces.Repositories.UserWallets;
 using BLL.Common.Interfaces.Repositories.WalletTransactions;
 using BLL.Services;
+using BLL.Services.Notifications;
 using BLL.ViewModels.ContractMilestone;
 using Domain.Models.Contracts;
+using Domain.Models.Freelance;
+using Domain.Models.Notifications;
 using Domain.Models.Payments;
 using Domain.Models.Projects;
 
@@ -26,7 +29,8 @@ public class UpdateContractMilestoneStatusEmployerHandler(
     IMapper mapper,
     IContractPaymentRepository contractPaymentRepository,
     IProjectRepository projectRepository,
-    IProjectQueries projectQueries
+    IProjectQueries projectQueries,
+    INotificationService notificationService
 ) : IUpdateHandler<ContractMilestone, UpdContractMilestoneStatusEmployerVM, ContractMilestoneVM>
 {
     public async Task<Result<ContractMilestoneVM?>> HandleAsync(
@@ -48,10 +52,12 @@ public class UpdateContractMilestoneStatusEmployerHandler(
         var areAllOtherMilestonesFinished = otherMilestones
             .All(m => m.Status is ContractMilestoneStatus.Approved or ContractMilestoneStatus.Rejected);
 
+        var freelancer = await freelancerQueries.GetByIdAsync(contract!.FreelancerId, cancellationToken);
         if (updateModel.Status == ContractMilestoneEmployerStatus.Approved)
         {
             var paymentError = await ProcessPaymentAsync(
-                existingEntity, contract!, otherMilestones, areAllOtherMilestonesFinished, cancellationToken);
+                existingEntity, contract, otherMilestones, areAllOtherMilestonesFinished, cancellationToken,
+                freelancer!);
 
             if (paymentError is not null)
                 return paymentError;
@@ -59,12 +65,19 @@ public class UpdateContractMilestoneStatusEmployerHandler(
 
         if (areAllOtherMilestonesFinished && updateModel.Status == ContractMilestoneEmployerStatus.Approved)
         {
-            var completionError = await CompleteContractAndProjectAsync(contract!, cancellationToken);
+            var completionError = await CompleteContractAndProjectAsync(contract, cancellationToken);
             if (completionError is not null)
                 return completionError;
         }
 
         mapper.Map(updateModel, existingEntity);
+
+        await notificationService.SendAsync(
+            message: $"Status changed to '{updateModel.Status}' for contract milestone '{existingEntity.Description}'",
+            type: NotificationType.MilestoneStatusUpdated,
+            userId: freelancer!.CreatedBy,
+            cancellationToken: cancellationToken,
+            linkAddress: $"/contract/{contract.Id}");
 
         return Result<ContractMilestoneVM?>.Ok();
     }
@@ -75,7 +88,7 @@ public class UpdateContractMilestoneStatusEmployerHandler(
         if (milestone.Status == ContractMilestoneStatus.Approved)
             return BadRequest("Cannot change the status of an approved contract milestone.");
 
-        if (milestone is not { Status: ContractMilestoneStatus.Submitted or  ContractMilestoneStatus.UnderReview })
+        if (milestone is not { Status: ContractMilestoneStatus.Submitted or ContractMilestoneStatus.UnderReview })
             return BadRequest("Only milestones with 'Submitted' status can be updated by the employer.");
 
         return null;
@@ -112,10 +125,10 @@ public class UpdateContractMilestoneStatusEmployerHandler(
         Contract contract,
         List<ContractMilestone> otherMilestones,
         bool isLastMilestone,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Freelancer freelancer)
     {
-        var freelancer = await freelancerQueries.GetByIdAsync(contract.FreelancerId, cancellationToken);
-        var freelancerUserId = freelancer!.CreatedBy;
+        var freelancerUserId = freelancer.CreatedBy;
 
         var milestoneError = await ProcessMilestonePaymentAsync(
             milestone, contract, freelancerUserId, cancellationToken);

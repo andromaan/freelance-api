@@ -2,7 +2,6 @@ using AutoMapper;
 using BLL.Common.Interfaces;
 using BLL.Common.Interfaces.Repositories.Contracts;
 using BLL.Common.Interfaces.Repositories.Freelancers;
-using BLL.Common.Interfaces.Repositories.Roles;
 using BLL.Services;
 using BLL.ViewModels.Contract;
 using MediatR;
@@ -18,8 +17,7 @@ public class GetContractByIdQueryQueryHandler(
     IContractQueries contractQueries,
     IMapper mapper,
     IUserProvider userProvider,
-    IFreelancerQueries freelancerQueries,
-    IRoleQueries roleQueries)
+    IFreelancerQueries freelancerQueries)
     : IRequestHandler<GetContractByIdQuery, Result<ContractVM?>>
 {
     public async Task<Result<ContractVM?>> Handle(GetContractByIdQuery request,

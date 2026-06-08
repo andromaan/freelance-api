@@ -97,7 +97,7 @@ public class CreateContractCommandHandler(
             if (projectChangeStatusResult != null)
                 return projectChangeStatusResult;
 
-            await SendNotificationsToFreelancers(quote, project, cancellationToken);
+            await SendNotificationsToFreelancers(quote, project, cancellationToken, createdEntity!.Id);
 
             return Result<ContractVM?>.Ok($"Contract created",
                 mapper.Map<ContractVM>(createdEntity));
@@ -109,7 +109,7 @@ public class CreateContractCommandHandler(
     }
 
     private async Task SendNotificationsToFreelancers(Quote quote, Project project,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, Guid contractId)
     {
         var bids = await bidQueries.GetByProjectIdAsync(project.Id, cancellationToken);
         var freelancerIdsToNotifyAboutTakenProject =
@@ -132,7 +132,8 @@ public class CreateContractCommandHandler(
             throw new Exception($"Freelancer with id {quote.FreelancerId} not found");
 
         await notificationService.SendAsync($"Your quote for project '{project.Title}' has been accepted.",
-            NotificationType.ProposalAccepted, freelancer.CreatedBy, cancellationToken);
+            NotificationType.ProposalAccepted, freelancer.CreatedBy, cancellationToken, 
+            linkAddress: $"/contract/{contractId}");
     }
 
     private async Task<Result<ContractVM?>?> UpdateStatusAsync(Guid quoteProjectId, CancellationToken cancellationToken)

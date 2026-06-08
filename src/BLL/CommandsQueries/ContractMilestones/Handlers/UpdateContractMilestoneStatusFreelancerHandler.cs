@@ -4,8 +4,10 @@ using BLL.Common.Interfaces.Repositories.ContractMilestones;
 using BLL.Common.Interfaces.Repositories.Contracts;
 using BLL.Common.Interfaces.Repositories.Freelancers;
 using BLL.Services;
+using BLL.Services.Notifications;
 using BLL.ViewModels.ContractMilestone;
 using Domain.Models.Contracts;
+using Domain.Models.Notifications;
 
 namespace BLL.CommandsQueries.ContractMilestones.Handlers;
 
@@ -18,7 +20,8 @@ public class UpdateContractMilestoneStatusFreelancerHandler(
     IContractQueries contractQueries,
     IFreelancerQueries freelancerQueries,
     IContractMilestoneQueries contractMilestoneQueries,
-    IContractRepository contractRepository
+    IContractRepository contractRepository,
+    INotificationService notificationService
 )
     : IUpdateHandler<ContractMilestone, UpdContractMilestoneStatusFreelancerVM, ContractMilestoneVM>
 {
@@ -28,7 +31,7 @@ public class UpdateContractMilestoneStatusFreelancerHandler(
         CancellationToken cancellationToken)
     {
         // Перевірка прав доступу
-        var userId = await userProvider.GetUserId();
+        var userId = await userProvider.GetUserId(cancellationToken);
         var contract = await contractQueries.GetByIdAsync(existingEntity.ContractId, cancellationToken);
         var freelancer = await freelancerQueries.GetByUserIdAsync(userId, cancellationToken);
 
@@ -45,6 +48,13 @@ public class UpdateContractMilestoneStatusFreelancerHandler(
 
 
         existingEntity.Status = (ContractMilestoneStatus)updateModel.Status;
+
+        await notificationService.SendAsync(
+            message: $"Status changed to '{updateModel.Status}' for contract milestone '{existingEntity.Description}'",
+            type: NotificationType.MilestoneStatusUpdated,
+            userId: contract.CreatedBy,
+            cancellationToken: cancellationToken,
+            linkAddress: $"/contract/{contract.Id}");
 
         return Result<ContractMilestoneVM?>.Ok(); // Валідація пройшла успішно
     }
@@ -70,7 +80,7 @@ public class UpdateContractMilestoneStatusFreelancerHandler(
                 return Result<ContractMilestoneVM?>.InternalError(e.Message);
             }
         }
-        
+
         return null;
     }
 }

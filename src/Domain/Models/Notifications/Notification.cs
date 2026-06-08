@@ -18,8 +18,9 @@ public enum NotificationType
     InterestedInYourBid,    // Ставкою зацікавилися
     NotInterestedInYourBid, // Ставкою не зацікавилися
     NewMessage,             // Нове повідомлення в чаті
-    MilestoneApproved,      // Milestone схвалено (для фрілансера)
-    MilestoneRejected,      // Milestone відхилено (для фрілансера)
+    MilestoneStatusUpdated,
+    // MilestoneApproved,      // Milestone схвалено (для фрілансера)
+    // MilestoneRejected,      // Milestone відхилено (для фрілансера)
     ContractCreated,        // Новий контракт створено (для обох сторін)
     PaymentReceived,        // Оплата надійшла (для фрілансера)
     DisputeOpened,          // Відкрито спір (для обох сторін)
