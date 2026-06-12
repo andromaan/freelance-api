@@ -33,7 +33,7 @@ public class UpdateByUser
             Command<TUpdateViewModel, TViewModel> request,
             CancellationToken cancellationToken)
         {
-            var userId = await userProvider.GetUserId();
+            var userId = await userProvider.GetUserId(cancellationToken);
             
             // 1. Check entity existence
             var existingEntity = await queries.GetByUser(userId, cancellationToken);
